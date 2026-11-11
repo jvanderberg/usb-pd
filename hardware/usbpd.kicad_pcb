@@ -6838,7 +6838,7 @@
 	(footprint "JLCImport:TS-1088-AR02016"
 		(layer "F.Cu")
 		(uuid "e7bb78ce-3110-5ea2-8203-20d209354701")
-		(at 141 102.25)
+		(at 139.5 102.25)
 		(descr "TS-1088-AR02016; SW-SMD_L3.9-W3.0-P4.45; XUNPU")
 		(tags "C720477 SW-SMD_L3.9-W3.0-P4.45 TS-1088-AR02016 XUNPU")
 		(property "Reference" "SW1"
@@ -9333,9 +9333,9 @@
 		)
 	)
 	(gr_text "ON/OFF"
-		(at 141 102.25 0)
+		(at 139.5 102.25 0)
 		(layer "B.SilkS")
-		(uuid "97a5c500-3b4a-592c-8cc4-c1d25e694452")
+		(uuid "a5493744-43c1-50a2-8cba-c1615452f50f")
 		(effects
 			(font
 				(size 1 1)
@@ -10430,19 +10430,19 @@
 	)
 	(segment
 		(start 136.8 104)
-		(end 138.815 104)
+		(end 137.315 104)
 		(width 0.2)
 		(layer "F.Cu")
 		(net "Net-(U4-P1.1)")
-		(uuid "07c96804-60c5-5a85-8dd8-c9418569b76e")
+		(uuid "07747162-b2ca-53e3-9c93-6b2a043c0396")
 	)
 	(segment
-		(start 138.815 104)
-		(end 138.815 102.25)
+		(start 137.315 104)
+		(end 137.315 102.25)
 		(width 0.2)
 		(layer "F.Cu")
 		(net "Net-(U4-P1.1)")
-		(uuid "15709194-4d27-57d9-9a04-e46ee4e0a7e7")
+		(uuid "453dcbaa-2819-5b70-a52d-ec42c8e38bf2")
 	)
 	(segment
 		(start 114 111.4506)
