@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Redrawn symbols (pins grouped by function, real types from the datasheet pin tables) -> hardware/usbpd.kicad_sym.
+"""Board symbols (pins grouped by function, real types from the datasheet pin tables) -> hardware/usbpd.kicad_sym.
 Each inherits the JLCImport symbol's data (LCSC, datasheet, footprint). Pin numbers = JLC footprint pad numbers."""
 import os
 import kskills  # noqa: F401
@@ -14,14 +14,17 @@ DEV = SymLib('Device', kicad_symbol_dir() + '/Device.kicad_sym')
 
 def build():
     s = {}
-    # HUSB238 (docs/datasheets/HUSB238_002DD.pdf, table 1 p.3)
-    s['HUSB238'] = ic('HUSB238', 7.62,
-                      left=[('VIN', ['1'], PI), None, ('CC1', ['4'], BI), ('CC2', ['5'], BI), None,
-                            ('D+', ['2'], BI), ('D-', ['3'], BI)],
-                      right=[('SDA', ['6'], BI), ('SCL', ['7'], IN), None, ('VSET', ['8'], PA), ('ISET', ['9'], PA),
-                             None, ('GATE', ['10'], OC)],
-                      bottom=[('GND', ['11'], PI)], desc='USB PD sink controller, I2C, 5-20 V',
-                      inherit=J.get('HUSB238_002DD'))
+    # AP33772S W-QFN4040-24 (docs/datasheets/AP33772S_rev10-2.pdf, table 1 p.3); EP = pad 25 (JLC footprint)
+    s['AP33772S'] = ic('AP33772S', 10.16,
+                       left=[('VCC', ['24'], PI), ('ISENP', ['1'], IN), None, ('CC2', ['16'], BI), ('CC1', ['17'], BI),
+                             None, ('DP', ['19'], BI), ('DN', ['18'], BI)],
+                       right=[('SDA', ['4'], BI), ('SCL', ['5'], BI), None, ('PWR_EN', ['23'], OUT),
+                              ('VOUT', ['22'], IN), None, ('OTP', ['13'], PA), ('IFB', ['15'], PA), ('V5V', ['20'], PO),
+                              ('V18', ['12'], PO), None, ('VSEL', ['11'], IN), ('INT', ['9'], OUT), ('LED', ['8'], OUT),
+                              ('FLIP', ['6'], OUT), ('GPIO', ['7'], BI)],
+                       bottom=[('NC', ['2', '10', '14', '21'], NC), ('GND', ['3', '25'], PI)],
+                       desc='USB PD3.1 sink controller with PPS/AVS, I2C 0x52, NMOS gate driver',
+                       inherit=J.get('AP33772SDKZ-13-FA02'))
     # CH552P QFN-16 (docs/datasheets/CH552E.pdf section 4, QFN16 column); EP = pad 17
     s['CH552P'] = ic('CH552P', 10.16,
                      left=[('VCC', ['16'], PI), ('V33', ['1'], PO), ('RST', ['7'], IN), None,
@@ -47,10 +50,9 @@ def build():
                                ('SBU1', ['A8'], PA), ('SBU2', ['B8'], PA)],
                         bottom=[('GND', ['A1B12', 'B1A12'], PO), ('SHIELD', ['1', '2', '3', '4'], PA)],
                         ref='J', desc='USB Type-C receptacle, 16 pin, 5 A', inherit=J.get('TYPE-C-31-M-12'))
-    s['AO4407A'] = fet(DEV.get('Q_PMOS'), 'AO4407A', D=['5', '6', '7', '8'], G=['4'], S=['1', '2', '3'],
-                       desc='-30 V -14 A P-MOSFET, Vgs +-25 V', inherit=J.get('AO4407A_C2841482'))
-    s['2N7002'] = fet(DEV.get('Q_NMOS'), '2N7002', D=['3'], G=['1'], S=['2'], desc='60 V N-MOSFET',
-                      inherit=J.get('2N7002'))
+    # AON7262E DFN 3x3: 1-3 S, 4 G, 5 D (AOS DS, JLC footprint pads)
+    s['AON7262E'] = fet(DEV.get('Q_NMOS'), 'AON7262E', D=['5'], G=['4'], S=['1', '2', '3'],
+                        desc='60 V N-MOSFET, 8.5 mOhm at Vgs 4.5 V, Vgs +-20 V', inherit=J.get('AON7262E'))
     # 0.69" 96x16 OLED FPC (Wisevision N069-9616TSWPG02-H14, pin definition table 1.5)
     s['OLED_0.69_96x16'] = ic('OLED_0.69_96x16', 7.62,
                               left=[('C2P', ['1'], PA), ('C2N', ['2'], PA), ('C1P', ['3'], PA), ('C1N', ['4'], PA),
@@ -62,13 +64,6 @@ def build():
                               footprint='usbpd:OLED_0.69in_96x16_FPC14',
                               datasheet='https://www.lcsc.com/datasheet/C5123561.pdf',
                               desc='0.69in 96x16 COG OLED, SSD1306/SSD1315 I2C, 14-pin 0.62 mm FPC (hand-soldered)')
-    # INA226 VSSOP-10 (docs/datasheets/INA226.pdf table 4-1)
-    s['INA226'] = ic('INA226', 7.62,
-                     left=[('VBUS', ['8'], IN), ('IN-', ['9'], IN), ('IN+', ['10'], IN)],   # shunt taps drop in uncrossed
-                     right=[('SDA', ['4'], BI), ('SCL', ['5'], IN), None, ('ALERT', ['3'], OC), None,
-                            ('A0', ['2'], IN), ('A1', ['1'], IN)],
-                     top=[('VS', ['6'], PI)], bottom=[('GND', ['7'], PI)],
-                     desc='36 V current / voltage / power monitor, I2C, 16-bit', inherit=J.get('INA226AIDGSR'))
     return s
 
 

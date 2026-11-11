@@ -1,5 +1,5 @@
 {
- "_comment": "Review config for the usbpd board (kicad-board-review). Currents: 5 A output (100 W at 20 V); 5 V rail ~35 mA peak (requirements power budget). Enclosure: user's 3D-printed case.",
+ "_comment": "Review config for the USB-PD PPS board (kicad-board-review). 5 A max output, 21 V max (PPS clamp); 5 V rail ~35 mA peak. Enclosure: 3D-printed case.",
  "ground_nets": [
   "GND"
  ],
@@ -9,11 +9,15 @@
    "class": "usb"
   },
   {
-   "match": "^/(SDA|SCL)$",
+   "match": "^/(SDA|SCL|SDA5|SCL5)$",
    "class": "i2c"
   },
   {
-   "match": "^Net-\\(J1-CC[12]\\)$",
+   "match": "^Net-\\(U4-P1\\.[67]\\)$",
+   "class": "i2c"
+  },
+  {
+   "match": "^/CC[12]$",
    "class": "slow_ext"
   },
   {
@@ -21,7 +25,11 @@
    "class": "slow_ext"
   },
   {
-   "match": "^(VBUS|/VOUT|/VOUT_SW|\\+5V|\\+3V3|Net-\\(U4-V33\\))$",
+   "match": "^/(VOUT_MON|PWR_EN)$|^Net-\\(U1-(OTP|IFB)\\)$",
+   "class": "analog"
+  },
+  {
+   "match": "^(VBUS|/VBUS_S|/OUT|\\+5V|\\+3V3|Net-\\(U4-V33\\)|Net-\\(U1-V5V\\)|Net-\\(U1-V18\\))$",
    "class": "power"
   }
  ],
@@ -38,44 +46,19 @@
   }
  ],
  "rail_voltages": {
-  "VBUS": 20,
-  "/VOUT": 20,
-  "/VOUT_SW": 20
+  "VBUS": 21,
+  "/VBUS_S": 21,
+  "/OUT": 21
  },
  "hot_loops": [],
  "power_runs": [
   {
    "name": "vbus",
    "net": "VBUS",
-   "title": "J1 VBUS pins to Q1 source pins, 5 A",
+   "title": "J1 VBUS pins to shunt R10 pad 1, 5 A",
    "source": [
     "J1:A4B9",
     "J1:B4A9"
-   ],
-   "sinks": [
-    [
-     "Q1:1",
-     1.667
-    ],
-    [
-     "Q1:2",
-     1.667
-    ],
-    [
-     "Q1:3",
-     1.666
-    ]
-   ]
-  },
-  {
-   "name": "vout_sw",
-   "net": "/VOUT_SW",
-   "title": "Q1 drains to shunt R10 pad 1, 5 A",
-   "source": [
-    "Q1:5",
-    "Q1:6",
-    "Q1:7",
-    "Q1:8"
    ],
    "sinks": [
     [
@@ -85,11 +68,27 @@
    ]
   },
   {
-   "name": "vout",
-   "net": "/VOUT",
-   "title": "Shunt R10 pad 2 to J2 pin 1, 5 A",
+   "name": "vbus_s",
+   "net": "/VBUS_S",
+   "title": "Shunt R10 pad 2 to Q1 drain, 5 A",
    "source": [
     "R10:2"
+   ],
+   "sinks": [
+    [
+     "Q1:5",
+     5.0
+    ]
+   ]
+  },
+  {
+   "name": "out",
+   "net": "/OUT",
+   "title": "Q1 sources to J2 pin 1, 5 A",
+   "source": [
+    "Q1:1",
+    "Q1:2",
+    "Q1:3"
    ],
    "sinks": [
     [
@@ -119,37 +118,27 @@
   "h_W_m2K": "enclosed",
   "board_T_max_C": 105,
   "corners": {
-   "20V_5A": {
-    "title": "20 V PD contract, 5 A load (100 W), Q1 Vgs about -18 V",
+   "21V_5A": {
+    "title": "21 V PPS / 20 V fixed, 5 A load; LDO at its worst (21 V in)",
     "currents": {
      "I_out": 5.0
     }
    },
-   "9V_5A": {
-    "title": "9 V, 5 A (worst Q1 loss at lower gate drive, Vgs about -8 V)",
+   "5V_5A": {
+    "title": "5 V PPS, 5 A (lowest gate drive if the charge pump tracks VOUT); LDO in dropout",
     "currents": {
      "I_out": 5.0
-    }
-   },
-   "5V_3A": {
-    "title": "5 V, 3 A (Vgs about -4.5 V)",
-    "currents": {
-     "I_out": 3.0
     }
    }
   },
   "sources": [
    {
     "ref": "Q1",
-    "what": "output PMOS",
+    "what": "output NMOS",
     "kind": "i2r",
-    "R_ohm": {
-     "20V_5A": 0.0161,
-     "9V_5A": 0.0185,
-     "5V_3A": 0.0259
-    },
+    "R_ohm": 0.02,
     "I": "I_out",
-    "basis": "AO4407A (UMW) DS RDS(on) max 11.5 mOhm @ -10 V, 18.5 mOhm @ -4.5 V, x1.4 hot (Fig. 4); 9 V corner uses the -4.5 V value"
+    "basis": "AON7262E at the AP33772S gate drive: PWR_EN is at most VCC + 4 V (AP33772S DS abs max), so VGS < 4 V; DS Fig. 5 at 125 C gives ~10.5-13 mOhm typical, ~20 mOhm for a high-threshold part (design-review M1). Measure at bring-up"
    },
    {
     "ref": "R10",
@@ -165,7 +154,7 @@
     "kind": "i2r",
     "R_ohm": 0.02,
     "I": "I_out",
-    "basis": "USB Type-C spec LLCR 40 mOhm max per contact (initial), 4 VBUS + 4 GND contacts in parallel = 10 + 10 mOhm; no figure in the TYPE-C-31-M-12 datasheet. Worst case; typical is several times lower"
+    "basis": "Type-C LLCR 40 mOhm max per contact, 4 + 4 contacts in parallel"
    },
    {
     "ref": "J2",
@@ -173,7 +162,7 @@
     "kind": "i2r",
     "R_ohm": 0.004,
     "I": "I_out",
-    "basis": "ASSUMED ~2 mOhm per pole (no datasheet figure for the generic MKDS-1,5 footprint part)"
+    "basis": "ASSUMED ~2 mOhm per pole"
    },
    {
     "copper_run": "vbus",
@@ -181,12 +170,12 @@
     "group": "power path"
    },
    {
-    "copper_run": "vout_sw",
+    "copper_run": "vbus_s",
     "I": "I_out",
     "group": "power path"
    },
    {
-    "copper_run": "vout",
+    "copper_run": "out",
     "I": "I_out",
     "group": "power path"
    },
@@ -197,26 +186,25 @@
    },
    {
     "ref": "U2",
-    "what": "5 V LDO from VBUS",
+    "what": "5 V LDO from VBUS_S",
     "kind": "fixed",
     "P_W": {
-     "20V_5A": 0.53,
-     "9V_5A": 0.14,
-     "5V_3A": 0.0
+     "21V_5A": 0.56,
+     "5V_5A": 0.0
     },
-    "basis": "(Vin - 5 V) x 35 mA peak 5 V rail (requirements power budget); 5 V in: dropout, ~0"
+    "basis": "(21 - 5) V x 35 mA peak 5 V rail (requirements power budget)"
    },
    {
     "ref": "U3",
     "what": "3.3 V LDO",
     "kind": "fixed",
-    "P_W": 0.05,
-    "basis": "(5 - 3.3) V x 27 mA (OLED + I2C + INA226)"
+    "P_W": 0.04,
+    "basis": "(5 - 3.3) V x ~25 mA (OLED + MCU I/O)"
    },
    {
     "ref": "U1",
     "kind": "negligible",
-    "why": "HUSB238, a few mA"
+    "why": "AP33772S, a few mA from VBUS"
    },
    {
     "ref": "U4",
@@ -224,37 +212,27 @@
     "why": "CH552, 6-11 mA at 5 V (0.05 W)"
    },
    {
-    "ref": "U5",
-    "kind": "negligible",
-    "why": "INA226, 0.4 mA"
-   },
-   {
-    "ref": "Q2",
-    "kind": "negligible",
-    "why": "2N7002 gate driver, 0.2 mA"
-   },
-   {
     "ref": "D1",
     "kind": "negligible",
     "why": "BAT54, bootloader-entry pull-up only"
+   },
+   {
+    "ref": "RT1",
+    "kind": "negligible",
+    "why": "NTC, 100 uA from the AP33772S OTP pin"
    }
   ],
   "parts": {
    "Q1": {
-    "psi_jb": 24.0,
+    "psi_jb": 2.9,
     "Tj_max_C": 150,
-    "basis": "AO4407A DS RthJL max 24 C/W (junction-to-lead) used as psi_JB"
+    "basis": "AON7262E DS RthJC max 2.9 C/W (case = drain pad, soldered to the board)"
    },
    "U2": {
     "psi_jb": null,
     "theta_jc": null,
     "Tj_max_C": 125,
     "basis": "SGM2203 DS gives only theta_JA 65 C/W (SOT-89-3)"
-   },
-   "U5": {
-    "psi_jb": 80.4,
-    "Tj_max_C": 150,
-    "basis": "INA226 DS RthJB 80.4 C/W"
    }
   },
   "pads": {}

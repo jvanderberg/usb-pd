@@ -7,7 +7,7 @@
   edge), total 1.2 thick; FPC 9 wide, 10.49 from the panel edge to the contact end.
 Footprint frame (footprints.py): pads along x at y = 0 (pin 1 at -x, contact end at y = -1.3), the FPC runs to +y,
 folds 180 deg, and the panel lies face up over the pads with its FPC end at y = EDGE and its far end at EDGE - 26.3.
-The active area shows a real frame from the firmware (firmware/test/screens.c, frame "on"), lit white.
+The active area shows a real frame from the firmware (firmware/test/screens.c, frame "pps-on"), lit white.
 Glass, FPC and tape thicknesses are approximate (drawing gives only the 1.2 mm total).
 VRML units here are KiCad's: 0.1 inch (2.54 mm)."""
 import os
@@ -36,7 +36,7 @@ AA_Y0 = FAR + 2.27                # active area starts 2.27 from the far end
 COL_P, ROW_P, COL_W, ROW_H = 0.18, 0.20, 0.16, 0.18
 
 
-def frame(name='on'):
+def frame(name='pps-on'):
     subprocess.run(['make', '-s', '-C', FW, 'build/screens'], check=True, stdout=subprocess.DEVNULL)
     lines = subprocess.run([os.path.join(FW, 'build', 'screens')], check=True, capture_output=True,
                            text=True).stdout.splitlines()

@@ -10,28 +10,23 @@
   },
   "_texts": [
     {
-      "text": "OUT -",
+      "text": "OUT",
       "at": [
-        61.0,
-        2.0
-      ]
-    },
-    {
-      "text": "OUT +",
-      "at": [
-        61.0,
-        15.0
-      ]
+        65.7,
+        8.5
+      ],
+      "sides": "B",
+      "rot": 90
     }
   ],
   "SW1": {
-    "text": "ON/OFF",
+    "text": "ON",
     "dx": 0,
     "dy": 0,
     "sides": "B"
   },
   "SW2": {
-    "text": "VOLT",
+    "text": "SEL",
     "dx": 0,
     "dy": 0,
     "sides": "B"
@@ -57,7 +52,7 @@
   "TP4": {
     "text": "GND",
     "dx": 0,
-    "dy": 1.3,
+    "dy": -1.3,
     "sides": "B"
   },
   "TP5": {
@@ -70,6 +65,30 @@
     "text": "RX",
     "dx": 0,
     "dy": -1.3,
+    "sides": "B"
+  },
+  "SW3": {
+    "text": "UP",
+    "dx": 0,
+    "dy": 0,
+    "sides": "B"
+  },
+  "SW4": {
+    "text": "DN",
+    "dx": 0,
+    "dy": 0,
+    "sides": "B"
+  },
+  "TP7": {
+    "text": "OUT",
+    "dx": 0,
+    "dy": -1.3,
+    "sides": "B"
+  },
+  "TP8": {
+    "text": "PWR_EN",
+    "dx": 0,
+    "dy": 1.7,
     "sides": "B"
   }
 }

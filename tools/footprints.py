@@ -90,6 +90,36 @@ def ch552p_epvia():
     return name, fp
 
 
+def ap33772s_epvia():
+    """JLC's AP33772S footprint (JLCImport:AP33772SDKZ-13-FA02, same origin, rotation and pad numbers as JLC places
+    it) with four 0.3 mm GND holes in the 2.8 mm exposed pad at +-0.55 mm and nine paste windows that clear them
+    (~36 % of the EP; board_lint VIA IN PAD / PASTE ON HOLE). The EP is the IC's thermal and ground pad."""
+    name = 'AP33772S_EPVIA'
+    fp = load(os.path.join(HW, 'JLCImport.pretty', 'AP33772SDKZ-13-FA02.kicad_mod'))
+    fp[1] = name
+    eps = [p for p in fp.find_all('pad') if p.args[0] == '25']
+    assert len(eps) == 1, 'AP33772S: expected one EP pad'
+    eps[0].set('layers', 'F.Cu', 'F.Mask')
+    wins = [(0, 0, 0.5, 0.5)]
+    for sx in (-1, 1):
+        wins += [(sx * 1.025, 0, 0.55, 0.7), (0, sx * 1.025, 0.7, 0.55)]
+        wins += [(sx * 1.1, sy * 1.1, 0.5, 0.5) for sy in (-1, 1)]
+    last = eps[0]
+    for x, y, w, h in wins:
+        node = Node('pad', '', Sym('smd'), Sym('rect'), Node('at', x, y), Node('size', w, h), Node('layers', 'F.Paste'))
+        fp.insert(_at(fp, last) + 1, node)
+        last = node
+    for x in (-0.55, 0.55):
+        for y in (-0.55, 0.55):
+            hole = Node('pad', '25', Sym('thru_hole'), Sym('circle'), Node('at', x, y), Node('size', 0.6, 0.6),
+                        Node('drill', 0.3), Node('layers', '*.Cu'))
+            fp.insert(_at(fp, last) + 1, hole)
+            last = hole
+    fp.set('descr', 'AP33772S (JLC C50341643 footprint) with four 0.3 mm GND vias in the exposed pad and paste '
+                    'windows clear of them')
+    return name, fp
+
+
 def rlm12_land():
     """NoOutline:RLM12FTCMR005 (strip_outline.py copy of JLC's footprint) with the datasheet land pattern
     (RLM12 DS s6, 2-50 mOhm: pad length b 1.7, width a 1.8, gap L 1.6 -> centres +-1.65). JLC's pads are 1.21 long.
@@ -109,7 +139,7 @@ def rlm12_land():
 
 def main():
     os.makedirs(LIB, exist_ok=True)
-    for name, fp in (oled(), ch552p_epvia()):
+    for name, fp in (oled(), ch552p_epvia(), ap33772s_epvia()):
         p = os.path.join(LIB, name + '.kicad_mod')
         text = dumps(fp)
         open(p, 'w').write(text)

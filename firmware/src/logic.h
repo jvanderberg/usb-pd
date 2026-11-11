@@ -4,72 +4,103 @@
 #include <stdint.h>
 
 #ifdef SDCC
-#define NTC_CODE __code
+#define CODE __code
 #define XDATA __xdata
 #else
-#define NTC_CODE
+#define CODE
 #define XDATA
 #endif
 
-/* ---- PD voltages: index 0..5 = 5, 9, 12, 15, 18, 20 V (HUSB238 SRC_PDO_5V..20V, registers 0x02..0x07) */
-#define NVOLT 6
-extern const NTC_CODE uint8_t volt_v[NVOLT];        /* volts per index */
-extern const NTC_CODE uint8_t volt_sel[NVOLT];      /* HUSB238 SRC_PDO.PDO_SELECT code per index (reg 0x08 [7:4]) */
-extern const NTC_CODE uint16_t pdo_current_ma[16];  /* HUSB238 4-bit current code -> mA (SRC_PDO_xV[3:0], PD_STATUS0[3:0]) */
+/* ---- AP33772S source capabilities. SRCPDO (0x20) returns 13 little-endian 16-bit words; words 0..6 are SPR PDO1..7
+ * (DS "Source PDO Information Getting"). Word layout (CentyLab and hnz1102 drivers; requirements s8):
+ *   bit 15 detected, bit 14 type (0 fixed, 1 APDO = PPS in SPR), bits 13:10 I_max code,
+ *   fixed: bits 7:0 V in 100 mV;  PPS: bits 7:0 V_max in 100 mV, bits 9:8 V_min code (1 = 3.3 V, 2 = 3.3-5 V) */
+#define NPDO 7
+struct pdos {
+    uint8_t nfix;                       /* fixed PDOs, in the source's order (rising voltage) */
+    uint8_t fix_idx[NPDO];              /* PDO_INDEX (1..7) for PD_REQMSG */
+    uint16_t fix_mv[NPDO];
+    uint8_t fix_imax[NPDO];             /* current code 0..15 */
+    uint8_t npps;
+    uint8_t pps_idx[NPDO];
+    uint16_t pps_min_mv[NPDO], pps_max_mv[NPDO];
+    uint8_t pps_imax[NPDO];
+};
+void pdo_parse(const uint16_t XDATA *words, struct pdos XDATA *p);
 
-/* next offered voltage after `cur` (wrapping); `offered` bit i = SRC_PDO for index i detected. Returns cur if none other */
-uint8_t next_offered(uint8_t cur, uint8_t offered);
-/* HUSB238 PD_STATUS0[7:4] voltage code -> index, or 0xFF (0000 unattached / reserved) */
-uint8_t status_volt_index(uint8_t pd_status0);
+/* current code (PDO I_max, PD_REQMSG CURRENT_SEL) -> mA: 1.00 A + 0.25 A per code, code 15 = 5.00 A */
+uint16_t code_ma(uint8_t c);
+/* OCPTHR (50 mA/LSB) for a current code: the AP33772S trips at 110 % of it after 30 ms (DS table 7) */
+uint8_t ocp_thr(uint8_t c);
 
-/* ---- temperature: NTC ADC counts -> 0.1 C (interpolated); clamps at the table ends */
-int16_t ntc_decic(uint8_t counts);
+/* ---- PPS: one entry for every PPS APDO together, clamped to 5.0-21.0 V (requirements s4) */
+#define PPS_MIN_MV 5000u
+#define PPS_MAX_MV 21000u
+/* the range the PPS entry offers; returns 0 if there is no PPS APDO (or the clamp leaves nothing) */
+uint8_t pps_range(const struct pdos XDATA *p, uint16_t *lo, uint16_t *hi);
+/* the APDO (index into pps_*) that covers mv with the most current, or 0xFF */
+uint8_t pps_pick(const struct pdos XDATA *p, uint16_t mv);
+/* UP / DOWN hold-to-accelerate (requirements s3): the step for a press held `held_ms` (100 / 500 / 1000 mV) */
+uint16_t pps_step_mv(uint16_t held_ms);
+#define REPEAT_START_MS 400
+#define REPEAT_EVERY_MS 100
+/* setpoint + dir * step, kept inside [lo, hi] */
+uint16_t pps_adjust(uint16_t mv, int8_t dir, uint16_t step, uint16_t lo, uint16_t hi);
 
-/* ---- cheap arithmetic. The 8051 has an 8x8 MUL and an 8/8 DIV and nothing wider; SDCC's 32-bit divide and
- * multiply helpers cost ~30,000 standard-8051 clocks per formatted number (s51). Everything here is 16-bit
- * shift-and-add, accurate to the display's last digit, not to the last mA. */
+/* ---- PD_REQMSG (0x31) words (DS table 2): PDO_INDEX 15:12, CURRENT_SEL 11:8, VOLTAGE_SEL 7:0 (100 mV for PPS) */
+uint16_t req_fixed(uint8_t pdo_index);          /* max current of a fixed PDO: CURRENT_SEL 0xF, VOLTAGE_SEL 0xFF */
+uint16_t req_pps(uint8_t pdo_index, uint8_t isel, uint16_t mv);
+
+/* ---- readings: VOLTAGE (0x11) 80 mV/LSB, CURRENT (0x12) 24 mA/LSB (DS table 19) */
+uint16_t ap_mv(uint16_t raw);
+uint16_t ap_ma(uint8_t raw);
+
+/* ---- cheap arithmetic. The 8051 has an 8x8 MUL and an 8/8 DIV and nothing wider; SDCC's 32-bit helpers cost
+ * ~30,000 clocks per formatted number. Everything here is 16-bit shift-and-add. */
 uint16_t div10(uint16_t n);                           /* exact n / 10 for every uint16_t */
 int16_t sdiv10(int16_t n);                            /* rounds toward zero, like C's / */
-
-/* ---- INA226 raw registers -> engineering units (5 mOhm shunt) */
-int16_t ina_current_ma(int16_t shunt_raw);            /* 2.5 uV/LSB / 5 mOhm = 0.5 mA/LSB: +-16383 mA */
-uint16_t ina_bus_mv(uint16_t bus_raw);                /* 1.25 mV/LSB: raw + raw/4 (bit 15 is always 0) */
 uint16_t power_dw(uint16_t mv, int16_t ma);           /* 0.1 W units, ~0.3 % (0 for negative current) */
 
-/* ---- thermal / current policy */
-#define T_TRIP_BOARD_DC   850   /* NTC (board, beside U4) trip: 85.0 C */
+/* ---- thermal policy (on top of the AP33772S OTP). The NTC (RT1, on the AP33772S OTP pin) sits ~3.5 mm from Q1 */
+#define T_TRIP_BOARD_DC   850   /* NTC trip: 85.0 C */
 #define T_TRIP_Q1_DC     1100   /* estimated Q1 board temperature trip: 110.0 C */
 #define T_RESUME_DC       650   /* lockout ends below 65.0 C */
-#define Q1_RISE_5A_DC     250   /* Q1 above the board average at 5 A, from the thermal solve (13-23 K) + margin */
-int16_t q1_estimate_dc(int16_t board_dc, int16_t ma); /* errs a few % high (the safe side) */
-/* returns 1 if the output must be turned off now */
-uint8_t over_temperature(int16_t board_dc, int16_t ma);
+#define Q1_RISE_5A_DC     320   /* Q1 board above the NTC at 5 A: 30 K solved (5 V / 5 A, Q1 20 mOhm at the AP33772S
+                                   gate drive, design-review M1; thermal.md) + margin */
+#define OTP_THR_C          90   /* AP33772S OTPTHR: a hardware backstop just above the firmware's 85 C trip */
+int16_t q1_estimate_dc(int16_t ntc_dc, int16_t ma);   /* errs a few % high (the safe side) */
+uint8_t over_temperature(int16_t ntc_dc, int16_t ma); /* 1 = turn the output off now */
 
 /* ---- settings log in the CH552 DataFlash (128 bytes, byte-writable, ~10K writes per cell: CH552 DS s6.2)
- * 32 slots x 4 bytes: [0xA5][seq][data][seq ^ data ^ 0x5A]; each save writes the next slot, so a cell sees one write
- * per 32 saves. data: bits 2..0 voltage index, bit 7 output on. */
-#define SLOT_N 32
-#define SLOT_SZ 4
-/* storage: provided by hw.c on the CH552, by a fake in test/test_logic.c */
-uint8_t df_read(uint8_t off);
+ * 16 slots x 8 bytes: [0xA5][seq][d0][d1][d2][d3][chk][-], chk = seq ^ d0..d3 ^ 0x5A; each save writes the next
+ * slot, so a cell sees one write per 16 saves. */
+#define SLOT_N 16
+#define SLOT_SZ 8
+#define SET_N 4
+/* d0: bit 7 output on, bit 6 PPS selected, bit 5 editing current. d1: fixed voltage / 100 mV.
+   d2: PPS setpoint / 100 mV. d3: PPS current code */
+#define SET_ON   0x80
+#define SET_PPS  0x40
+#define SET_EDI  0x20
+uint8_t df_read(uint8_t off);           /* provided by hw.c on the CH552, by a fake in test/test_logic.c */
 void df_write(uint8_t off, uint8_t v);
-/* finds the newest valid record; returns 1 and fills *data / *slot / *seq, or 0 if none */
-uint8_t settings_load(uint8_t *data, uint8_t *slot, uint8_t *seq);
-/* writes `data` to the slot after `*slot`, updating *slot / *seq */
-void settings_save(uint8_t data, uint8_t *slot, uint8_t *seq);
+uint8_t settings_load(uint8_t XDATA *d, uint8_t *slot, uint8_t *seq);   /* newest valid record -> d[SET_N]; 0 = none */
+void settings_save(const uint8_t XDATA *d, uint8_t *slot, uint8_t *seq);
 
-/* ---- the screen: two 16-character rows (host-testable; test/screens.c renders them through src/oled.c) */
-enum { ST_OK, ST_NOPD, ST_HOT, ST_OVERCURRENT, ST_FAIL };
+/* ---- the screen: two 16-character rows (host-testable; test/screens.c renders them through src/oled.c).
+ * In PPS a '>' points at the value UP / DOWN edits (voltage or current limit). */
+enum { ST_OK, ST_HOT, ST_OCP, ST_OVP, ST_UVP, ST_FAIL, ST_DENIED };
 struct ui {
-    uint8_t vidx, status, out_on, ina_ok;
-    uint16_t max_ma;            /* what the charger allows at the selected voltage; 0 = not offered */
-    uint16_t mv;
-    int16_t ma, t_dc;
+    uint8_t pps, legacy, status, out_on, edit_i, show_set;
+    uint16_t set_mv;            /* fixed: the PDO voltage; PPS: the setpoint */
+    uint16_t lim_ma;            /* fixed: what the charger allows (0 = unknown); PPS: the current limit */
+    uint16_t mv;                /* measured output voltage */
+    int16_t ma, t_dc;           /* measured output current, NTC temperature (0.1 C) */
 };
-/* row 0 "20V  ON     45C"; row 1 "3.21A    64.2W", "MAX 3.00A", or why the output is off. r0 / r1: 17 bytes */
+/* fixed: "20V  ON     45C" / " 3.21A    64.2W" or "MAX 3.00A"; PPS: ">12.3V  ON   45C" / " 2.95A LIM 3.00A".
+   r0 / r1: 17 bytes */
 void ui_lines(char XDATA *r0, char XDATA *r1, const struct ui XDATA *u);
 
-/* ---- tiny text formatting (no printf on the 8051) */
-/* writes value/10^dp with `dp` decimals right-aligned in `width` chars; returns chars written */
-uint8_t fmt_fixed(char *out, int16_t value, uint8_t dp, uint8_t width);
+/* ---- tiny text formatting (no printf on the 8051): value/10^dp with `dp` decimals right-aligned in `width` chars */
+uint8_t fmt_fixed(char XDATA *out, int16_t value, uint8_t dp, uint8_t width);
 #endif

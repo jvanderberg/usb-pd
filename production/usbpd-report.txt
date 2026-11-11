@@ -1,60 +1,67 @@
 JLCPCB production check
 =======================
-48 footprints, 23 unique LCSC parts, 10 boards
-0 errors, 1 warnings
-10 extended parts (each adds a feeder loading fee, est. $30.00 on Economic PCBA): C25800, C49851, C69335, C77131, C165948, C316225, C968536, C2841482, C4555390, C7471904
+55 footprints, 25 unique LCSC parts, 10 boards
+0 errors, 2 warnings
+10 extended parts (each adds a feeder loading fee, est. $30.00 on Economic PCBA): C25100, C25800, C69335, C77131, C165948, C176755, C316225, C968536, C4555390, C50341643
 2 preferred extended parts (no loading fee on Economic assembly): C25082, C7502694
-Estimated parts cost: $27.45 (unit prices at order quantity, excl. fees)
+Estimated parts cost: $32.76 (unit prices at order quantity, excl. fees)
 
-[WARNING] D1: Polarized part: check its polarity in JLC's placement preview
+[WARNING] D1, D2: Polarized part: check its polarity in JLC's placement preview
 
 Ref      Value            LCSC        Stock                      Type          Rot Conf       Notes
 ---------------------------------------------------------------------------------------------------
-C1       1u 50V           C28323      In stock (3702743)         Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C2       1u 50V           C28323      In stock (3702743)         Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C3       4.7u             C23733      In stock (837304)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C4       1u               C52923      In stock (10855833)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C5       100n             C1525       In stock (31623288)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C6       100n             C1525       In stock (31623288)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C7       1u               C52923      In stock (10855833)        Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C8       1u               C52923      In stock (10855833)        Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C9       100n             C1525       In stock (31623288)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C10      2.2u 16V         C23630      In stock (2681197)         Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C11      4.7u 25V         C69335      In stock (751077)          Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
-C12      100n             C1525       In stock (31623288)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C13      4.7u             C23733      In stock (837304)          Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C14      100n             C1525       In stock (31623288)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-C15      100n             C1525       In stock (31623288)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-D1       BAT54WS          C7502694    In stock (80363)           Preferred     180 medium     Polarized part: check its polarity in JLC's placement preview; Placement solved: polarity matched by pin name (anode/cathode or +/-)
-J1       TYPE-C-31-M-12   C165948     In stock (274522)          Extended      270 high       Extended part (loading fee)
+C1       1u 50V           C28323      In stock (3852181)         Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C2       1u 50V           C28323      In stock (3852181)         Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C3       4.7u             C23733      In stock (775471)          Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C4       1u               C52923      In stock (10706894)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C5       100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C6       100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C7       1u               C52923      In stock (10706894)        Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C8       1u               C52923      In stock (10706894)        Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C9       100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C10      2.2u 16V         C23630      In stock (2637017)         Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C11      4.7u 25V         C69335      In stock (754298)          Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
+C12      100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C13      4.7u             C23733      In stock (775471)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C14      100n             C1525       In stock (31279754)        Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C15      1u               C52923      In stock (10706894)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C16      100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C17      100n             C1525       In stock (31279754)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+C18      10u 50V          C13585      In stock (3515723)         Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+D1       BAT54WS          C7502694    In stock (72537)           Preferred     180 medium     Polarized part: check its polarity in JLC's placement preview; Placement solved: polarity matched by pin name (anode/cathode or +/-)
+D2       SS34             C8678       In stock (2818379)         Basic           0 medium     Polarized part: check its polarity in JLC's placement preview; Placement solved: polarity matched by pin name (anode/cathode or +/-); JLC's side from the + / - marks its footprint draws beside the pads
+J1       TYPE-C-31-M-12   C165948     In stock (282789)          Extended      270 high       Extended part (loading fee)
 J2       OUT                          excluded                                                
 J3       OLED 0.69in 96x…             excluded                                                
-Q1       AO4407A          C2841482    In stock (65706)           Extended      180 high       Extended part (loading fee)
-Q2       2N7002           C8545       In stock (5856102)         Basic         180 high       
-R1       2.2k             C25879      In stock (3240018)         Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R2       2.2k             C25879      In stock (3240018)         Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R3       10k              C25744      In stock (21146992)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R4       10k              C25744      In stock (21146992)        Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R5       100k             C25741      In stock (7971684)         Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R6       10k              C25744      In stock (21146992)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R7       2.2k             C25879      In stock (3240018)         Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R8       10k              C25744      In stock (21146992)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R9       910k             C25800      In stock (19369)           Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
-R10      5m               C316225     In stock (132154)          Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
-R11      2.2k             C25879      In stock (3240018)         Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R12      150              C25082      In stock (707847)          Preferred      90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-R13      150              C25082      In stock (707847)          Preferred      90 high       symmetric 2-terminal part: polarity relies on pad numbering only
-RT1      10k B3380        C77131      In stock (288962)          Extended      180 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
-SW1      ON/OFF           C720477     In stock (908634)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
-SW2      CYCLE            C720477     In stock (908634)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+Q1       AON7262E         C176755     In stock (3602)            Extended       90 high       Extended part (loading fee)
+R1       2.2k             C25879      In stock (3223257)         Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R2       2.2k             C25879      In stock (3223257)         Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R3       10k              C25744      In stock (20651024)        Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R4       10k              C25744      In stock (20651024)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R5       5.1k             C25905      In stock (4154256)         Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R6       5.1k             C25905      In stock (4154256)         Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R7       4.7k             C25900      In stock (15047287)        Basic         270 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R8       4.7k             C25900      In stock (15047287)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R9       10k              C25744      In stock (20651024)        Basic          90 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R10      5m               C316225     In stock (131601)          Extended        0 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
+R11      910k             C25800      In stock (38499)           Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
+R12      150              C25082      In stock (706072)          Preferred     180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R13      150              C25082      In stock (706072)          Preferred       0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+R14      27               C25100      In stock (669135)          Extended      270 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
+RT1      10k B3380        C77131      In stock (288977)          Extended        0 high       Extended part (loading fee); symmetric 2-terminal part: polarity relies on pad numbering only
+SW1      ON/OFF           C720477     In stock (922694)          Basic         180 high       symmetric 2-terminal part: polarity relies on pad numbering only
+SW2      SEL              C720477     In stock (922694)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+SW3      UP               C720477     In stock (922694)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
+SW4      DN               C720477     In stock (922694)          Basic           0 high       symmetric 2-terminal part: polarity relies on pad numbering only
 TP1      VBUS                         excluded                                                
 TP2      +5V                          excluded                                                
 TP3      +3V3                         excluded                                                
 TP4      GND                          excluded                                                
 TP5      TXD                          excluded                                                
 TP6      RXD                          excluded                                                
-U1       HUSB238          C7471904    In stock (17890)           Extended      270 high       Extended part (loading fee)
-U2       SGM2203-5.0      C4555390    In stock (1177)            Extended        0 high       Extended part (loading fee)
-U3       XC6206-3.3       C5446       In stock (485925)          Basic           0 high       
-U4       CH552P           C968536     In stock (3778)            Extended        0 high       Extended part (loading fee)
-U5       INA226           C49851      In stock (68022)           Extended      270 high       Extended part (loading fee)
+TP7      OUT                          excluded                                                
+TP8      PWR_EN                       excluded                                                
+U1       AP33772S         C50341643   In stock (2913)            Extended      270 high       Extended part (loading fee)
+U2       SGM2203-5.0      C4555390    In stock (1147)            Extended        0 high       Extended part (loading fee)
+U3       XC6206-3.3       C5446       In stock (481392)          Basic           0 high       
+U4       CH552P           C968536     In stock (3768)            Extended        0 high       Extended part (loading fee)

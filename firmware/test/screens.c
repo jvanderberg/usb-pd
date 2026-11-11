@@ -1,6 +1,6 @@
 /* Renders the firmware's screens on the host: src/logic.c ui_lines() -> src/oled.c -> a model of the panel RAM.
- * Prints each screen as "name" then 2 lines of 96 hex bytes (page 0, page 1; bit 0 = top row of the page).
- * tools/screens.py turns this into PNGs; ../tools/oled_3d.py uses one frame for the board's 3D model. */
+ * Prints each screen as "name|row0|row1" then 2 lines of 96 hex bytes (page 0,
+ * page 1; bit 0 = top row of the page). tools/screens.py turns this into PNGs. */
 #include <stdio.h>
 #include <string.h>
 #include "oled.c"
@@ -32,15 +32,11 @@ uint8_t i2c_write_code(uint8_t a, uint8_t ctrl, const uint8_t *b, uint8_t n) { (
 uint8_t df_read(uint8_t off) { (void)off; return 0xFF; }
 void df_write(uint8_t off, uint8_t v) { (void)off; (void)v; }
 
-static void shot(const char *name, uint8_t vidx, uint8_t status, uint8_t on, uint8_t ina, uint16_t max_ma,
-                 uint16_t mv, int16_t ma, int16_t t_dc)
+static void shot(const char *name, const struct ui *u)
 {
-    struct ui u;
     char r0[17], r1[17];
     int p, c;
-    u.vidx = vidx; u.status = status; u.out_on = on; u.ina_ok = ina; u.max_ma = max_ma;
-    u.mv = mv; u.ma = ma; u.t_dc = t_dc;
-    ui_lines(r0, r1, &u);
+    ui_lines(r0, r1, u);
     oled_clear();
     oled_text(0, 0, r0);
     oled_text(1, 0, r1);
@@ -54,11 +50,29 @@ static void shot(const char *name, uint8_t vidx, uint8_t status, uint8_t on, uin
 
 int main(void)
 {
+    struct ui u;
     oled_init();
-    shot("on",          5, ST_OK,          1, 1, 5000, 20012, 3217, 452);
-    shot("off",         3, ST_OK,          0, 1, 3000, 15000,    0, 318);
-    shot("no-pd",       0, ST_NOPD,        0, 1,    0,  5050,    0, 254);
-    shot("hot",         5, ST_HOT,         0, 1, 5000, 20000,    0, 872);
-    shot("overcurrent", 1, ST_OVERCURRENT, 0, 1, 3000,  9000,    0, 391);
+    memset(&u, 0, sizeof u);
+    u.set_mv = 20000; u.lim_ma = 3250; u.out_on = 1; u.mv = 20012; u.ma = 3217; u.t_dc = 452;
+    shot("on", &u);
+    u.set_mv = 15000; u.lim_ma = 3000; u.out_on = 0; u.ma = 0; u.t_dc = 318;
+    shot("off", &u);
+    memset(&u, 0, sizeof u);
+    u.pps = 1; u.set_mv = 12300; u.lim_ma = 3000; u.out_on = 1; u.show_set = 1; u.mv = 12240; u.ma = 2950; u.t_dc = 512;
+    shot("pps-set-v", &u);
+    u.show_set = 0;
+    shot("pps-on", &u);
+    u.edit_i = 1; u.show_set = 1; u.lim_ma = 3250;
+    shot("pps-set-i", &u);
+    u.out_on = 0; u.status = ST_UVP;
+    shot("pps-uvp", &u);
+    memset(&u, 0, sizeof u);
+    u.legacy = 1; u.set_mv = 5000; u.t_dc = 254;
+    shot("no-pd", &u);
+    memset(&u, 0, sizeof u);
+    u.set_mv = 20000; u.lim_ma = 5000; u.status = ST_HOT; u.t_dc = 872;
+    shot("hot", &u);
+    u.set_mv = 9000; u.lim_ma = 3000; u.status = ST_OCP; u.t_dc = 391;
+    shot("overcurrent", &u);
     return 0;
 }

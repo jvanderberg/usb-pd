@@ -2,7 +2,7 @@
 	(version 20251024)
 	(generator "symgen")
 	(generator_version "10.0")
-	(symbol "HUSB238"
+	(symbol "AP33772S"
 		(pin_names
 			(offset 0.508)
 		)
@@ -12,7 +12,7 @@
 		(in_pos_files yes)
 		(duplicate_pin_numbers_are_jumpers no)
 		(property "Reference" "U"
-			(at 0 13.97 0)
+			(at 0 25.4 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -21,8 +21,8 @@
 				)
 			)
 		)
-		(property "Value" "HUSB238"
-			(at 0 -13.97 0)
+		(property "Value" "AP33772S"
+			(at 0 -25.4 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31,7 +31,7 @@
 				)
 			)
 		)
-		(property "Footprint" "JLCImport:HUSB238_002DD"
+		(property "Footprint" "JLCImport:AP33772SDKZ-13-FA02"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -42,7 +42,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.semiee.com/file/ON/ON-NCP51400.pdf"
+		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20230606/9108084F8D3399931DD16D047B315AD0.pdf"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -53,7 +53,7 @@
 				)
 			)
 		)
-		(property "Description" "USB PD sink controller, I2C, 5-20 V"
+		(property "Description" "USB PD3.1 sink controller with PPS/AVS, I2C 0x52, NMOS gate driver"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -64,7 +64,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7471904"
+		(property "LCSC" "C50341643"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -75,7 +75,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Hynetek"
+		(property "Manufacturer" "DIODES"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -86,7 +86,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "HUSB238_002DD"
+		(property "Manufacturer Part" "AP33772SDKZ-13-FA02"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -97,10 +97,10 @@
 				)
 			)
 		)
-		(symbol "HUSB238_0_1"
+		(symbol "AP33772S_0_1"
 			(rectangle
-				(start -7.62 12.7)
-				(end 7.62 -12.7)
+				(start -10.16 24.13)
+				(end 10.16 -24.13)
 				(stroke
 					(width 0.254)
 					(type default)
@@ -110,11 +110,29 @@
 				)
 			)
 		)
-		(symbol "HUSB238_1_1"
+		(symbol "AP33772S_1_1"
 			(pin power_in line
-				(at -10.16 10.16 0)
+				(at -12.7 21.59 0)
 				(length 2.54)
-				(name "VIN"
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "24"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -12.7 19.05 0)
+				(length 2.54)
+				(name "ISENP"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -130,9 +148,81 @@
 				)
 			)
 			(pin bidirectional line
-				(at -10.16 5.08 0)
+				(at -12.7 13.97 0)
+				(length 2.54)
+				(name "CC2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "16"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -12.7 11.43 0)
 				(length 2.54)
 				(name "CC1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "17"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -12.7 6.35 0)
+				(length 2.54)
+				(name "DP"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "19"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -12.7 3.81 0)
+				(length 2.54)
+				(name "DN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "18"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 12.7 21.59 180)
+				(length 2.54)
+				(name "SDA"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -148,9 +238,9 @@
 				)
 			)
 			(pin bidirectional line
-				(at -10.16 2.54 0)
+				(at 12.7 19.05 180)
 				(length 2.54)
-				(name "CC2"
+				(name "SCL"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -165,53 +255,17 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at -10.16 -2.54 0)
+			(pin output line
+				(at 12.7 13.97 180)
 				(length 2.54)
-				(name "D+"
+				(name "PWR_EN"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
-				(at -10.16 -5.08 0)
-				(length 2.54)
-				(name "D-"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "3"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
-				(at 10.16 10.16 180)
-				(length 2.54)
-				(name "SDA"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
+				(number "23"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -220,16 +274,16 @@
 				)
 			)
 			(pin input line
-				(at 10.16 7.62 180)
+				(at 12.7 11.43 180)
 				(length 2.54)
-				(name "SCL"
+				(name "VOUT"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "7"
+				(number "22"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -238,16 +292,16 @@
 				)
 			)
 			(pin passive line
-				(at 10.16 2.54 180)
+				(at 12.7 6.35 180)
 				(length 2.54)
-				(name "VSET"
+				(name "OTP"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "8"
+				(number "13"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -256,9 +310,81 @@
 				)
 			)
 			(pin passive line
-				(at 10.16 0 180)
+				(at 12.7 3.81 180)
 				(length 2.54)
-				(name "ISET"
+				(name "IFB"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "15"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at 12.7 1.27 180)
+				(length 2.54)
+				(name "V5V"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "20"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at 12.7 -1.27 180)
+				(length 2.54)
+				(name "V18"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "12"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 12.7 -6.35 180)
+				(length 2.54)
+				(name "VSEL"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "11"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 12.7 -8.89 180)
+				(length 2.54)
+				(name "INT"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -273,10 +399,83 @@
 					)
 				)
 			)
-			(pin open_collector line
-				(at 10.16 -5.08 180)
+			(pin output line
+				(at 12.7 -11.43 180)
 				(length 2.54)
-				(name "GATE"
+				(name "LED"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "8"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 12.7 -13.97 180)
+				(length 2.54)
+				(name "FLIP"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 12.7 -16.51 180)
+				(length 2.54)
+				(name "GPIO"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at 5.08 -26.67 90)
+				(length 2.54)
+				(name "NC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at 5.08 -26.67 90)
+				(length 2.54)
+				(hide yes)
+				(name "NC"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -291,8 +490,46 @@
 					)
 				)
 			)
+			(pin no_connect line
+				(at 5.08 -26.67 90)
+				(length 2.54)
+				(hide yes)
+				(name "NC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "14"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at 5.08 -26.67 90)
+				(length 2.54)
+				(hide yes)
+				(name "NC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "21"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
 			(pin power_in line
-				(at 5.08 -15.24 90)
+				(at 7.62 -26.67 90)
 				(length 2.54)
 				(name "GND"
 					(effects
@@ -301,7 +538,26 @@
 						)
 					)
 				)
-				(number "11"
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 7.62 -26.67 90)
+				(length 2.54)
+				(hide yes)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "25"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1469,7 +1725,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(symbol "AO4407A"
+	(symbol "AON7262E"
 		(pin_numbers
 			(hide yes)
 		)
@@ -1493,7 +1749,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "AO4407A"
+		(property "Value" "AON7262E"
 			(at 5.08 -1.27 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1504,7 +1760,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "JLCImport:AO4407A_C2841482"
+		(property "Footprint" "JLCImport:AON7262E"
 			(at 5.08 2.54 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1515,7 +1771,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://item.szlcsc.com/7378.html"
+		(property "Datasheet" "https://lcsc.com/product-detail/MOSFET_Winsok-Semicon-WSD3028DN_C148384.html"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1526,439 +1782,7 @@
 				)
 			)
 		)
-		(property "Description" "-30 V -14 A P-MOSFET, Vgs +-25 V"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "ki_keywords" "PMOS P-MOS"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C2841482"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "UMW"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer Part" "AO4407A"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(symbol "AO4407A_0_1"
-			(polyline
-				(pts
-					(xy 0.254 1.905) (xy 0.254 -1.905)
-				)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0.254 0) (xy -2.54 0)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0.762 2.286) (xy 0.762 1.27)
-				)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0.762 1.778) (xy 3.302 1.778) (xy 3.302 -1.778) (xy 0.762 -1.778)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0.762 0.508) (xy 0.762 -0.508)
-				)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0.762 -1.27) (xy 0.762 -2.286)
-				)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(circle
-				(center 1.651 0)
-				(radius 2.794)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 2.286 0) (xy 1.27 0.381) (xy 1.27 -0.381) (xy 2.286 0)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type outline)
-				)
-			)
-			(polyline
-				(pts
-					(xy 2.54 2.54) (xy 2.54 1.778)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(circle
-				(center 2.54 1.778)
-				(radius 0.254)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type outline)
-				)
-			)
-			(circle
-				(center 2.54 -1.778)
-				(radius 0.254)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type outline)
-				)
-			)
-			(polyline
-				(pts
-					(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 2.921 -0.381) (xy 3.683 -0.381)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 3.302 -0.381) (xy 2.921 0.254) (xy 3.683 0.254) (xy 3.302 -0.381)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-		)
-		(symbol "AO4407A_1_1"
-			(pin passive line
-				(at 2.54 5.08 270)
-				(length 2.54)
-				(name "D"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "5"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 5.08 270)
-				(length 2.54)
-				(hide yes)
-				(name "D"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 5.08 270)
-				(length 2.54)
-				(hide yes)
-				(name "D"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "7"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 5.08 270)
-				(length 2.54)
-				(hide yes)
-				(name "D"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "8"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at -5.08 0 0)
-				(length 2.54)
-				(name "G"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "4"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 -5.08 90)
-				(length 2.54)
-				(name "S"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 -5.08 90)
-				(length 2.54)
-				(hide yes)
-				(name "S"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 -5.08 90)
-				(length 2.54)
-				(hide yes)
-				(name "S"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "3"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-		)
-		(embedded_fonts no)
-	)
-	(symbol "2N7002"
-		(pin_numbers
-			(hide yes)
-		)
-		(pin_names
-			(offset 0)
-			(hide yes)
-		)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "Q"
-			(at 5.08 1.27 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 5.08 -1.27 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "JLCImport:2N7002"
-			(at 5.08 2.54 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.diodes.com/assets/Package-Files/SOT23.pdf"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "60 V N-MOSFET"
+		(property "Description" "60 V N-MOSFET, 8.5 mOhm at Vgs 4.5 V, Vgs +-20 V"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1980,7 +1804,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C8545"
+		(property "LCSC" "C176755"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1991,7 +1815,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "CJ(江苏长电/长晶)"
+		(property "Manufacturer" "AOS"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2002,7 +1826,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "2N7002"
+		(property "Manufacturer Part" "AON7262E"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2013,7 +1837,7 @@
 				)
 			)
 		)
-		(symbol "2N7002_0_1"
+		(symbol "AON7262E_0_1"
 			(polyline
 				(pts
 					(xy 0.254 1.905) (xy 0.254 -1.905)
@@ -2180,7 +2004,7 @@
 				)
 			)
 		)
-		(symbol "2N7002_1_1"
+		(symbol "AON7262E_1_1"
 			(pin passive line
 				(at 2.54 5.08 270)
 				(length 2.54)
@@ -2191,7 +2015,7 @@
 						)
 					)
 				)
-				(number "3"
+				(number "5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2209,7 +2033,7 @@
 						)
 					)
 				)
-				(number "1"
+				(number "4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2227,7 +2051,45 @@
 						)
 					)
 				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(hide yes)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
 				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(hide yes)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2552,298 +2414,6 @@
 				(at 5.08 -19.05 90)
 				(length 2.54)
 				(name "VSS"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "7"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-		)
-		(embedded_fonts no)
-	)
-	(symbol "INA226"
-		(pin_names
-			(offset 0.508)
-		)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "U"
-			(at 0 16.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "INA226"
-			(at 0 -16.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "JLCImport:INA226AIDGSR"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://item.szlcsc.com/221388.html"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "36 V current / voltage / power monitor, I2C, 16-bit"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C49851"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "TI"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer Part" "INA226AIDGSR"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(symbol "INA226_0_1"
-			(rectangle
-				(start -7.62 15.24)
-				(end 7.62 -15.24)
-				(stroke
-					(width 0.254)
-					(type default)
-				)
-				(fill
-					(type background)
-				)
-			)
-		)
-		(symbol "INA226_1_1"
-			(pin input line
-				(at -10.16 7.62 0)
-				(length 2.54)
-				(name "VBUS"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "8"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at -10.16 5.08 0)
-				(length 2.54)
-				(name "IN-"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "9"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at -10.16 2.54 0)
-				(length 2.54)
-				(name "IN+"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "10"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
-				(at 10.16 7.62 180)
-				(length 2.54)
-				(name "SDA"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "4"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at 10.16 5.08 180)
-				(length 2.54)
-				(name "SCL"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "5"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin open_collector line
-				(at 10.16 0 180)
-				(length 2.54)
-				(name "ALERT"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "3"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at 10.16 -5.08 180)
-				(length 2.54)
-				(name "A0"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at 10.16 -7.62 180)
-				(length 2.54)
-				(name "A1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin power_in line
-				(at 5.08 17.78 270)
-				(length 2.54)
-				(name "VS"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin power_in line
-				(at 5.08 -17.78 90)
-				(length 2.54)
-				(name "GND"
 					(effects
 						(font
 							(size 1.27 1.27)

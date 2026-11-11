@@ -1,192 +1,106 @@
-# Design review - 2026-11-10 (commit 23ca8df)
+# Design review, 2026-11-11
 
-kicad-board-review analysis pack (config: docs/review_config.json) plus an independent adversarial reviewer; every
-finding below was checked against the files and datasheets. Stackup: JLC 2-layer 1.6 mm, 1 oz.
+Inputs: the board as built from `tools` (usbpd, 67 x 17 mm, JLC 2-layer 1.6 mm, 1 oz), `docs/requirements.md`, and the
+kicad-board-review analysis pack (`docs/review_config.json`). An independent adversarial reviewer checked the board
+against the datasheets as well; its findings are merged below, each re-checked against the files.
 
 ## Blockers
 
-None. Every IC pin map matches its datasheet; nothing exceeds an absolute maximum in hardware from 5 to 21 V.
+### B1. The saved board had no zone fills (fixed)
+- The router writes zones unfilled, and the whole power path (VBUS, VBUS_S, OUT) plus most ground connections exist only as
+  pours. Gerbers exported from that file would have had no power copper.
+- Done: `tools/build_board.sh` now refills the zones as its last stage, saves the fills, and fails if they are missing.
+  Still look at the copper gerbers before uploading: the VBUS_S band along the top edge and the OUT pour must be there.
 
 ## Major
 
-### M1. 100 W (20 V / 5 A) continuous overheats the board, especially in a closed case
-- Losses at 20 V / 5 A:
-  - Q1 0.33-0.40 W (AO4407A, 11.5 mOhm max at -10 V, hot)
-  - copper 0.37-0.45 W (VBUS 8.4 + GND 5.0 + VOUT 1.5 mOhm, solved)
-  - USB-C contacts 0.1-0.5 W (spec max 40 mOhm per contact)
-  - R10 0.125 W
-  - U2 0.2-0.5 W ((20 - 5) V x 13-35 mA)
-  - Total about 1.3-2.1 W.
-- Thermal solve over the 67 x 17 mm board (both faces):
+### M1. 100 W continuous overheats the board, and Q1 runs hotter than the requirements assumed
+- Q1's gate drive is lower than assumed. The AP33772S limits PWR_EN to VCC + 4 V (DS abs max, "Voltage from PWR_EN to
+  VCC Pin"). VCC is on Q1's drain net, so V_GS is under 4 V, not the 4.5 V used in requirements s4.
+- AON7262E Fig. 5 at 125 C then gives about 10.5-13 mOhm for a typical part and about 20 mOhm for a high-threshold one.
+  At 5 A that is 0.4-0.5 W in Q1, not 0.34 W.
+- Thermal solve with the worst-case figures (Q1 20 mOhm, J1 contacts at the spec maximum, LDO 0.56 W). Closed case, 35 C
+  air, h 7 W/m2K, cables ignored:
 
-  | Case | Board average | Peak |
-  |---|---|---|
-  | Closed case, 35 C air, h 7 W/m2K, worst-case inputs | ~165 C | ~200 C |
-  | Bare board, typical inputs, h 12 W/m2K | ~100 C | ~120 C, near J1 |
-  | 5 V / 3 A | 60-86 C | |
-- The model ignores heat carried away by the cables, which roughly doubles the cooling, so the absolute numbers are
-  pessimistic. The conclusion holds: a PLA (~60 C) or PETG (~80 C) case will soften at 100 W continuous.
-- Done 2026-11-10 (user's choice): board temperature sensor RT1 (NTC) on P3.2 / AIN3. It sits beside U4, between the
-  20 V / 9 V hot spots (J1, U2); there is no room for a part next to Q1. Firmware trips the output on NTC temperature
-  plus an I^2-based Q1 offset from the INA226 (solve: Q1 runs 13-23 K above the board average at 5 A).
-- Options:
-  - (a) firmware power limit from the INA226 already on the board: about 3 A continuous, 5 A in timed bursts (the
-    board's thermal time constant is ~230 s);
-  - (b) lower R_DS(on) Q1, e.g. AON6407 (DFN 5x6, SO-8 compatible pinout, C13899, 2,523 in stock, R_DS(on) not yet
-    verified against its datasheet). DECLINED by the user 2026-11-10: Q1 stays AO4407A;
-  - (c) widen the VBUS / GND copper near J1;
-  - (d) vent the case.
+  | Corner | Total loss | Board average | Q1 board | U2 board |
+  |---|---|---|---|---|
+  | 21 V / 5 A | 2.2 W | ~175 C | ~218 C | ~205 C |
+  | 5 V / 5 A | 1.7 W | ~140 C | ~169 C | - |
 
-### M2. The 5 V CH552 can drive 5 V onto the 3.3 V I2C bus
-- Limits on the bus:
-  - INA226 SCL/SDA: max VS + 0.3 = 3.6 V (DS Absolute Maximum Ratings).
-  - OLED VDD: abs max 4 V (N069 DS).
-  - HUSB238: 6 V, fine.
-- The CH552 resets P1 to quasi-bidirectional (P1_MOD_OC = P1_DIR_PU = FFh, CH552 DS port table). In that mode it
-  drives a pin high for 2 clocks on every low-to-high transition. Push-pull mode would drive a full 5 V.
-- Fix (firmware rule): set P1.6 and P1.7 to open drain with no pull-up (P1_MOD_OC bit = 1, P1_DIR_PU bit = 0) before
-  the first I2C transaction, and never drive them high.
-- Done 2026-11-10: series resistors R12 (SDA) / R13 (SCL) in U4's branch (220R, then 150R: see Timing budget), pull-ups on the bus side. 1k was
-  rejected: the low level at the bus would be 3.3 x 1k / 3.2k = 1.03 V, above the OLED's VIL (0.2 VDD = 0.66 V).
-  With 220R it is 0.30 V + Vol; a 5 V drive puts about 6 mA, shared, into the INA226 / OLED clamps.
+- The absolute numbers are pessimistic: the cables roughly double the cooling. The conclusion holds: the
+  board area limits 100 W continuous, not the copper.
+  - Ground stitching vias every 3 mm change no part by more than 0.2 K.
+  - More Q1 drain vias would gain 5-10 K at most.
+- Mitigation is already in place:
+  - The NTC (RT1) sits about 3.5 mm from Q1, so it reads Q1's area directly.
+  - The firmware trips at 85 C on the NTC, or at 110 C on its Q1 estimate. The estimate is the NTC plus 32 K x (I / 5 A)^2,
+    from the solve: Q1 runs 30 K above RT1 at 5 V / 5 A with 20 mOhm.
+  - The AP33772S OTP (OTPTHR = 90 C) is a hardware backstop.
+- Bring-up: measure V_GS (TP8 - TP7) and Q1's V_DS at a known current, then set Q1_RISE_5A_DC from the measured R_DS(on).
 
-## Minor
-- U2 (SGM2203, up to 0.53 W) had no ground via near its tab (14.2 K step to B.Cu). Done: 3 vias just below the tab
-  (the bottom under the tab is the VBUS band and the BTN_ON / SW_EN lanes). Step 11.1 K; U2 board temperature -5 K;
-  the board area still limits it (M1).
-- R10's JLC footprint pads were 1.21 mm long against the RLM12 datasheet land (1.7 x 1.8 mm, gap 1.6). Done
-  (tools/footprints.py rlm12_land): pad 2 per datasheet; pad 1 keeps the datasheet inner edge but is 1.0 mm long,
-  because a full pad would overlap Q1's drain pads (same net) and the board edge is behind pad 2.
-- Kelvin sense traces now leave R10's pads at their inner edges, as the RLM12 datasheet shows; they still touch the
-  pour edge about 0.2 mm from the pad (small error, can be calibrated).
-- U2 output: 1 uF 0402 at 5 V DC bias is about 0.5 uF. Done 2026-11-11 (pre-order review): the SGM2203 needs 1-10 uF
-  effective (DS p.10), so C3 is now 4.7 uF 10 V 0402 (C23733, Basic, same footprint), ~1.5-2 uF at 5 V.
-- U3 input capacitor (C3) is 6.5 mm of track from U3 VIN.
-- OLED VBAT at 3.3 V is below the app-note range of 3.5-4.2 V (works, dimmer). The XC6206's +2 % tolerance can put
-  VDD at 3.37 V, above the 3.3 V recommended maximum but below the 4 V abs max.
-- OLED RES# comes only from an RC. A spare GPIO (P1.5) driving it would be more robust.
-- Bootloader entry (CYCLE -> BAT54 -> 10k -> D+) depends on undocumented ROM behaviour. A P1.5 test pad was tried and
-  NOT added: P1.5 is boxed in under U4 (C5, the CYCLE route, and the D+ bottom route right where its via would go).
-  Fallbacks instead: a blank CH552 starts in its bootloader, and the firmware jumps to the bootloader on a button combo.
-- Q1 turns on hard with no inrush limit. Turn-off spends ~0.3 ms in the linear region (100k gate pull-up), which is
-  fine at these energies.
-- USB D+/D- are not impedance-controlled and partly cross a void. They run full speed only, over ~20 mm, which is
-  electrically short: acceptable.
+## Minor (not changed)
+- **R14 (VOUT sense series resistor) is 27 R, as RotoPD. The datasheet figure shows 200 R.** The negative swing it
+  guarded against is now clamped by D2.
+- **Q1 V_GS can reach about -21 V against a +-20 V rating.** This happens if a large output capacitor holds OUT at 21 V
+  when PWR_EN pulls the gate low. It is the same as RotoPD. The fix would be a gate-source zener, if wanted.
+- **The AP33772S land pattern (JLC's) sits about 0.125 mm further out than the Diodes pattern.** It is still solderable.
+- **Exposed-pad paste coverage is 36 % (U1) and 38 % (U4), with open 0.3 mm vias in both pads.** U4's footprint is the
+  same pattern as U1's. Check the first boards' QFN joints.
+- **Some capacitors are low after DC bias, and C3 is 6.9 mm from U2's output.**
+  - VCC and V5V caps are under 1 uF effective.
+  - C3 sits 6.9 mm from U2's output pin, which matters for its 1-10 uF effective requirement.
+- **R10 (shunt) has asymmetric pads.** This is the datasheet land pattern.
+- **There is a 0.8 mm VBUS neck at J1's upper VBUS contact, about 7 A/mm local current density.** It is short, so it warms
+  locally but does not limit anything. The VBUS run total is 2.5 mOhm, 13 mV at 5 A.
+- **USB D+/D- are not impedance controlled and partly cross a void** (bootloader only, full speed, about 20 mm).
+- **Three ground pockets have a single via:** the CH552 EP (one hole by design), the C5 pad, and 1.9 mm2 between
+  the UART pads.
+
+## Fixed during the review
+- **Output clamp and bulk (added after comparing RotoPD, user 2026-11-11).** RotoPD fits both C6 10 uF and D3 Schottky
+  on its output.
+  - D2 (SS34, C8678) runs from OUT to GND, sitting above J2 with its anode straight to J2's GND pin. When Q1 (or an OCP
+    trip) switches off an inductive load, it holds OUT near -0.4 V, which covers the R14 / VOUT-pin exposure below. In
+    use it is reverse-biased: leakage only, no load-current drop.
+  - C18 (10 uF 50 V 1206, C13585 Basic) is the output bulk capacitor, below J2.
+  - A second, back-to-back FET was considered and declined. It would only block reverse current from a load that holds
+    a voltage, at the cost of doubling the switch loss.
+- **Q1's Datasheet field pointed at a Winsok WSD3028DN page** (from JLC's EasyEDA data). It now links to the LCSC
+  AON7262E datasheet. The part number C176755 was already correct.
+- **U1's exposed-pad vias were open vias in the paste area.** They are now plated holes in a project footprint
+  (`usbpd:AP33772S_EPVIA`), with 9 paste windows clear of them, like U4's CH552P_EPVIA.
+- **U2's tab vias were in the pad.** They now sit beside the tab, with a mask web between: two above and four below.
 
 ## Checked and fine
-- Pin maps against datasheets (HUSB238, CH552P, INA226, AO4407A, SGM2203, XC6206, OLED FPC incl. fold orientation).
-- Q1 V_GS at 21 V: -19.1 V against +-25 V.
-- SW_EN reset state: at most 0.31 V into the 2.2k, so the output stays off.
-- BAT54 polarity; I2C addresses (0x08 / 0x3C / 0x40); nothing but copper under the OLED panel.
-- DC drops at 5 A: VBUS 44 mV, GND 26 mV, VOUT 8 mV.
-- J1 VBUS current density flagged by the solver: an artefact of the ideal source. Each pad solved alone gives 9.2 vs
-  10.9 mOhm, an even split.
-- Stitching what-if: more ground vias change no temperature (area, airflow and loss limit it).
-- DRC 0 errors, ERC 0, 0 unconnected, parity clean.
+- **AP33772S, pin by pin (DS Rev 10-2):**
+  - Caps on V5V, V18, IFB and VCC are present.
+  - ISENP is on the connector side of R10, with VCC after it, and both Kelvin taps start at the shunt pads.
+  - VSEL floating gives the 5 V default.
+  - GPIO, LED, INT, FLIP, DP, DN and the NC pins are open, each with a decision in `pin-decisions.json`.
+- **CC1/CC2 crossover:** J1 CC1 goes to U1 pin 16. This is harmless; it only flips the unused FLIP pin and the
+  OPMODE.CCFLIP bit.
+- **NTC:** NCP15XH103 matches the chip's default NCP03XH103 table, so no TR25-TR100 writes are needed.
+- **Q1:** pinout and body-diode direction are correct. With D = VBUS_S and S = OUT, the diode blocks VBUS -> OUT when off.
+- **Every IC's pin map and footprint against its datasheet,** including the CH552P QFN16.
+- **I2C bus B on P1.0 / P3.2:** levels have good margin at both ends, neither pin has an alternate function active at
+  reset, and the ROM bootloader uses neither.
+- **DC drops at 5 A:**
+
+  | Run | Drop | Resistance |
+  |---|---|---|
+  | VBUS | 13 mV | 2.5 mOhm |
+  | VBUS_S | 32 mV | 6.1 mOhm |
+  | OUT | 5 mV | 1.0 mOhm |
+  | GND | 29 mV | 5.7 mOhm |
+
+- **Placement:** nothing but copper under the folded OLED panel (J3's courtyard).
+- **Checks:** DRC 0 errors, ERC clean, 0 unconnected, schematic parity clean, board_lint 0 problems, every unused pin
+  decided.
+- **Remaining DRC warnings are silk only:** J1 and J2 silk clipped at the board edge (both overhang the edge), and J3's
+  silk over its own pads.
 
 ## Not checked
-- USB-C land pattern against the connector drawing (datasheet is image-only).
-- The CH552 ROM bootloader entry condition (not documented).
-- Enclosure air and the cooling the cables provide.
-
-## Firmware validation (2026-11-10, firmware/)
-
-The firmware was written against the datasheets and builds with SDCC 4.6.0 (8.6 KB of 14 KB flash, 460 B of 1 KB
-xRAM, no warnings); the board-independent logic has host tests (`make test`). What it found:
-
-- **Fixed in hardware:** the NTC divider ran from +3V3 while the CH552 ADC reads relative to VCC. On a 5 V contract
-  VCC is VBUS minus the SGM2203 dropout (1.3 V typ at 150 mA; a few hundred mV at ~35 mA), about 4.4 V, which would
-  shift the reading ~12 % (~11 C at 85 C). R11 now runs from +5V (VCC), so the reading is ratiometric.
-- **Firmware constraint:** CH552 at 24 MHz needs VCC > 4.5 V (DS table 8.2.2), not guaranteed on a 5 V contract.
-  The firmware runs at 16 MHz, allowed down to VCC 3.8 V (12 MHz until 2026-11-10).
-- **Firmware constraint:** P1.6/P1.7 open drain without pull-up; P1.4 (CYCLE, to 3.3 V) high-impedance input, not the
-  reset-default pull-up to 5 V; P3.2 high-impedance for the ADC.
-- **Design limit (accepted):** the INA226 sits after Q1, so it cannot see the voltage while the output is off; the
-  display shows the HUSB238's reported contract instead.
-- **HUSB238 register map** (docs/datasheets/HUSB238_registers.pdf): PDO_SELECT codes are not sequential (15 V = 1000b)
-  while PD_STATUS0 voltage codes are; both tables are in firmware/src/logic.c with tests.
-- **Open (firmware):** a charger that hard-resets on a saved high-voltage request at every power-up would boot-loop;
-  a boot-attempt marker in the DataFlash log would break the loop. Not implemented.
-- **Needs the real board:** I2C timing (bit-banged, ~100 kHz target, scope it), the OLED init on the actual panel,
-  and the CH552 ROM bootloader entry through D1/R4.
-
-### Timing budget (cycle count, 16 MHz)
-
-Clock: 16 MHz since 2026-11-10 (was 12 MHz). The CH552 allows 16 MHz down to VCC 3.8 V (DS s23, Fsys rows) and 24 MHz
-only at VCC >= 4.5 V; on a 5 V contract VCC is VBUS minus the SGM2203 dropout, about 4.4-4.6 V, so 24 MHz is out.
-
-Bounds: the CH552 datasheet gives no per-instruction table ("79 % single-byte single-cycle, 8-15x a standard
-MCS51"), so each path is bounded at 1 and 4 clocks per instruction, with the 8-15x figure as the typical value.
-Instruction counts were measured at 12 MHz; times below are scaled by 12/16.
-
-| Path | Measured | Time |
-|---|---|---|
-| I2C bit (i2c_tx, generated asm) | 52 instructions (3 lcall, 3 ret, 12 djnz) | 3.2-13 us; typical 3.8-7.5 us (SCL ~130-270 kHz) |
-| One display update, CPU (s51 simulator) | 177,048 standard-8051 clocks (was 1,265,784 before the 16-bit arithmetic) | 0.7-1.4 ms typical, 0.5-3.7 ms bounds |
-| One update, I2C | ~440 bit times typical (OLED ~270 for a changed digit or two, INA226 96, HUSB238 78); ~2,020 when the whole screen changes or every 10 s resync | 1.7-5.7 ms typical, 27 ms worst |
-| Update total, every 100 ms (10 Hz since 2026-11-10; was 200 ms) | | ~2.5-7 ms typical, 31 ms worst (full-screen redraw) |
-| Timer ISR, every 1 ms | <= 114 instructions | <= 29 us (2.9 %) |
-| Longest gap between watchdog feeds | main loop 10 ms + update 31 ms (+ DataFlash save) | << 1.05 s (Fsys/65536 x 256) |
-| Over-current trip | INA226 AVG16 x 2.2 ms + 100 ms sample + 500 ms filter | < 0.65 s |
-
-I2C against the parts:
-- OLED: tcycle >= 2.5 us (best case 3.2 us); data hold >= 300 ns (next SDA change >= 8 instructions = 0.5 us after
-  SCL falls).
-- HUSB238: its datasheet gives no SCL maximum; the fastest possible bit (3.2 us, 312 kHz) is inside Fast-mode 400 kHz.
-- INA226: SMBus timeout 28 ms; SCL is never held low longer than one ISR (29 us).
-- Rise time: 2.2k x ~50 pF = 110 ns.
-
-Arithmetic (2026-11-10): the 8051 has only 8x8 MUL and 8/8 DIV, and SDCC's 32-bit helpers made each formatted
-number cost ~300,000 standard-8051 clocks (s51). Replaced with 16-bit shift-and-add (logic.c div10 / power_dw /
-q1_estimate_dc), per call: fmt_fixed 303,000 -> 19,000; power 136,000 -> 4,500; Q1 estimate 141,000 -> 3,400;
-INA226 units 70,000 -> 1,800. Host tests check div10 against / for all 65,536 inputs, power within 0.5 % + 0.2 W over
-0-40 V x 0-16 A, and the Q1 estimate never below the exact I^2 law (it reads ~4 % high: 26.1 K at 5 A for 25 K).
-
-OLED (2026-11-10): the flush sends only the changed byte spans (oled.c keeps a copy of what the panel holds; spans
-closer than 10 bytes merge, since each window costs ~10 bytes). A one-digit current and power change is 30 bytes
-on the wire instead of 212. Button presses redraw at once (a voltage step shows the new voltage before the ~0.1-1 s
-negotiation) instead of at the next update tick. After a failed transfer, and every 10 s, the whole screen is
-resent. test/test_oled.c checks a model of the panel's RAM against the framebuffer over 2,000 random frames and a
-NACK mid-transfer.
-
-Fixed in firmware from this pass:
-- ms_ticks was read non-atomically. It is 16 bits on an 8-bit CPU, so a torn read could end a delay early; now read
-  through ticks().
-- Buttons were sampled only in the main loop, which stalls up to ~80 ms during an update and could miss a quick tap;
-  now debounced (10 ms) and latched in the 1 ms ISR.
-- The master ACK now holds SDA a bit time past SCL low.
-
-Found here, electrical: the HUSB238's SDA/SCL VIL max is 0.4 V (datasheet I2C parameters). With R12/R13 = 220R the
-CH552's low reaches the bus at 0.35 V worst case (3.3 V +2 %, 2.2k -1 %, CH552 33 R at VOL 0.4 V / 12 mA): 49 mV of
-margin. 150R gives 0.26 V (139 mV), 100R 0.19 V (206 mV); the cost is the clamp current if firmware ever drives
-5 V push-pull (9.3 / 14 mA total, against the INA226's 5 mA per pin).
-
-Decision 2026-11-10 (user): R12/R13 changed to 150R (0402WGF1500TCE, C25082, Extended).
-
-## Pre-order review (2026-11-11)
-
-Scope: show-stoppers only (the board ships to JLCPCB without further human review). Fresh analysis pack, an
-independent adversarial reviewer, and the JLC production check (jlcimport-cli production, 10 boards, global stock).
-
-Fixed:
-- C3 (U2 output) 1 uF -> 4.7 uF 0402: below the SGM2203's 1 uF effective minimum, a stability risk for the MCU rail.
-- J3 (OLED FPC) pads: no solder paste. The stencil would print paste on 14 unplaced 0.38 mm pads with 0.24 mm gaps.
-
-Checked and fine: every IC pin map and footprint pad numbering against its datasheet (CH552P, HUSB238, INA226,
-AO4407A, 2N7002, SGM2203, XC6206, BAT54WS, USB-C, OLED FPC incl. the fold); abs max at 21 V; Q1 drive at 5 V and
-20 V; Q2 off through reset; firmware pin modes, addresses and register codes; output off at first power-up; BOM
-part numbers vs footprints; stock for 10 boards + 10 %; all assembled parts on top; THT and hand-soldered parts
-excluded; Gerbers and drills complete (EP via in U4, USB-C slots); DRC/ERC 0 errors, 0 unconnected, parity clean.
-
-Test on the first board (cannot be verified on paper):
-- CH552 ROM bootloader entry is undocumented. A charger that drives D+ high (Apple 2.4 A divider mode) might look
-  like the CYCLE bootloader request at power-up: the board would sit in the bootloader with the output off (safe).
-  Try an Apple / BC1.2 charger.
-- HUSB238 OVP follows the I2C-requested voltage (datasheet implies it); try a 9 V request first.
-- OLED: image orientation, charge pump start at 3.3 V (VBAT is at the bottom of its range: dimmer).
-- In JLC's placement preview: D1 polarity (medium-confidence rotation) and pin 1 of U1, U2, U4, U5, Q1.
-
-Known and accepted: the panel sits ~1 mm from Q1; the 85 C NTC / 110 C Q1 cutoffs allow hotter than the panel's
-85 C rating at sustained high power (lower T_TRIP_BOARD_DC in firmware/src/logic.h if that matters). The F.Fab
-panel outline assumes the FPC folds back on itself; where the panel lands is set by where you fold it.
-
+- **The real PWR_EN voltage:** the datasheet does not state the charge-pump output.
+- **PPS keep-alive:** the AP33772S is expected to re-request at least every 10 s itself.
+- **JLC placement rotations:** checked against JLC's footprints by the production check; confirm in JLC's placement preview.
+- **Live LCSC stock:** last checked 2026-11-11 in the requirements.

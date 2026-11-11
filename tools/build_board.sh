@@ -17,7 +17,7 @@ test -s "$S/net.xml"
 python3 "$K/new_board.py" "$S/net.xml" "$HW/usbpd.kicad_pcb" --layers 2 --outline 67x17 --origin 100,100 \
     --corner-r 1 --placement "$ROOT/tools/place.json" --labels "$ROOT/tools/labels.json" --refs fab
 python3 "$K/board_setup.py" "$HW/usbpd.kicad_pro" --stackup JLC-2L-1.6 \
-    --class Power:track=1.0 --assign Power=VBUS,/VOUT,/VOUT_SW,GND
+    --class Power:track=1.0 --assign Power=VBUS,/VBUS_S,/OUT,GND
 
 if [ -f "$ROOT/tools/route_plan.py" ]; then
     rm -f "$S/router.log"
@@ -35,4 +35,10 @@ if [ -f "$ROOT/tools/route_plan.py" ]; then
     if grep -E '^ +(VIOLATION|REJECTED)' "$S/router.log"; then echo "router rejected items: fix the plan"; exit 1; fi
     [ "$rc" = 0 ] || { cat "$S/router.log"; exit 1; }
 fi
+# fill the zones in the saved board (the router writes them unfilled): the power path is pour-only, and gerbers
+# exported from an unfilled board would have no VBUS / VBUS_S / OUT copper (design-review B1)
+rm -f "$S/fill.json"
+"$KC" pcb drc --refill-zones --save-board --format json -o "$S/fill.json" "$HW/usbpd.kicad_pcb" >/dev/null 2>&1 || true
+test -s "$S/fill.json"
+if grep -q "(zone" "$HW/usbpd.kicad_pcb"; then grep -q filled_polygon "$HW/usbpd.kicad_pcb" || { echo "zone refill did not save fills"; exit 1; }; fi
 echo "board built"
