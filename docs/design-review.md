@@ -33,7 +33,7 @@ None. Every IC pin map matches its datasheet; nothing exceeds an absolute maximu
   - (a) firmware power limit from the INA226 already on the board: about 3 A continuous, 5 A in timed bursts (the
     board's thermal time constant is ~230 s);
   - (b) lower R_DS(on) Q1, e.g. AON6407 (DFN 5x6, SO-8 compatible pinout, C13899, 2,523 in stock, R_DS(on) not yet
-    verified against its datasheet). This changes an approved part and is the user's decision;
+    verified against its datasheet). DECLINED by the user 2026-11-10: Q1 stays AO4407A;
   - (c) widen the VBUS / GND copper near J1;
   - (d) vent the case.
 
