@@ -79,7 +79,7 @@ or reviewed for safety-critical use.
 
 ![v2 top view](v2/docs/images/board-top.png)
 
-*KiCad 3D renders of `v2/hardware/usbpd2.kicad_pcb`. The OLED model still shows a v1 frame; the v2 screens are below.*
+*KiCad 3D renders of `v2/hardware/usbpd2.kicad_pcb`. The OLED model (`v2/tools/oled_3d.py`) shows a real PPS frame from the v2 firmware.*
 
 Same size and case style as v1. With a PPS charger it sets any voltage from 5 to 21 V in 100 mV steps, plus a
 current limit, so it works as a small bench supply. With an ordinary PD charger it behaves like v1.
