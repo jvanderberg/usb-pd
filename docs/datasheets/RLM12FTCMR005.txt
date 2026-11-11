@@ -1,0 +1,304 @@
+                                                                                   Document No       TRLM-120S032E
+                                  Current Sensing Resistors
+                                          RLM Series                                Issued date          2020/01/13
+                                       ( Halogen-Free )
+                                  AEC-Q 200-Ver D qualified                              page               1/6
+
+
+
+1. Scope：
+   This specification applied to the products of current sensing resistor of metal foil for Lead-Free RLM series
+   manufactured by TA-I TECHNOLOGY CO., LTD.
+
+
+2. Type Designation：
+RLM         12              F              T                 C                   M                 R001
+Item      Series        Resistance     Packaging         Power Rating           Metal            Resistance
+           No           tolerance
+
+          12:1206         F:±1%      T: Paper Tape         A=1/4W             M= Metal            e.g:
+           (3216)        G:±2%                             S=1/2W                                 R001=1mΩ
+                         J:±5%                             C=1W                                   R030=30mΩ
+
+
+3. Construction and Dimension ：
+       3.1 Construction:
+                                             Over-Coat
+
+             Ni / Sn
+             Plating                                                          Metal Alloy Plate
+
+
+
+
+       3.2 Dimension:
+
+
+
+
+                                                                                                    UNIT: mm
+
+   Style            L         W               C                      t                          Material
+                                          1.1 ± 0.30            0.75 ± 0.20
+                                          (R=1mΩ)                (R=1mΩ)          Metal ： Alloy
+ RLM12 3.2±0.20 1.6±0.20                 0.5 ± 0.30           0.6 ± 0.20
+                                                                                  Over Coating : molding
+                                                                                  Compound UL-94 grade
+                                      (2mΩ≦R≦50mΩ)         (2mΩ≦R≦50mΩ)
+
+
+                                                           TA-I TECHNOLOGY CO., LTD
+                                                                                  Document No    TRLM-120S032E
+                               Current Sensing Resistors
+                                       RLM Series                                 Issued date      2020/01/13
+                                    ( Halogen-Free )
+                               AEC-Q 200-Ver D qualified                             page               2/6
+
+
+
+4. Features:
+     Type                                                                       RLM12
+     Power Rating                                                      1/4W & 1/2W & 1W
+     Resistance Value                                                       1~50mΩ
+     Operation Temperature Range                                         -55℃~+170℃
+     Temperature Coefficient of Resistance                                 ±50ppm/℃
+     Tolerance                                                           ±1%、±2%、±5%
+     Insulation Resistance                                                Over 100MΩ
+     Maximum Working Voltage(V)                                             (P*R)1/2
+                                                                   2
+     Note*:1 Watts with total solder pad and trace size of 300mm
+5. Reliability Tests:
+
+
+                                                                                                   Test
+        Test Items                  Reference                      Condition of Test
+                                                                                                  Limits
+Temperature Coefficient            IEC60115-1 4.8      +25 ~ 125℃                               Refer 4.0
+of Resistance
+High Temperature                      MIL-STD-         T=125℃,1000hrs,Measurement
+                                     202 Method                                                 < ±1%
+Exposure(Storage)                       108            at 24hrs after test conclusion.
+Low temperature                   IEC60115-1 4.23.4    -55 °C for 45 min                        < ±0.5%
+operation
+                                      JESD22           1000Cycle (-55℃ to 125
+Temperature Cycling                   Method           ℃),Measurement at 24hrs after test       < ±0.5%
+                                       JA-104          conclusion.
+
+Short time overload                IEC60115-1 4.13     5 X rated power for 5s                   < ±0.5%
+
+                                     MIL-STD-          10% Rated voltage at 85
+Biased Humidity                     202 Method         ℃,RH:85% ,1000Hrs, Measurement < ±0.5%
+                                        103            at 24hrs after test conclusion.
+                                     MIL-STD-
+                                                       1000 h at +70 °C, 1.5 h “ON”, 0.5 h
+Operation life                          202                                                     < ±1%
+                                                       “OFF”
+                                    Method 108
+Resistance to Soldering Heat       IEC60115-1 4.18     T=260+/-5℃ solder,10+/-1 sec dwell < ±0.5%
+                                     MIL-STD-
+                                                       100g's , Normal duration is 6ms , half
+Mechanical Shock                       202                                                    < ±0.5%
+                                                       sine shock pulse
+                                    Method 213
+                                     MIL-STD-
+Resistance to vibration                202             5g's for 20min.12cycles, 10-2000Hz       <±0.5%
+                                    Method 204
+                                    AEC-Q200-
+Board Flex                                             Min 2mm deflection ,60sec.               < ±0.5%
+                                       005
+                                                       V-0 or V-1are acceptable, Electrical
+Flammability                           UL-94
+                                                       test not required
+
+
+
+                                                         TA-I TECHNOLOGY CO., LTD
+                                                                                             Document No   TRLM-120S032E
+                                        Current Sensing Resistors
+                                                RLM Series                                   Issued date     2020/01/13
+                                             ( Halogen-Free )
+                                        AEC-Q 200-Ver D qualified                                page           3/6
+
+
+
+    5.1Derating Curve
+             Power Ratio (%)
+
+
+
+
+                               100
+
+
+
+
+                                      -55               70                     170
+                                                   Ambient Temperature (℃)
+ 5.2 Rated Current
+    The rated current is calculated by the following formula:
+
+                                                                   I: Rated Current (A)
+                               I     P R                         P: Rated Power (W)
+                                                                   R: Resistance Value (Ω)
+
+6. Recommended Solder Pad Dimension
+                                                              L    b
+
+
+
+
+                                                                                             a
+
+
+
+
+                                      Cu Trace                         Sensing Trace
+
+
+                                Resistance Range
+                                                             a           b             L
+                                       (Ω)
+
+                                        0.001                1.8         2.3           1.0
+
+                                     0.002~0.050             1.8         1.7           1.6
+
+                                                                                       Unit: mm
+
+
+
+
+                                                                   TA-I TECHNOLOGY CO., LTD
+                                                                                             Document No     TRLM-120S032E
+                             Current Sensing Resistors
+                                     RLM Series                                              Issued date        2020/01/13
+                                  ( Halogen-Free )
+                             AEC-Q 200-Ver D qualified                                          page                 4/6
+
+
+
+ 7. Number of Package:
+
+
+        5000 Pieces / package
+
+
+
+ 8. Label:
+                                           Date Code           Series      Resistance
+
+
+                         QTY: 5000 PCS
+                                                                          R010                     FTCM
+       LOT NO:           T019C0071H              1019       RLM12FTCM
+
+
+
+
+                                                                               Tolerance      Package      Power Rating
+
+
+
+ 9. Taping
+
+
+
+
+Packing      Type    A        B         W           F          E          P1        P2           P0        D0              T
+
+Paper Tape RLM12 2.0±0.15   3.6±0.2   8.0.±0.2   3.5±0.05   1.75±0.1    4.0±0.1   2.0±0.05     4.0±0.1    ψ1.5       0.84±0.1
+                                                                                                         (+0.1/-0)
+
+
+
+
+                                                              TA-I TECHNOLOGY CO., LTD
+                                                                            Document No   TRLM-120S032E
+                            Current Sensing Resistors
+                                    RLM Series                              Issued date       2020/01/13
+                                 ( Halogen-Free )
+                            AEC-Q 200-Ver D qualified                          page              5/6
+
+
+
+10. Reel Specification
+
+
+
+
+     Series           ψA            ψB             ψC                   W                 T
+
+      RLM12         178±2.0       60.0±1.0        13.0±1.0          9.0±1.0           11.5±1.0
+
+
+
+
+11. Peeling Strength of Top Cover Tape
+    Test Condition: 0.1 to 0.7 N at a peel-off speed of 300 mm / min.
+
+
+                                                                             Pull
+                            Top cover tape                                  300 mm/min
+
+                                                          10 ~15∘       standard: 0.1 ~ 0.7 N
+     Carrier tape
+
+
+
+
+12. Storage Conditions:
+   Temperature: 5℃~35℃,Humidity:40%~75%
+
+
+13. Shelf Life:
+    2 years from manufacturing date.
+
+
+
+                                                      TA-I TECHNOLOGY CO., LTD
+                                                                                     Document No   TRLM-120S032E
+                                   Current Sensing Resistors
+                                           RLM Series                                Issued date     2020/01/13
+                                        ( Halogen-Free )
+                                   AEC-Q 200-Ver D qualified                            page            6/6
+
+
+
+14. Recommend IR – Reflow profile: (solder: Sn96.5 / Ag3 / Cu0.5)
+
+
+
+
+                  5
+    Peak : 250         ℃ , 5 sec
+                  0
+    Pre–heat zone : 150 to 180 ℃, 90±30 sec
+    Soldering zone : 230℃ or higher , 30±10 sec
+
+
+
+15. ECN
+    Engineering Change Notice: The customer will be informed with ECN if there is significant
+    modification on the characteristics and materials described in approval sheet.
+
+
+16. Manufacturing Country & City:
+             TA-I TECHNOLOGY CO., LTD. (Taiwan– Tao Yuan)
+              Tel: (+886) 3-3246169         Fax: (+886) 3-3246167
+            Associated companies:
+           (1)TA-I TECHNOLOGY (SU ZHOU) CO., LTD. (China – Su Zhou)
+              Tel: (+86) 512-63457879              Fax: (+86) 512-63457869
+           (2) TA-I TECHNOLOGY ELECTRONIC (DONGGUAN) CO., LTD. (China –Dongguan)
+              Tel: (+86) 769-8339-4790〜3           Fax : (+86) 769-8339-4794
+           (3) FORTUNE TASK RESISTOR FACTORY (China – Dongguan)
+              Tel: (+86) 769-8339-4790〜3           Fax : (+86) 769-8339-4794
+           (4) TAI OHM ELECTRONICS (M) SDN. BHD. (Malaysia – Penang)
+              Tel: (+60) 4-3900480                Fax: (+60) 4-3901481
+           (5) P.T.TAI ELECTRONIC Indonesia (Indonesia – Jakarta)
+               Tel: (+62) 21-44820254      Fax: (+62) 21-44820256
+
+
+
+
+                                                          TA-I TECHNOLOGY CO., LTD
+

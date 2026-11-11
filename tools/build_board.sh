@@ -17,7 +17,7 @@ test -s "$S/net.xml"
 python3 "$K/new_board.py" "$S/net.xml" "$HW/usbpd.kicad_pcb" --layers 2 --outline 67x17 --origin 100,100 \
     --corner-r 1 --placement "$ROOT/tools/place.json" --labels "$ROOT/tools/labels.json" --refs fab
 python3 "$K/board_setup.py" "$HW/usbpd.kicad_pro" --stackup JLC-2L-1.6 \
-    --class Power:track=1.0 --assign Power=VBUS,/VOUT,GND
+    --class Power:track=1.0 --assign Power=VBUS,/VOUT,/VOUT_SW,GND
 
 if [ -f "$ROOT/tools/route_plan.py" ]; then
     rm -f "$S/router.log"

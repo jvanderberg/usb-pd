@@ -93,6 +93,9 @@
       "/VOUT": [
         "Power"
       ],
+      "/VOUT_SW": [
+        "Power"
+      ],
       "GND": [
         "Power"
       ],

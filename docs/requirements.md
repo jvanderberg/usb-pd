@@ -41,7 +41,7 @@ certified use.
 ### Block diagram
 
 ```
-USB-C (16-pin, 5 A) --VBUS 5-20 V--+------------------------------> AO4407A PMOS high-side --> OUT+ (2 x THT, 5.08 mm)
+USB-C (16-pin, 5 A) --VBUS 5-20 V--+------------------------------> AO4407A PMOS high-side --> R10 5 mOhm --> OUT+ (2 x THT, 5.08 mm)
    |  CC1/CC2                      |                                    ^ gate: 100k S-G / 10k to 2N7002
    +--> HUSB238 PD sink (I2C 0x08) <+ VIN                                |
    |       ^ SDA/SCL (3.3 V bus, 2.2k pull-ups)                         |
@@ -50,7 +50,8 @@ USB-C (16-pin, 5 A) --VBUS 5-20 V--+------------------------------> AO4407A PMOS
           |  P1.6 SDA / P1.7 SCL (bit-banged, open-drain); P1.5 left free on purpose (alternate bootloader-entry pin)
           |  P1.1 <- ON/OFF button (to GND)
           |  P1.4 <- CYCLE button (to 3.3 V; also via BAT54 + 10k to D+ = bootloader entry at plug-in)
-          '--> OLED 0.69" 96x16 (SSD1306/SSD1315, I2C 0x3C), FPC hand-soldered
+          +--> OLED 0.69" 96x16 (SSD1306/SSD1315, I2C 0x3C), FPC hand-soldered
+          '--> INA226 power monitor (I2C 0x40, A0 = A1 = GND): Kelvin taps across R10, bus voltage at OUT+
 VBUS --> SGM2203-5.0 (SOT-89, 36 V) --> 5V --> XC6206-3.3 (Torex) --> 3V3 (OLED VDD + VBAT, I2C pull-ups)
 ```
 
@@ -58,7 +59,7 @@ VBUS --> SGM2203-5.0 (SOT-89, 36 V) --> 5V --> XC6206-3.3 (Torex) --> 3V3 (OLED 
 
 | From | To | Interface | Speed | Notes |
 |---|---|---|---|---|
-| CH552 | HUSB238, OLED | I2C (bit-banged) | 100-400 kHz | 3.3 V bus; CH552 VIH = 2.4 V at 5 V (DS 18.2) |
+| CH552 | HUSB238, OLED, INA226 | I2C (bit-banged) | 100-400 kHz | 3.3 V bus; CH552 VIH = 2.4 V at 5 V (DS 18.2) |
 | CH552 | USB host | USB FS | 12 Mbit/s | ROM bootloader only; no series resistors |
 | CH552 | output switch | GPIO | DC | must default OFF through reset (pull-down) |
 
@@ -112,6 +113,7 @@ VBUS --> SGM2203-5.0 (SOT-89, 36 V) --> 5V --> XC6206-3.3 (Torex) --> 3V3 (OLED 
 | OLED VBAT (one line of text ~ 30 % lit) | 6 | 20 | N069 DS IBAT max, 100 % lit |
 | OLED VDD | 0.2 | 0.3 | N069 DS IDD |
 | I2C pull-ups (2 x 2.2k, while low) | 1 | 3 | - |
+| INA226 (from 3V3) | 0.33 | 0.42 | INA226 DS IQ max |
 | Switch gate drive (10k + 100k at 21 V) | 0 | 0.2 | from VBUS |
 | **Total** | **~13** | **~35** | |
 
@@ -147,7 +149,7 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 | Layers | 2 (agreed) |
 | Reason | simple board: I2C only, no switching regulator, short power path |
 | Thickness / copper | 1.6 mm, 1 oz both sides (user: no 2 oz) |
-| Power path | VBUS: bottom-layer band along the top edge (~3.2 mm) from J1 to Q1's source via field (16 vias), plus copper under the J1 body joining both receptacle VBUS pads (3 + 2 vias). VOUT: top pour (~6.8 mm) from Q1's drains to J2. GND: top and bottom pours, stitched. Nothing but copper under the folded OLED panel (x 124.5-152) |
+| Power path | VBUS: bottom-layer band along the top edge (~3.2 mm) from J1 to Q1's source via field (16 vias), plus copper under the J1 body joining both receptacle VBUS pads (3 + 2 vias). VOUT: Q1's drains -> top pour VOUT_SW -> R10 (vertical, under Q1) -> top pour VOUT (>= 2.3 mm neck, then full height) -> J2. INA226 IN+/IN- leave R10's pads on the side away from the current (Kelvin) and touch no pour; I2C reaches U5 on two bottom rows under the panel. GND: top and bottom pours, stitched. Nothing but copper under the folded OLED panel (x 124.5-152) |
 
 ## 8. Component candidates (stock: LCSC global, 2026-11-10; need 11 each)
 
@@ -160,6 +162,8 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 | 5 V LDO | SGM2203-5.0YK3G/TR | C4555390 | 1,177 | Ext | SOT-89-3 | 36 V in, 65 C/W |
 | 3.3 V LDO | XC6206P332MR-G (Torex) | C5446 | 486,611 | Basic | SOT-23 | genuine Torex pinout 1 VSS / 2 VOUT / 3 VIN. UMW clones (C347376, C351446) rejected: their datasheet and JLC symbols disagree on the pinout. 3.6 V rail dropped (OLED VBAT runs from 3.3 V) |
 | Output switch | AO4407A (UMW) | C2841482 | 66,168 | Ext | SOP-8 | -30 V, V_GS +-25 V, 11.5 mOhm |
+| Power monitor | INA226AIDGSR (TI) | C49851 | 67,268 (global, 2026-11-10) | Ext | VSSOP-10 | bus 0-36 V, shunt +-81.92 mV full scale; displays output V, I, W. ALERT unused |
+| Shunt | RLM12FTCMR005 (Ta-I) 5 mOhm 1 % 1206 | C316225 | 132,154 (global, 2026-11-10) | Ext | 1206 | 25 mV / 0.125 W at 5 A (rating 1 W); 5 A = 31 % of the INA226 range. Footprint NoOutline:RLM12FTCMR005 (JLC's, silk outline removed: its top pad sits against Q1's drain pads) |
 | Gate driver | 2N7002 | C8545 | 5.9 M | Basic | SOT-23 | |
 | USB-C | TYPE-C-31-M-12 | C165948 | 289,362 | Ext | SMD 16-pin | 5 A / 20 V rated (DS) |
 | Buttons | TS-1088-AR02016 | C720477 | 933,292 | Basic | 4 x 3 mm SMD | top-actuated |
@@ -201,6 +205,6 @@ Datasheets saved in docs/datasheets/.
 
 1. Create the KiCad project - done (hardware/usbpd.kicad_pro).
 2. Schematic capture with JLC footprints - done (tools/schematic.py -> hardware/usbpd.kicad_sch).
-3. Board (2-layer, 67 x 17 mm): placed and routed from tools/place.json + tools/route_plan.py (tools/build_board.sh); DRC 0 errors, 0 unconnected, parity clean.
+3. Board (2-layer, 67 x 17 mm), INA226 + 5 mOhm shunt added 2026-11-10 (user approved): placed and routed from tools/place.json + tools/route_plan.py (tools/build_board.sh); DRC 0 errors, 0 unconnected, parity clean.
 4. Design review (kicad-board-review), production files.
 5. Firmware.

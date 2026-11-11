@@ -2,4 +2,5 @@
 	(version 7)
 	(lib (name "JLCImport") (type "KiCad") (uri "${KIPRJMOD}/JLCImport.pretty") (options "") (descr ""))
 	(lib (name "usbpd") (type "KiCad") (uri "${KIPRJMOD}/usbpd.pretty") (options "") (descr "usbpd project footprints"))
+	(lib (name "NoOutline") (type "KiCad") (uri "${KIPRJMOD}/NoOutline.pretty") (options "") (descr ""))
 )

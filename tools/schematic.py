@@ -150,13 +150,38 @@ j2 = s.add('Connector:Screw_Terminal_01x02', 'J2', 'OUT', 0, 0,
            footprint='TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal',
            fields={'Datasheet': 'https://www.phoenixcontact.com/en-us/products/pcb-terminal-block-mkds-15-2-508-1715721'},
            in_bom=False)
-at(j2, 1, (365.76, yr))
-s.wire(q1.p(5), j2.p(1))
-s.label('VOUT', *L(q1.p(5), 7.62))                          # names the output net (board net class, test probing)
-p2 = j2.p(2); s.wire(p2, L(p2, -5.08), L(p2, -5.08, 5.08)); gnd(L(p2, -5.08, 5.08))
+at(j2, 1, (398.78, yr))
+# output current shunt R10 (5 mOhm) in the switched line, sensed by U5 (INA226, I2C 0x40)
+d = q1.p(5)
+r10 = s.add('Device:R', 'R10', '5m', 0, 0, 90, footprint='NoOutline:RLM12FTCMR005', lcsc='C316225')
+at(r10, 1, L(d, 15.24))
+assert abs(r10.p(2)[1] - yr) < 0.01 and r10.p(2)[0] > r10.p(1)[0]
+n1, n2 = L(r10.p(1), -5.08), L(r10.p(2), 5.08)
+s.wire(d, r10.p(1))
+s.wire(r10.p(2), j2.p(1))
+s.label('VOUT_SW', *L(d, 5.08))                             # net names for the board's power class
+s.label('VOUT', *L(n2, 5.08))
+u5 = s.add('usbpd:INA226', 'U5', 'INA226', 0, 0, footprint='JLCImport:INA226AIDGSR', lcsc='C49851')
+at(u5, 9, L(n2, 7.62, 27.94))                              # IN- row below the load-side tap
+s.tap(n1); s.tap(n2)
+s.wire(n2, (n2[0], u5.p(9)[1]), u5.p(9))
+s.wire(n1, (n1[0], u5.p(10)[1]), u5.p(10))
+vb = L(u5.p(9), -2.54)
+s.tap(vb); s.wire(vb, (vb[0], u5.p(8)[1]), u5.p(8))         # VBUS pin reads the output (load side of the shunt)
+vs = u5.p(6); s.wire(vs, L(vs, 0, -7.62)); rail('+3V3', L(vs, 0, -7.62))
+hang(C('C15', '100n'), L(vs, 7.62, -7.62)); s.wire(L(vs, 0, -7.62), L(vs, 7.62, -7.62))
+gp = u5.p(7); s.wire(gp, L(gp, 0, G)); gnd(L(gp, 0, G))
+for pin, net in ((4, 'SDA'), (5, 'SCL')):
+    p = u5.p(pin); s.wire(p, L(p, 5.08)); s.label(net, *L(p, 5.08))
+s.nc(u5.p(3))
+a0, a1 = u5.p(2), u5.p(1)
+s.wire(a0, L(a0, 2.54)); s.wire(a1, L(a1, 2.54)); s.wire(L(a0, 2.54), L(a1, 2.54), L(a1, 2.54, G)); s.tap(L(a1, 2.54))
+gnd(L(a1, 2.54, G))
+p2 = j2.p(2); s.wire(p2, L(p2, -2.54), L(p2, -2.54, 5.08)); gnd(L(p2, -2.54, 5.08))
 s.text('VGS = -0.91 x VBUS (R5 100k / R6 10k): -4.3 V at 4.75 V, -19 V at 21 V (abs max 25 V)\n'
        'R7 holds SW_EN low against the CH552 reset pull-up (140 uA max -> 0.3 V)\n'
-       'J2: pads for a 5.08 mm terminal or wires (not assembled)', 287.02, 121.92, 1.27)
+       'R10 5 mOhm: 25 mV / 0.125 W at 5 A (INA226 range 81.9 mV). U5 A0 = A1 = GND -> I2C 0x40\n'
+       'J2: pads for a 5.08 mm terminal or wires (not assembled)', 287.02, 132.08, 1.27)
 
 # ================================================================== MCU, buttons, bootloader entry
 s.text('MCU (CH552P) + buttons', 25.4, 144.78, 2, True)

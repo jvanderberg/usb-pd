@@ -62,6 +62,13 @@ def build():
                               footprint='usbpd:OLED_0.69in_96x16_FPC14',
                               datasheet='https://www.lcsc.com/datasheet/C5123561.pdf',
                               desc='0.69in 96x16 COG OLED, SSD1306/SSD1315 I2C, 14-pin 0.62 mm FPC (hand-soldered)')
+    # INA226 VSSOP-10 (docs/datasheets/INA226.pdf table 4-1)
+    s['INA226'] = ic('INA226', 7.62,
+                     left=[('VBUS', ['8'], IN), ('IN-', ['9'], IN), ('IN+', ['10'], IN)],   # shunt taps drop in uncrossed
+                     right=[('SDA', ['4'], BI), ('SCL', ['5'], IN), None, ('ALERT', ['3'], OC), None,
+                            ('A0', ['2'], IN), ('A1', ['1'], IN)],
+                     top=[('VS', ['6'], PI)], bottom=[('GND', ['7'], PI)],
+                     desc='36 V current / voltage / power monitor, I2C, 16-bit', inherit=J.get('INA226AIDGSR'))
     return s
 
 
