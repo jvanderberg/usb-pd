@@ -1,0 +1,19 @@
+{
+ "J1.A8": "SBU1: not used by a USB-PD sink (Type-C spec: sideband use only) - open",
+ "J1.B8": "SBU2: not used by a USB-PD sink - open",
+ "J3.6": "VBREF: NC per N069 DS pin table 1.5 (reserved)",
+ "U1.1": "ISENP: current-sense positive node, to the connector side of the 5 mOhm shunt R10 (AP33772S DS table 1 pin 1; VCC pin 24 after the shunt)",
+ "U1.2": "NC: no connection (AP33772S DS table 1) - open",
+ "U1.6": "FLIP: push-pull CC-orientation output (DS table 1); orientation is also readable over I2C (OPMODE) - open",
+ "U1.7": "GPIO: FA02-only general purpose I/O (DS table 1), not used - open",
+ "U1.8": "LED: push-pull status output (DS table 1, table 13), not used (status shown on the OLED) - open",
+ "U1.9": "INT: push-pull interrupt output (DS table 1); firmware polls STATUS over I2C instead - open",
+ "U1.10": "NC: no connection (AP33772S DS table 1) - open",
+ "U1.11": "VSEL: open = 5 V default request before the MCU takes over (DS table 4, '100k or floating' = 5V) - open on purpose",
+ "U1.14": "NC: no connection (AP33772S DS table 1) - open",
+ "U1.18": "DN: only for moisture detection, 'could be unconnected if moisture detection is waived' (DS table 1) - open, so the USB pair stays free for the CH552 bootloader",
+ "U1.19": "DP: as DN (DS table 1) - open",
+ "U1.21": "NC: no connection (AP33772S DS table 1) - open",
+ "U4.2": "P1.5: spare GPIO, internal pull-up by default - open. Kept free on purpose: P1.5 is the CH552 bootloader's alternate entry pin (pulled low at power-up), so nothing that can sit low at power-up goes on it",
+ "U4.7": "RST: internal pull-down (CH552 DS section 4) - open"
+}
