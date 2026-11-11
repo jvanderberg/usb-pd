@@ -46,10 +46,10 @@ USB-C (16-pin, 5 A) --VBUS 5-20 V--+------------------------------> AO4407A PMOS
    +--> HUSB238 PD sink (I2C 0x08) <+ VIN                                |
    |       ^ SDA/SCL (3.3 V bus, 2.2k pull-ups)                         |
    |  D+/D- (to MCU only; HUSB238 D+/D- and GATE left NC)                         |
-   +--> CH552P MCU (VCC 5 V) ---- SW_EN (P3.4, 2.2k pull-down) ---------+
-          |  P1.6 SDA / P1.7 SCL (bit-banged, open-drain)
-          |  P1.4 <- ON/OFF button (to GND)
-          |  P1.5 <- CYCLE button (to 3.3 V; also via BAT54 + 10k to D+ = bootloader entry at plug-in)
+   +--> CH552P MCU (VCC 5 V) ---- SW_EN (P1.0, 2.2k pull-down) ---------+
+          |  P1.6 SDA / P1.7 SCL (bit-banged, open-drain); P1.5 left free on purpose (alternate bootloader-entry pin)
+          |  P1.1 <- ON/OFF button (to GND)
+          |  P1.4 <- CYCLE button (to 3.3 V; also via BAT54 + 10k to D+ = bootloader entry at plug-in)
           '--> OLED 0.69" 96x16 (SSD1306/SSD1315, I2C 0x3C), FPC hand-soldered
 VBUS --> SGM2203-5.0 (SOT-89, 36 V) --> 5V --> XC6206-3.3 (Torex) --> 3V3 (OLED VDD + VBAT, I2C pull-ups)
 ```
@@ -126,10 +126,10 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 
 | Item | Requirement |
 |---|---|
-| Board outline | long and thin, ~66 x 12 mm (provisional until placement): USB-C / electronics / buttons / OLED (folded FPC) / switch + output pads |
+| Board outline | long and thin, 67 x 17 mm (widened from 12 mm at layout, user agreed 2026-11-10): USB-C / electronics / buttons / OLED (folded FPC) / switch + output pads |
 | Connector positions | USB-C on one short edge; output pads (2 x THT, 5.08 mm) on the opposite short edge |
 | Top side | OLED + 2 top-actuated tactile switches (4 x 3 mm), for 3D-printed plungers and a display window. Nothing under the OLED glass (it lies on the board on tape) |
-| Mounting holes | none: no room at 12 mm width; the case holds the board by its edges (changed 2026-11-10, user told) |
+| Mounting holes | none (decided at 12 mm width; still none at 17 mm); the case holds the board by its edges (changed 2026-11-10, user told) |
 | Assembly side | top only |
 
 ## 6. Manufacturing
@@ -147,7 +147,7 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 | Layers | 2 (agreed) |
 | Reason | simple board: I2C only, no switching regulator, short power path |
 | Thickness / copper | 1.6 mm, 1 oz both sides (user: no 2 oz) |
-| Power path | VBUS/VOUT as top+bottom pours in parallel, stitched; widths set by the 5 A check at layout |
+| Power path | VBUS: bottom-layer band along the top edge (~3.2 mm) from J1 to Q1's source via field (16 vias), plus copper under the J1 body joining both receptacle VBUS pads (3 + 2 vias). VOUT: top pour (~6.8 mm) from Q1's drains to J2. GND: top and bottom pours, stitched. Nothing but copper under the folded OLED panel (x 124.5-152) |
 
 ## 8. Component candidates (stock: LCSC global, 2026-11-10; need 11 each)
 
@@ -164,7 +164,7 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 | USB-C | TYPE-C-31-M-12 | C165948 | 289,362 | Ext | SMD 16-pin | 5 A / 20 V rated (DS) |
 | Buttons | TS-1088-AR02016 | C720477 | 933,292 | Basic | 4 x 3 mm SMD | top-actuated |
 | Boot diode | BAT54WS | C7502694 | 81,063 | Ext | SOD-323 | |
-| OLED | 0.69" 96x16 panel, 14-pin 0.62 mm FPC (Wisevision N069-9616TSWPG02-H14 pinout) | C5123561 | 0 | - | - | NOT at LCSC: buy separately (AliExpress/BuyDisplay), hand-solder |
+| OLED | 0.69" 96x16 panel, 14-pin 0.62 mm FPC (Wisevision N069-9616TSWPG02-H14 pinout) | C5123561 | 0 | - | - | NOT at LCSC (0 stock; the Wisevision/Newvisio MPN is not sold elsewhere): buy the generic panel - must be SSD1306/SSD1315, 14 pins at 0.62 mm, 26.3 x 8 mm glass, internal charge pump (e.g. Electropeak "0.69inch OLED IIC 14 pin SSD1306", ~$0.95, Nov 2026; BuyDisplay ER-OLED0.69-1W; NOT ER-OLED0.69-4W = SSD1312, 0.5 mm). Check the seller's pin table against J3 before soldering. Hand-solder the FPC tail flat, then fold the panel onto tape (user agreed 2026-11-10); buy spares |
 
 Datasheets saved in docs/datasheets/.
 
@@ -201,6 +201,6 @@ Datasheets saved in docs/datasheets/.
 
 1. Create the KiCad project - done (hardware/usbpd.kicad_pro).
 2. Schematic capture with JLC footprints - done (tools/schematic.py -> hardware/usbpd.kicad_sch).
-3. Board (2-layer, ~66 x 12 mm). Placement and routing; 5 A path as top+bottom pours.
+3. Board (2-layer, 67 x 17 mm): placed and routed from tools/place.json + tools/route_plan.py (tools/build_board.sh); DRC 0 errors, 0 unconnected, parity clean.
 4. Design review (kicad-board-review), production files.
 5. Firmware.

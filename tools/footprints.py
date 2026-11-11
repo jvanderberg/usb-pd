@@ -11,7 +11,7 @@ shows where the folded panel lands (fold allowance ~1.5 mm, approximate: check t
 """
 import os
 import kskills  # noqa: F401  (puts kicad-skills on sys.path, checks the pin)
-from kicad_sexpr import Node, LibTable
+from kicad_sexpr import Node, LibTable, load
 from kicad_sexpr.board import new_footprint, fp_line, fp_rect
 from kicad_sexpr.sexp import Sym, dumps
 
@@ -54,9 +54,39 @@ def oled():
     return name, fp
 
 
+def _at(parent, child):
+    return next(i for i, c in enumerate(parent) if c is child)
+
+
+def ch552p_epvia():
+    """JLC's CH552P footprint (JLCImport:CH552P, kept as JLC places it: same origin, rotation, pad numbers) with one
+    plated hole in the exposed pad and paste windows that clear it. The EP is the CH552P's only GND and every side of
+    it faces a pin row, so its ground has to leave through the pad (board_lint VIA IN PAD / PASTE ON HOLE)."""
+    name = 'CH552P_EPVIA'
+    fp = load(os.path.join(HW, 'JLCImport.pretty', 'CH552P.kicad_mod'))
+    fp[1] = name
+    eps = [p for p in fp.find_all('pad') if p.args[0] == '17']
+    assert len(eps) == 1, 'CH552P: expected one EP pad'
+    eps[0].set('layers', 'F.Cu', 'F.Mask')                      # paste comes from the windows below
+    # 0.55 mm windows in the four quadrants, inner edges 0.2 mm from the hole centre (0.13 mm past a 0.3 mm drill);
+    # the lower-left one is cut short where the EP has its pin-1 chamfer. Coverage ~40 % of the 2.83 mm^2 EP.
+    wins = [(0.475, -0.475, 0.55, 0.55), (-0.475, -0.475, 0.55, 0.55), (0.475, 0.475, 0.55, 0.55),
+            (-0.45, 0.4, 0.5, 0.4)]
+    last = eps[0]
+    for x, y, w, h in wins:
+        node = Node('pad', '', Sym('smd'), Sym('rect'), Node('at', x, y), Node('size', w, h), Node('layers', 'F.Paste'))
+        fp.insert(_at(fp, last) + 1, node)
+        last = node
+    hole = Node('pad', '17', Sym('thru_hole'), Sym('circle'), Node('at', 0, 0), Node('size', 0.6, 0.6),
+                Node('drill', 0.3), Node('layers', '*.Cu'))
+    fp.insert(_at(fp, last) + 1, hole)
+    fp.set('descr', 'CH552P (JLC C968536 footprint) with a 0.3 mm GND via in the exposed pad and paste windows clear of it')
+    return name, fp
+
+
 def main():
     os.makedirs(LIB, exist_ok=True)
-    for name, fp in (oled(),):
+    for name, fp in (oled(), ch552p_epvia()):
         p = os.path.join(LIB, name + '.kicad_mod')
         text = dumps(fp)
         open(p, 'w').write(text)

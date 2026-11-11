@@ -152,6 +152,7 @@ j2 = s.add('Connector:Screw_Terminal_01x02', 'J2', 'OUT', 0, 0,
            in_bom=False)
 at(j2, 1, (365.76, yr))
 s.wire(q1.p(5), j2.p(1))
+s.label('VOUT', *L(q1.p(5), 7.62))                          # names the output net (board net class, test probing)
 p2 = j2.p(2); s.wire(p2, L(p2, -5.08), L(p2, -5.08, 5.08)); gnd(L(p2, -5.08, 5.08))
 s.text('VGS = -0.91 x VBUS (R5 100k / R6 10k): -4.3 V at 4.75 V, -19 V at 21 V (abs max 25 V)\n'
        'R7 holds SW_EN low against the CH552 reset pull-up (140 uA max -> 0.3 V)\n'
@@ -160,7 +161,7 @@ s.text('VGS = -0.91 x VBUS (R5 100k / R6 10k): -4.3 V at 4.75 V, -19 V at 21 V (
 # ================================================================== MCU, buttons, bootloader entry
 s.text('MCU (CH552P) + buttons', 25.4, 144.78, 2, True)
 s.text('Hold CYCLE while plugging in: D1 + R4 pull D+ up -> CH552 ROM USB bootloader', 25.4, 152.4, 1.27)
-u4 = s.add('usbpd:CH552P', 'U4', 'CH552P', 81.28, 200.66, footprint='JLCImport:CH552P', lcsc='C968536')
+u4 = s.add('usbpd:CH552P', 'U4', 'CH552P', 81.28, 200.66, footprint='usbpd:CH552P_EPVIA', lcsc='C968536')
 # +5V: up and over, C6 hangs from the top run
 vc = u4.p(16)
 yt = vc[1] - 12.7
@@ -176,11 +177,12 @@ for pin, net in ((14, 'USB_DP'), (15, 'USB_DM')):
     s.wire(p, L(p, -5.08)); s.label(net, *L(p, -5.08), rot=180)
 for pin, ref, net in ((10, 'TP6', 'RXD'), (9, 'TP5', 'TXD')):
     p = u4.p(pin)
-    tp = s.add('Connector:TestPoint', ref, net, 0, 0, rot=90, footprint='TestPoint:TestPoint_Pad_D1.0mm', in_bom=False)
+    tp = s.add('Connector:TestPoint', ref, net, 0, 0, rot=90, footprint='TestPoint:TestPoint_Pad_D1.0mm', in_bom=False,
+               fields={'_ref_at': L(p, -19.05), '_val_at': L(p, -24.13)})
     at(tp, 1, L(p, -10.16)); s.wire(p, tp.p(1))
     s.accept_missing(ref, 'Datasheet', 'bare test pad')
 gp = u4.p(17); s.wire(gp, L(gp, 0, G)); gnd(L(gp, 0, G))
-for pin in (8, 11, 4, 12):
+for pin in (4, 13, 2, 12):       # P3.2, P3.4, P1.5 (alternate bootloader-entry pin: left alone), P3.3
     s.nc(u4.p(pin))
 # I2C with pull-ups hanging above
 sda, scl = u4.p(5), u4.p(6)
@@ -189,19 +191,19 @@ s.wire(scl, L(scl, 35.56)); s.label('SCL', *L(scl, 35.56))
 for ref, p, dx in (('R1', sda, 12.7), ('R2', scl, 30.48)):
     r = R(ref, '2.2k'); at(r, 2, L(p, dx)); s.tap(L(p, dx)); rail('+3V3', r.p(1))
 # buttons
-on, cyc, en = u4.p(3), u4.p(2), u4.p(13)
+on, cyc, en = u4.p(11), u4.p(3), u4.p(8)    # P1.1, P1.4, P1.0: the QFN edges facing the button / switch routes
 sw1 = s.add('Switch:SW_Push', 'SW1', 'ON/OFF', 0, 0, footprint='JLCImport:TS-1088-AR02016', lcsc='C720477')
-at(sw1, 1, L(on, 55.88, -15.24))                          # ON/OFF one row up, clear of CYCLE
-s.wire(on, L(on, 45.72), L(on, 45.72, -15.24), sw1.p(1))
+at(sw1, 1, L(on, 55.88, 20.32))                           # ON/OFF below R4's USB_DP label
+s.wire(on, L(on, 40.64), L(on, 40.64, 20.32), sw1.p(1))
 p = sw1.p(2); s.wire(p, L(p, 5.08)); gnd(L(p, 5.08), 90)
 sw2 = s.add('Switch:SW_Push', 'SW2', 'CYCLE', 0, 0, footprint='JLCImport:TS-1088-AR02016', lcsc='C720477')
-at(sw2, 1, L(cyc, 55.88))
+at(sw2, 1, L(cyc, 76.2))                                  # CYCLE runs past the I2C labels before R3 / D1 hang
 s.wire(cyc, sw2.p(1))
 p = sw2.p(2); s.wire(p, L(p, 5.08)); rail('+3V3', L(p, 5.08), 270)
-r3 = R('R3', '10k'); hang(r3, L(cyc, 20.32))
+r3 = R('R3', '10k'); hang(r3, L(cyc, 50.8))
 d1 = s.add('Device:D_Schottky', 'D1', 'BAT54WS', 0, 0, rot=90, footprint='JLCImport:BAT54WS_C7502694',
-           lcsc='C7502694')
-at(d1, 2, L(cyc, 33.02)); s.tap(L(cyc, 33.02))
+           lcsc='C7502694', fields={'_ref_at': L(cyc, 66.04, 3.81), '_val_at': L(cyc, 66.04, 6.35), '_just': 'left'})
+at(d1, 2, L(cyc, 63.5)); s.tap(L(cyc, 63.5))
 r4 = R('R4', '10k'); at(r4, 1, d1.p(1)); s.wire(d1.p(1), r4.p(1))
 p = r4.p(2); s.wire(p, L(p, 0, G)); s.label('USB_DP', *L(p, 0, G), rot=270)
 s.wire(en, L(en, 5.08)); s.label('SW_EN', *L(en, 5.08))

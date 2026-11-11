@@ -4233,22 +4233,22 @@
 		(uuid "caa567b3-99ac-580c-8a2d-b2d63a324c88")
 	)
 	(junction
-		(at 114.3 195.58)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b8cc3046-9f28-58bc-95aa-c2c8c3afe38f")
-	)
-	(junction
 		(at 124.46 187.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "55ce195d-be60-521c-8d56-75c5e3bba4ad")
 	)
 	(junction
-		(at 127 195.58)
+		(at 144.78 193.04)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "fddb7838-ccca-53be-810c-8e34afcb63a6")
+		(uuid "180f35f0-7b9e-5b79-9eb9-341d822c0be7")
+	)
+	(junction
+		(at 157.48 193.04)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4053e9ec-0ba7-54d9-a608-ab3482e32772")
 	)
 	(junction
 		(at 172.72 63.5)
@@ -4351,16 +4351,16 @@
 		(uuid "bdab0ac0-5754-5dad-98c6-bf20b029e9eb")
 	)
 	(no_connect
-		(at 93.98 203.2)
-		(uuid "aee72447-5213-5895-9ab4-710996cd6429")
-	)
-	(no_connect
-		(at 93.98 205.74)
-		(uuid "76b48fd5-1614-58ab-9064-11fa87b15f10")
-	)
-	(no_connect
 		(at 93.98 208.28)
 		(uuid "61595437-8d09-5a6e-a644-f2710ac202fa")
+	)
+	(no_connect
+		(at 93.98 198.12)
+		(uuid "41d52553-55c5-5d28-9b79-55889906f80b")
+	)
+	(no_connect
+		(at 93.98 195.58)
+		(uuid "441625bc-5599-5de5-82cc-71e66fba388c")
 	)
 	(no_connect
 		(at 93.98 210.82)
@@ -4912,103 +4912,103 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 193.04) (xy 139.7 193.04)
+			(xy 93.98 205.74) (xy 134.62 205.74)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "944d071f-89d2-5ea7-b789-f128baf9372e")
+		(uuid "45e28ba5-f044-5bee-94d4-a40d59e625e9")
 	)
 	(wire
 		(pts
-			(xy 139.7 193.04) (xy 139.7 177.8)
+			(xy 134.62 205.74) (xy 134.62 226.06)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "f2539c5a-9a3a-542f-a3b0-8ab3b368dced")
+		(uuid "1c3b06c3-ae48-5aaa-ac8d-919de7d53daa")
 	)
 	(wire
 		(pts
-			(xy 139.7 177.8) (xy 149.86 177.8)
+			(xy 134.62 226.06) (xy 149.86 226.06)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "bf89aa60-ec30-5b9c-983a-611e31b5859e")
+		(uuid "28543ca5-43a8-5a8c-ad85-5d0c2dc4538d")
 	)
 	(wire
 		(pts
-			(xy 160.02 177.8) (xy 165.1 177.8)
+			(xy 160.02 226.06) (xy 165.1 226.06)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "d15319fb-28fe-58b0-b88d-e3849ac3f7bd")
+		(uuid "adb715a8-ad6c-58d7-804a-01020d4109d9")
 	)
 	(wire
 		(pts
-			(xy 93.98 195.58) (xy 114.3 195.58)
+			(xy 93.98 193.04) (xy 144.78 193.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "8048eaeb-cc44-5d47-bb5b-ff165dc72c6b")
+		(uuid "17d85fa4-6836-54c1-a0bd-70e75fe9581c")
 	)
 	(wire
 		(pts
-			(xy 114.3 195.58) (xy 127 195.58)
+			(xy 144.78 193.04) (xy 157.48 193.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "4978b785-71d2-5ab9-b3c7-cca4ecbf31cc")
+		(uuid "628426cd-a1e1-5fa9-9faa-c283688d42e8")
 	)
 	(wire
 		(pts
-			(xy 127 195.58) (xy 149.86 195.58)
+			(xy 157.48 193.04) (xy 170.18 193.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "41abdb08-1a42-54d3-b5bc-d6023cdfcdac")
+		(uuid "418e911b-87b9-5ae4-a0b4-142f050940fc")
 	)
 	(wire
 		(pts
-			(xy 160.02 195.58) (xy 165.1 195.58)
+			(xy 180.34 193.04) (xy 185.42 193.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "41c6b5dd-9b56-532b-9efc-28a9b62dd104")
+		(uuid "55d188e8-d583-58dd-a1d1-30ee578efc57")
 	)
 	(wire
 		(pts
-			(xy 127 210.82) (xy 127 213.36)
+			(xy 157.48 208.28) (xy 157.48 210.82)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "287241e2-e645-51cd-a020-4a6ac9f10813")
+		(uuid "d86b396d-7e13-5c93-9de4-97f006646ab7")
 	)
 	(wire
 		(pts
-			(xy 93.98 198.12) (xy 99.06 198.12)
+			(xy 93.98 203.2) (xy 99.06 203.2)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "eec19622-a5e6-5386-99d3-98047cef65ed")
+		(uuid "e24e5998-29a9-55ac-810c-51025d483923")
 	)
 	(wire
 		(pts
@@ -5310,6 +5310,16 @@
 		)
 		(uuid "2ba564b0-0883-5578-ad80-884616391eb9")
 	)
+	(label "VOUT"
+		(at 337.82 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ce267326-e7de-5931-9f35-632162cf5122")
+	)
 	(label "USB_DP"
 		(at 63.5 195.58 180)
 		(effects
@@ -5351,24 +5361,24 @@
 		(uuid "3cae98b3-4db0-5cdb-8496-7c9340474635")
 	)
 	(label "USB_DP"
-		(at 127 213.36 270)
+		(at 157.48 210.82 270)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "9f0cf05b-9176-5d8f-9f44-f810bdde1721")
+		(uuid "b84ea496-fa48-5058-b86d-83342b9e7bf3")
 	)
 	(label "SW_EN"
-		(at 99.06 198.12 0)
+		(at 99.06 203.2 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "1427e14d-b8c4-5952-8f09-f33017db7eb1")
+		(uuid "5490a589-6c64-56c3-ac61-c838b71c3896")
 	)
 	(label "SCL"
 		(at 327.66 224.79 180)
@@ -8317,7 +8327,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "JLCImport:CH552P"
+		(property "Footprint" "usbpd:CH552P_EPVIA"
 			(at 81.28 200.66 0)
 			(hide yes)
 			(show_name no)
@@ -8886,7 +8896,7 @@
 		(dnp no)
 		(uuid "a8827215-e8de-5fd5-9ab2-c9aa674cee1d")
 		(property "Reference" "TP6"
-			(at 62.23 199.39 90)
+			(at 49.53 203.2 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8897,7 +8907,7 @@
 			)
 		)
 		(property "Value" "RXD"
-			(at 62.23 207.01 90)
+			(at 44.45 203.2 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8967,7 +8977,7 @@
 		(dnp no)
 		(uuid "611b9467-bcf4-55c6-95d4-cb0d5e80adea")
 		(property "Reference" "TP5"
-			(at 62.23 201.93 90)
+			(at 49.53 205.74 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8978,7 +8988,7 @@
 			)
 		)
 		(property "Value" "TXD"
-			(at 62.23 209.55 90)
+			(at 44.45 205.74 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9462,7 +9472,7 @@
 	)
 	(symbol
 		(lib_id "Switch:SW_Push")
-		(at 154.94 177.8 0)
+		(at 154.94 226.06 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9472,7 +9482,7 @@
 		(dnp no)
 		(uuid "c32601c8-d307-55fb-8035-e1d6a3008f3f")
 		(property "Reference" "SW1"
-			(at 157.48 176.53 0)
+			(at 157.48 224.79 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9483,7 +9493,7 @@
 			)
 		)
 		(property "Value" "ON/OFF"
-			(at 157.48 179.07 0)
+			(at 157.48 227.33 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9494,7 +9504,7 @@
 			)
 		)
 		(property "Footprint" "JLCImport:TS-1088-AR02016"
-			(at 154.94 177.8 0)
+			(at 154.94 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9506,7 +9516,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C720477.pdf"
-			(at 154.94 177.8 0)
+			(at 154.94 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9518,7 +9528,7 @@
 			)
 		)
 		(property "Description" "Push button switch, generic, two pins"
-			(at 154.94 177.8 0)
+			(at 154.94 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9530,7 +9540,7 @@
 			)
 		)
 		(property "LCSC" "C720477"
-			(at 154.94 177.8 0)
+			(at 154.94 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9558,7 +9568,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 165.1 177.8 90)
+		(at 165.1 226.06 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9566,9 +9576,9 @@
 		(on_board no)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "5bfbd1be-1b6f-542c-ac88-3acedba402ba")
+		(uuid "f2721f36-0c67-5d22-bf22-22573d2ecfe6")
 		(property "Reference" "#PWR024"
-			(at 165.1 173.99 0)
+			(at 165.1 222.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9579,7 +9589,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 165.1 173.99 0)
+			(at 165.1 222.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9590,7 +9600,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 165.1 177.8 0)
+			(at 165.1 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9601,7 +9611,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.1 177.8 0)
+			(at 165.1 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9612,7 +9622,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 165.1 177.8 0)
+			(at 165.1 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9623,7 +9633,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "8e5107ea-fb0e-54dc-a08b-7f41c9edba95")
+			(uuid "b221349f-2326-5f54-aedf-31571cc6ff0a")
 		)
 		(instances
 			(project "usbpd"
@@ -9636,7 +9646,7 @@
 	)
 	(symbol
 		(lib_id "Switch:SW_Push")
-		(at 154.94 195.58 0)
+		(at 175.26 193.04 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9646,7 +9656,7 @@
 		(dnp no)
 		(uuid "e339b98b-f2e4-5bd1-b8e3-b6497d65e2c9")
 		(property "Reference" "SW2"
-			(at 157.48 194.31 0)
+			(at 177.8 191.77 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9657,7 +9667,7 @@
 			)
 		)
 		(property "Value" "CYCLE"
-			(at 157.48 196.85 0)
+			(at 177.8 194.31 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9668,7 +9678,7 @@
 			)
 		)
 		(property "Footprint" "JLCImport:TS-1088-AR02016"
-			(at 154.94 195.58 0)
+			(at 175.26 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9680,7 +9690,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C720477.pdf"
-			(at 154.94 195.58 0)
+			(at 175.26 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9692,7 +9702,7 @@
 			)
 		)
 		(property "Description" "Push button switch, generic, two pins"
-			(at 154.94 195.58 0)
+			(at 175.26 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9704,7 +9714,7 @@
 			)
 		)
 		(property "LCSC" "C720477"
-			(at 154.94 195.58 0)
+			(at 175.26 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9732,7 +9742,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 165.1 195.58 270)
+		(at 185.42 193.04 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9740,9 +9750,9 @@
 		(on_board no)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "da037a38-333a-5d7a-a35b-838d22eaea54")
+		(uuid "1b54030b-b28c-53e4-ab7c-df6d4f0f414c")
 		(property "Reference" "#PWR025"
-			(at 165.1 191.77 0)
+			(at 185.42 189.23 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9753,7 +9763,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 165.1 191.77 0)
+			(at 185.42 189.23 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9763,7 +9773,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 165.1 195.58 0)
+			(at 185.42 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9774,7 +9784,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.1 195.58 0)
+			(at 185.42 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9785,7 +9795,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 165.1 195.58 0)
+			(at 185.42 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9796,7 +9806,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "ab52e0c1-613a-5529-9d20-ffbe89d86d93")
+			(uuid "68acd26a-ec8e-5cf8-9103-8ba092ac164d")
 		)
 		(instances
 			(project "usbpd"
@@ -9809,7 +9819,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 114.3 199.39 0)
+		(at 144.78 196.85 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9819,7 +9829,7 @@
 		(dnp no)
 		(uuid "78c8b263-940c-5376-8d25-7a2cc77abed3")
 		(property "Reference" "R3"
-			(at 116.84 198.12 0)
+			(at 147.32 195.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9830,7 +9840,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 116.84 200.66 0)
+			(at 147.32 198.12 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9841,7 +9851,7 @@
 			)
 		)
 		(property "Footprint" "JLCImport:0402WGF1002TCE"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9853,7 +9863,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C25744.pdf"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9865,7 +9875,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9877,7 +9887,7 @@
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9905,7 +9915,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 114.3 203.2 0)
+		(at 144.78 200.66 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9913,9 +9923,9 @@
 		(on_board no)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "dc3eb44f-72ce-5b49-b10a-e83f218442ce")
+		(uuid "589df3c5-2947-5205-9607-503f29457ec8")
 		(property "Reference" "#PWR026"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9926,7 +9936,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 114.3 199.39 0)
+			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9937,7 +9947,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 114.3 203.2 0)
+			(at 144.78 200.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9948,7 +9958,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 114.3 203.2 0)
+			(at 144.78 200.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9959,7 +9969,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 114.3 203.2 0)
+			(at 144.78 200.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9970,7 +9980,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "ebc45e51-0775-5466-849c-d36b986ce430")
+			(uuid "c24e6066-36a4-5fca-bc87-9828dbbbafc7")
 		)
 		(instances
 			(project "usbpd"
@@ -9983,7 +9993,7 @@
 	)
 	(symbol
 		(lib_id "Device:D_Schottky")
-		(at 127 199.39 90)
+		(at 157.48 196.85 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9993,27 +10003,29 @@
 		(dnp no)
 		(uuid "bcce499f-957c-563f-8cc6-5dd31fbeb216")
 		(property "Reference" "D1"
-			(at 127 196.85 90)
+			(at 160.02 196.85 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Value" "BAT54WS"
-			(at 127 201.93 90)
+			(at 160.02 199.39 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" "JLCImport:BAT54WS_C7502694"
-			(at 127 199.39 90)
+			(at 157.48 196.85 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10021,10 +10033,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C7502694.pdf"
-			(at 127 199.39 90)
+			(at 157.48 196.85 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10032,10 +10045,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "Schottky diode"
-			(at 127 199.39 90)
+			(at 157.48 196.85 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10043,10 +10057,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "LCSC" "C7502694"
-			(at 127 199.39 90)
+			(at 157.48 196.85 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10054,6 +10069,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(pin "1"
@@ -10073,7 +10089,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 127 207.01 0)
+		(at 157.48 204.47 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -10083,7 +10099,7 @@
 		(dnp no)
 		(uuid "d0dcff22-3115-541c-9956-7618b1eece33")
 		(property "Reference" "R4"
-			(at 129.54 205.74 0)
+			(at 160.02 203.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10094,7 +10110,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 129.54 208.28 0)
+			(at 160.02 205.74 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10105,7 +10121,7 @@
 			)
 		)
 		(property "Footprint" "JLCImport:0402WGF1002TCE"
-			(at 127 207.01 0)
+			(at 157.48 204.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10117,7 +10133,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C25744.pdf"
-			(at 127 207.01 0)
+			(at 157.48 204.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10129,7 +10145,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 127 207.01 0)
+			(at 157.48 204.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10141,7 +10157,7 @@
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 127 207.01 0)
+			(at 157.48 204.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
