@@ -112,7 +112,9 @@ x0 = u2.p(3)[0] - 20.32
 s.wire((x0, y), u2.p(3)); rail('VBUS', (x0, y))
 hang(C('C2', '1u 50V'), (x0 + 10.16, y))
 s.wire(u2.p(1), u3.p(3))
-hang(C('C3', '1u'), L(u2.p(1), 7.62))
+# SGM2203 needs 1-10 uF EFFECTIVE output capacitance (DS p.10 'Output Capacitor Selection'); a 1 uF 0402 X5R keeps
+# ~0.5 uF at 5 V bias, so C3 is 4.7 uF 10 V 0402 (~1.5-2 uF at 5 V), same footprint
+hang(C('C3', '4.7u'), L(u2.p(1), 7.62))
 rail('+5V', L(u2.p(1), 15.24)); s.tap(L(u2.p(1), 15.24))
 x3 = u3.p(2)[0] + 17.78
 s.wire(u3.p(2), (x3, y)); rail('+3V3', (x3, y))

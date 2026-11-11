@@ -7588,7 +7588,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1u"
+		(property "Value" "4.7u"
 			(at 208.28 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7599,7 +7599,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "JLCImport:CL05A105KA5NQNC"
+		(property "Footprint" "JLCImport:CL05A475MP5NRNC"
 			(at 205.74 67.31 0)
 			(hide yes)
 			(show_name no)
@@ -7611,7 +7611,7 @@
 				(justify left)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C52923.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C23733.pdf"
 			(at 205.74 67.31 0)
 			(hide yes)
 			(show_name no)
@@ -7635,7 +7635,7 @@
 				(justify left)
 			)
 		)
-		(property "LCSC" "C52923"
+		(property "LCSC" "C23733"
 			(at 205.74 67.31 0)
 			(hide yes)
 			(show_name no)

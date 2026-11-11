@@ -26,8 +26,10 @@ FOLD = 1.5             # length taken by the 180 deg bend (approximate)
 
 
 def pad(num, x, y, w, h):
+    # no F.Paste: the FPC is hand-soldered after assembly, and stencil paste on 0.38 mm pads with 0.24 mm gaps
+    # that get no part would reflow into bridges. Tin the pads with the iron instead.
     return Node('pad', str(num), Sym('smd'), Sym('rect'), Node('at', round(x, 4), round(y, 4)),
-                Node('size', w, h), Node('layers', 'F.Cu', 'F.Mask', 'F.Paste'))
+                Node('size', w, h), Node('layers', 'F.Cu', 'F.Mask'))
 
 
 def oled():

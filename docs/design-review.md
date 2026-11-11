@@ -59,7 +59,8 @@ None. Every IC pin map matches its datasheet; nothing exceeds an absolute maximu
   because a full pad would overlap Q1's drain pads (same net) and the board edge is behind pad 2.
 - Kelvin sense traces now leave R10's pads at their inner edges, as the RLM12 datasheet shows; they still touch the
   pour edge about 0.2 mm from the pad (small error, can be calibrated).
-- U2 output: 1 uF 0402 at 5 V DC bias is about 0.5 uF. Check the SGM2203 stability minimum, or use 2.2 uF / 0603.
+- U2 output: 1 uF 0402 at 5 V DC bias is about 0.5 uF. Done 2026-11-11 (pre-order review): the SGM2203 needs 1-10 uF
+  effective (DS p.10), so C3 is now 4.7 uF 10 V 0402 (C23733, Basic, same footprint), ~1.5-2 uF at 5 V.
 - U3 input capacitor (C3) is 6.5 mm of track from U3 VIN.
 - OLED VBAT at 3.3 V is below the app-note range of 3.5-4.2 V (works, dimmer). The XC6206's +2 % tolerance can put
   VDD at 3.37 V, above the 3.3 V recommended maximum but below the 4 V abs max.
@@ -161,3 +162,31 @@ margin. 150R gives 0.26 V (139 mV), 100R 0.19 V (206 mV); the cost is the clamp 
 5 V push-pull (9.3 / 14 mA total, against the INA226's 5 mA per pin).
 
 Decision 2026-11-10 (user): R12/R13 changed to 150R (0402WGF1500TCE, C25082, Extended).
+
+## Pre-order review (2026-11-11)
+
+Scope: show-stoppers only (the board ships to JLCPCB without further human review). Fresh analysis pack, an
+independent adversarial reviewer, and the JLC production check (jlcimport-cli production, 10 boards, global stock).
+
+Fixed:
+- C3 (U2 output) 1 uF -> 4.7 uF 0402: below the SGM2203's 1 uF effective minimum, a stability risk for the MCU rail.
+- J3 (OLED FPC) pads: no solder paste. The stencil would print paste on 14 unplaced 0.38 mm pads with 0.24 mm gaps.
+
+Checked and fine: every IC pin map and footprint pad numbering against its datasheet (CH552P, HUSB238, INA226,
+AO4407A, 2N7002, SGM2203, XC6206, BAT54WS, USB-C, OLED FPC incl. the fold); abs max at 21 V; Q1 drive at 5 V and
+20 V; Q2 off through reset; firmware pin modes, addresses and register codes; output off at first power-up; BOM
+part numbers vs footprints; stock for 10 boards + 10 %; all assembled parts on top; THT and hand-soldered parts
+excluded; Gerbers and drills complete (EP via in U4, USB-C slots); DRC/ERC 0 errors, 0 unconnected, parity clean.
+
+Test on the first board (cannot be verified on paper):
+- CH552 ROM bootloader entry is undocumented. A charger that drives D+ high (Apple 2.4 A divider mode) might look
+  like the CYCLE bootloader request at power-up: the board would sit in the bootloader with the output off (safe).
+  Try an Apple / BC1.2 charger.
+- HUSB238 OVP follows the I2C-requested voltage (datasheet implies it); try a 9 V request first.
+- OLED: image orientation, charge pump start at 3.3 V (VBAT is at the bottom of its range: dimmer).
+- In JLC's placement preview: D1 polarity (medium-confidence rotation) and pin 1 of U1, U2, U4, U5, Q1.
+
+Known and accepted: the panel sits ~1 mm from Q1; the 85 C NTC / 110 C Q1 cutoffs allow hotter than the panel's
+85 C rating at sustained high power (lower T_TRIP_BOARD_DC in firmware/src/logic.h if that matters). The F.Fab
+panel outline assumes the FPC folds back on itself; where the panel lands is set by where you fold it.
+
