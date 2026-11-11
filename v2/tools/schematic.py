@@ -26,7 +26,7 @@ s.lib('usbpd', os.path.join(HW, 'usbpd.kicad_sym'))
 RES = {'2.2k': ('0402WGF2201TCE', 'C25879'), '10k': ('0402WGF1002TCE', 'C25744'),
        '910k': ('0402WGF9103TCE', 'C25800'), '5.1k': ('0402WGF5101TCE', 'C25905'),
        '4.7k': ('0402WGF4701TCE', 'C25900'), '27': ('0402WGF270JTCE', 'C25100')}
-CAPS = {'1u 50V': ('CL21B105KBFNNNE', 'C28323'), '1u': ('CL05A105KA5NQNC', 'C52923'),
+CAPS = {'10u 50V': ('CL31A106KBHNNNE', 'C13585'), '1u 50V': ('CL21B105KBFNNNE', 'C28323'), '1u': ('CL05A105KA5NQNC', 'C52923'),
         '100n': ('CL05B104KO5NNNC', 'C1525'), '2.2u 16V': ('CL10A225KO8NNNC', 'C23630'),
         '4.7u 25V': ('CL10A475KA8NQNC', 'C69335'), '4.7u': ('CL05A475MP5NRNC', 'C23733')}
 
@@ -129,7 +129,7 @@ j2 = s.add('Connector:Screw_Terminal_01x02', 'J2', 'OUT', 0, 0,
            footprint='TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal',
            fields={'Datasheet': 'https://www.phoenixcontact.com/en-us/products/pcb-terminal-block-mkds-15-2-508-1715721'},
            in_bom=False)
-at(j2, 1, (xq + 38.1, top))
+at(j2, 1, (xq + 63.5, top))
 s.wire(q1.p(1), j2.p(1))
 s.label('OUT', *L(q1.p(1), 5.08))
 # VOUT monitor: 27R from OUT to the VOUT pin (as RotoPD R12)
@@ -137,6 +137,14 @@ r14 = R('R14', '27', rot=180)
 at(r14, 2, L(q1.p(1), 17.78)); s.tap(L(q1.p(1), 17.78))
 s.wire(r14.p(1), L(r14.p(1), 0, 5.08)); s.label('VOUT_MON', *L(r14.p(1), 0, 5.08), rot=270)
 p2 = j2.p(2); s.wire(p2, L(p2, -2.54), L(p2, -2.54, 5.08)); gnd(L(p2, -2.54, 5.08))
+# output: 10 uF bulk and a Schottky clamp (as RotoPD C6 / D3): an inductive load switched off by Q1 (or by an OCP trip)
+# drags OUT below ground; D2 holds it near -0.4 V, sparing Q1 and the VOUT pin (abs min -0.3 V). Reverse-biased in use.
+hang(C('C18', '10u 50V'), L(q1.p(1), 25.4))
+d2 = s.add('Device:D_Schottky', 'D2', 'SS34', 0, 0, rot=270, footprint='JLCImport:SS34_C8678', lcsc='C8678',
+           fields={'_ref_at': L(q1.p(1), 43.18, 3.81), '_val_at': L(q1.p(1), 43.18, 6.35), '_just': 'left'})
+at(d2, 1, L(q1.p(1), 40.64)); s.tap(L(q1.p(1), 40.64))
+assert d2.p(2)[1] > d2.p(1)[1], 'D2: cathode on OUT, anode down to GND'
+gnd(d2.p(2))
 # U1 right side: bus B, PWR_EN / VOUT, then a staircase of parts hanging from OTP / IFB / V5V / V18
 sda, scl = u1.p(4), u1.p(5)
 s.wire(sda, L(sda, 12.7)); s.label('SDA5', *L(sda, 12.7))

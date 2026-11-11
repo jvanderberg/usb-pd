@@ -292,5 +292,14 @@ def build(r):
     t(T, 0.25, ('RT1', '2'), (53.63, 13.35), net=GND)
     v(56.0, 9.6, VOUT_MON)
     t(T, SIG, (56.0, 9.6), ('R14', '1'), net=VOUT_MON)
+    # D2 (output clamp) above J2: cathode down into the OUT pour, anode straight to J2's GND pin (short flyback loop)
+    t(T, 1.0, ('D2', '1'), (59.0, 6.6), net=OUT)
+    t(T, 1.0, ('D2', '2'), ('J2', '2'), net=GND)
+    for y in (1.2, 3.4):
+        v(65.6, y, GND, VP)          # stitch the corner pour that D2's cathode track cuts off
+    # C18 (output bulk) below J2: pin 1 on the OUT pour, pin 2 out to two ground vias
+    t(T, 0.6, ('C18', '2'), (64.6, 15.4), net=GND)
+    for y in (15.0, 15.9):
+        v(64.6, y, GND, VP)
     v(61.6, 14.5, OUT, VP)
     t(B, 0.4, (61.6, 14.5), ('TP7', '1'), net=OUT)

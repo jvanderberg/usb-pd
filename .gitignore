@@ -5,3 +5,6 @@ fp-info-cache
 *.kicad_prl
 tools/__pycache__/
 build/
+
+# KiCad local history
+.history/

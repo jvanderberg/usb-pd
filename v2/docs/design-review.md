@@ -39,8 +39,8 @@ against the datasheets as well; its findings are merged below, each re-checked a
 - Bring-up: measure V_GS (TP8 - TP7) and Q1's V_DS at a known current, then set Q1_RISE_5A_DC from the measured R_DS(on).
 
 ## Minor (not changed)
-- **R14 (VOUT sense series resistor) is 27 R, as RotoPD. The datasheet figure shows 200 R.** The larger value protects
-  the VOUT pin better if an inductive load drives OUT below ground. The spec chose 27 R following RotoPD.
+- **R14 (VOUT sense series resistor) is 27 R, as RotoPD. The datasheet figure shows 200 R.** The negative swing it
+  guarded against is now clamped by D2.
 - **Q1 V_GS can reach about -21 V against a +-20 V rating.** This happens if a large output capacitor holds OUT at 21 V
   when PWR_EN pulls the gate low. It is the same as RotoPD. The fix would be a gate-source zener, if wanted.
 - **The AP33772S land pattern (JLC's) sits about 0.125 mm further out than the Diodes pattern.** It is still solderable.
@@ -57,6 +57,14 @@ against the datasheets as well; its findings are merged below, each re-checked a
   the UART pads.
 
 ## Fixed during the review
+- **Output clamp and bulk (added after comparing RotoPD, user 2026-11-11).** RotoPD fits both C6 10 uF and D3 Schottky
+  on its output.
+  - D2 (SS34, C8678) runs from OUT to GND, sitting above J2 with its anode straight to J2's GND pin. When Q1 (or an OCP
+    trip) switches off an inductive load, it holds OUT near -0.4 V, which covers the R14 / VOUT-pin exposure below. In
+    use it is reverse-biased: leakage only, no load-current drop.
+  - C18 (10 uF 50 V 1206, C13585 Basic) is the output bulk capacitor, below J2.
+  - A second, back-to-back FET was considered and declined. It would only block reverse current from a load that holds
+    a voltage, at the cost of doubling the switch loss.
 - **Q1's Datasheet field pointed at a Winsok WSD3028DN page** (from JLC's EasyEDA data). It now links to the LCSC
   AON7262E datasheet. The part number C176755 was already correct.
 - **U1's exposed-pad vias were open vias in the paste area.** They are now plated holes in a project footprint
