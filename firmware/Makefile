@@ -36,10 +36,18 @@ test: src/ntc_table.h | build
 	$(HOSTCC) -std=c11 -Wall -Wextra -Werror -Ibuild/host -Itest/shim -Isrc -o build/test_oled test/test_oled.c
 	./build/test_oled
 
+# pictures of the screens (docs/images/screen-*.png) from the real ui_lines() + oled.c on the host
+screens: build/screens
+	python3 tools/screens.py
+
+build/screens: test/screens.c src/logic.c src/oled.c src/*.h src/ntc_table.h | build
+	mkdir -p build/host && cp src/oled.c build/host/oled.c
+	$(HOSTCC) -std=c11 -Wall -Wextra -Werror -Ibuild/host -Itest/shim -Isrc -o build/screens test/screens.c src/logic.c
+
 flash: build/usbpd.bin
 	wchisp flash build/usbpd.bin
 
 clean:
 	rm -rf build
 
-.PHONY: all test flash clean
+.PHONY: all test screens flash clean

@@ -171,3 +171,34 @@ uint8_t fmt_fixed(char *out, int16_t value, uint8_t dp, uint8_t width)
         out[width - 1 - i] = tmp[i];
     return width;
 }
+
+void ui_lines(char XDATA *r0, char XDATA *r1, const struct ui XDATA *u)
+{
+    uint8_t i;
+    for (i = 0; i < 16; i++) { r0[i] = ' '; r1[i] = ' '; }
+    r0[16] = 0;
+    r1[16] = 0;
+    fmt_fixed(r0, volt_v[u->vidx], 0, 2);
+    r0[2] = 'V';
+    if (u->status == ST_NOPD) { r0[4] = 'N'; r0[5] = 'O'; r0[7] = 'P'; r0[8] = 'D'; }
+    else if (u->out_on) { r0[5] = 'O'; r0[6] = 'N'; }
+    else { r0[4] = 'O'; r0[5] = 'F'; r0[6] = 'F'; }
+    fmt_fixed(r0 + 11, sdiv10(u->t_dc), 0, 4);
+    r0[15] = 'C';
+    if (u->status == ST_HOT) {
+        r1[0] = 'H'; r1[1] = 'O'; r1[2] = 'T';
+    } else if (u->status == ST_OVERCURRENT) {
+        r1[0] = 'O'; r1[1] = 'V'; r1[2] = 'E'; r1[3] = 'R'; r1[5] = 'I';
+    } else if (!u->ina_ok) {
+        r1[0] = 'I'; r1[1] = 'N'; r1[2] = 'A'; r1[4] = '-';
+    } else if (u->out_on) {
+        fmt_fixed(r1, sdiv10(u->ma), 2, 5);                     /* 0.01 A */
+        r1[5] = 'A';
+        fmt_fixed(r1 + 8, (int16_t)power_dw(u->mv, u->ma), 1, 6);   /* 0.1 W */
+        r1[14] = 'W';
+    } else if (u->max_ma) {
+        r1[0] = 'M'; r1[1] = 'A'; r1[2] = 'X';                  /* what the charger allows at this voltage */
+        fmt_fixed(r1 + 4, (int16_t)div10(u->max_ma), 2, 5);
+        r1[9] = 'A';
+    }
+}

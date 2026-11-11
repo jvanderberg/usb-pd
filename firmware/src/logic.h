@@ -58,6 +58,17 @@ uint8_t settings_load(uint8_t *data, uint8_t *slot, uint8_t *seq);
 /* writes `data` to the slot after `*slot`, updating *slot / *seq */
 void settings_save(uint8_t data, uint8_t *slot, uint8_t *seq);
 
+/* ---- the screen: two 16-character rows (host-testable; test/screens.c renders them through src/oled.c) */
+enum { ST_OK, ST_NOPD, ST_HOT, ST_OVERCURRENT, ST_FAIL };
+struct ui {
+    uint8_t vidx, status, out_on, ina_ok;
+    uint16_t max_ma;            /* what the charger allows at the selected voltage; 0 = not offered */
+    uint16_t mv;
+    int16_t ma, t_dc;
+};
+/* row 0 "20V  ON     45C"; row 1 "3.21A    64.2W", "MAX 3.00A", or why the output is off. r0 / r1: 17 bytes */
+void ui_lines(char XDATA *r0, char XDATA *r1, const struct ui XDATA *u);
+
 /* ---- tiny text formatting (no printf on the 8051) */
 /* writes value/10^dp with `dp` decimals right-aligned in `width` chars; returns chars written */
 uint8_t fmt_fixed(char *out, int16_t value, uint8_t dp, uint8_t width);

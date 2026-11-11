@@ -5,6 +5,7 @@ Build with SDCC (`brew install sdcc`), flash with [wchisp](https://github.com/ch
 ```
 make          # build/usbpd.hex, build/usbpd.bin (8.2 KB of 14 KB)
 make test     # host tests of src/logic.c and the OLED partial flush (src/oled.c against a panel model)
+make screens  # ../docs/images/screen-*.png: what the firmware draws, rendered on the host
 make flash    # hold CYCLE while plugging the board into USB, then run this
 ```
 

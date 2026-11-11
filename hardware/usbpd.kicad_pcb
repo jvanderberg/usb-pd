@@ -4453,6 +4453,17 @@
 			(uuid "74a76229-adb5-575e-a75b-3fb6c66880cf")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/usbpd.3dshapes/OLED_0.69in_96x16.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "JLCImport:AO4407A_C2841482"
 		(layer "F.Cu")

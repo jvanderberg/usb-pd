@@ -9,8 +9,21 @@ output on and off, and read volts, amps, watts and board temperature on a tiny O
 
 ![Top view](docs/images/board-top.png)
 
-*KiCad 3D renders. The 0.69" OLED glass sits over the middle of the board on its hand-soldered flex cable; it has
-no 3D model, so only its pads show.*
+*KiCad 3D renders. The 0.69" OLED is hand-soldered by its flex cable and folded over onto the board. Its model
+(`tools/oled_3d.py`) is built from the panel's outline drawing and shows a real frame from the firmware.*
+
+## The screen
+
+What the firmware draws, rendered on the host from the real `ui_lines()` and `oled.c` code through a model of the
+panel's memory, at the panel's pixel pitch (`cd firmware && make screens`):
+
+| | |
+|---|---|
+| Output on: voltage, temperature, current, power | ![on](docs/images/screen-on.png) |
+| Output off: the charger's current limit at this voltage | ![off](docs/images/screen-off.png) |
+| No PD charger (plain 5 V) | ![no PD](docs/images/screen-no-pd.png) |
+| Thermal cutoff | ![hot](docs/images/screen-hot.png) |
+| Over-current trip (above the charger's contract) | ![over-current](docs/images/screen-overcurrent.png) |
 
 ## What it does
 

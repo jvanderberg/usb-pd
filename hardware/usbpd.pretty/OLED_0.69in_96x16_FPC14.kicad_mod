@@ -162,4 +162,15 @@
 		(layer "F.CrtYd")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/usbpd.3dshapes/OLED_0.69in_96x16.wrl"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )

@@ -20,8 +20,6 @@ void timer0_isr(void) __interrupt(1);    /* SDCC: the ISR prototype must be visi
 #define SAVE_DELAY_MS  3000
 #define OC_TRIP_MS      500
 
-enum { ST_OK, ST_NOPD, ST_HOT, ST_OVERCURRENT, ST_FAIL };
-
 static uint8_t offered;           /* bit i: voltage index i offered by the source */
 static uint8_t pdo_code[NVOLT];   /* 4-bit current code per offered voltage */
 static uint8_t vidx;              /* selected voltage index */
@@ -105,39 +103,15 @@ static void ina_init(void)
 
 static void show(uint16_t mv, int16_t ma, int16_t t_dc)
 {
-    static __xdata char line[17];
-    uint8_t i;
-    for (i = 0; i < 16; i++) line[i] = ' ';
-    line[16] = 0;
+    static __xdata char r0[17], r1[17];
+    static __xdata struct ui u;
+    u.vidx = vidx; u.status = status; u.out_on = out_on; u.ina_ok = ina_ok;
+    u.max_ma = (offered & (uint8_t)(1u << vidx)) ? pdo_current_ma[pdo_code[vidx]] : 0;
+    u.mv = mv; u.ma = ma; u.t_dc = t_dc;
+    ui_lines(r0, r1, &u);
     oled_clear();
-    /* row 0: "20V  ON     45C" */
-    fmt_fixed(line, volt_v[vidx], 0, 2);
-    line[2] = 'V';
-    if (status == ST_NOPD) { line[4] = 'N'; line[5] = 'O'; line[6] = ' '; line[7] = 'P'; line[8] = 'D'; }
-    else if (out_on) { line[5] = 'O'; line[6] = 'N'; }
-    else { line[4] = 'O'; line[5] = 'F'; line[6] = 'F'; }
-    fmt_fixed(line + 11, sdiv10(t_dc), 0, 4);
-    line[15] = 'C';
-    oled_text(0, 0, line);
-    /* row 1: "3.21A    64.2W", or the reason the output is off */
-    for (i = 0; i < 16; i++) line[i] = ' ';
-    if (status == ST_HOT) {
-        line[0] = 'H'; line[1] = 'O'; line[2] = 'T';
-    } else if (status == ST_OVERCURRENT) {
-        line[0] = 'O'; line[1] = 'V'; line[2] = 'E'; line[3] = 'R'; line[5] = 'I';
-    } else if (!ina_ok) {
-        line[0] = 'I'; line[1] = 'N'; line[2] = 'A'; line[4] = '-';
-    } else if (out_on) {
-        fmt_fixed(line, sdiv10(ma), 2, 5);       /* 0.01 A */
-        line[5] = 'A';
-        fmt_fixed(line + 8, (int16_t)power_dw(mv, ma), 1, 6);   /* 0.1 W */
-        line[14] = 'W';
-    } else if (offered & (uint8_t)(1u << vidx)) {
-        line[0] = 'M'; line[1] = 'A'; line[2] = 'X';        /* what the charger allows at this voltage */
-        fmt_fixed(line + 4, (int16_t)div10(pdo_current_ma[pdo_code[vidx]]), 2, 5);
-        line[9] = 'A';
-    }
-    oled_text(1, 0, line);
+    oled_text(0, 0, r0);
+    oled_text(1, 0, r1);
     oled_flush();
 }
 
