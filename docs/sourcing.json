@@ -1,0 +1,8 @@
+{
+ "assembler": "JLCPCB",
+ "region": "global",
+ "boards": 10,
+ "attrition": 0.1,
+ "min_stock": 0,
+ "exceptions": []
+}

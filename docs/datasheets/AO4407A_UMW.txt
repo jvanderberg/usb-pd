@@ -1,0 +1,625 @@
+                                                                                UMW AO4407A
+                                                                                                       P-Channel MOSFET
+
+
+
+
+1.Description                                                               2.Features
+
+The AO4407A uses advanced trench technology to provide                          VDS=-30V
+
+excellent RDS(ON), and ultra-low low gate charge with a 25V                     ID=-14A
+
+gate rating. This device is suitable for use as a load switch                   RDS(ON)<9.5mΩ (VGS=-10V)
+
+or in PWM applications. Standard Product AO4407A is Pb-free                     RDS(ON) <14.7mΩ(VGS=-4.5V)
+
+(meets ROHS & Sony 259 specifications).
+
+
+3.Pinning information                                                   5   6     7     8
+                                                                        D   D      D    D
+                                                                                                             D
+     Pin          Symbol        Description           SOP-8
+      4                  G          GATE
+
+    1,2,3                S        SOURCE                                                         G
+                                                                        S   S      S      G                  S
+   5,6,7,8               D         DRAIN
+                                                                        1   2      3    4
+
+
+4.Absolute Maximum Ratings TA=25°C unless otherwise noted
+
+                             Parameter                                            Symbol             Rating      Units
+Drain-Source Voltage                                                                   VDS            -30         V
+
+Gate-Source Voltage                                                                    VGS            ±25         V
+
+Continuous Drain                                          TA=25°C                                     -14
+                                                                                       ID
+Current                                                   TA=70°C                                     -11         A
+                         C
+Pulsed Drain Current                                                                   IDM            -56
+                     C
+Avalanche Current                                                                      IAS            -33         A
+                                                                    C
+Avalanche energy                                          L=0.1mH                      EAS             54         mJ
+
+                                                          TA=25°C                                     3.1
+ Power Dissipation
+                     B
+                                                                                       PD                         W
+                                                          TA=70°C                                     2.0
+
+ Junction and Storage Temperature Range                                            TJ, TSTG       -55 to 150      °C
+
+
+
+
+UTD Semiconductor Co.,Limited
+www.umw-ic.com                                      Nov.2024                                                     1 of 10
+www.umw-ic.com                                                    UMW AO4407A
+                                                                                         P-Channel MOSFET
+
+
+
+
+5.Thermal Characteristics
+
+                  Parameter                      Symbol              Typ           Max        Units
+Maximum Junction-to-Ambient A     t ≤ 10s                            31             40        °C/W
+                                                  RθJA
+Maximum Junction-to-Ambient A D   Steady-State                       59             75        °C/W
+
+Maximum Junction-to-Lead          Steady-State    RθJL               16             24        °C/W
+
+
+
+
+                                                         UTD Semiconductor Co.,Limited
+2 of 10                                                                     Nov.2024
+www.umw-ic.com                                                                  UMW AO4407A
+                                                                                                        P-Channel MOSFET
+
+
+
+
+6.Electrical Characteristics (TJ=25°C unless otherwise noted)
+
+                  Parameter                    Symbol                Conditions             Min    Typ Max Units
+STATIC PARAMETERS
+
+Drain-Source Breakdown Voltage                   BVDSS         ID=-250µA, VGS=0V            -30                    V
+
+                                                               VDS=-30V, VGS=0V                             -1
+Zero Gate Voltage Drain Current                      IDSS                                                          µA
+                                                                                  TJ=55°C                   -5
+
+Gate-Body leakage current                            IGSS      VDS=0V, VGS=±25V                            ±100    nA
+
+Gate Threshold Voltage                           VGS(th)       VDS=VGS, ID=-250μA           -1.3   -1.8    -2.3    V
+
+                                                               VGS=-10V, ID=-14A                   9.5     11.5   mΩ
+Static Drain-Source On-Resistance                RDS(ON)
+                                                               VGS=-4.5V, ID=-10A                  14.7    18.5   mΩ
+
+Forward Transconductance                             gFS       VDS=-5V, ID=-14A                     42             S
+
+Diode Forward Voltage                                VSD       IS=-1A, VGS=0V                      -0.7     -1     V
+
+Maximum Body-Diode Continuous Current                  IS                                                   -4     A
+
+DYNAMIC PARAMETERS
+
+Input Capacitance                                    Ciss                                          2050            pF
+
+Output Capacitance                                   Coss      VGS=0V, VDS=-15V, f=1MHz            330             pF
+
+Reverse Transfer Capacitance                         Crss                                          300             pF
+
+Gate resistance                                       Rg       f=1MHz                              3.2      6.4    Ω
+
+SWITCHING PARAMETERS
+
+Total Gate Charge                              Qg(-10V)                                             40      60    nC
+
+Total Gate Charge                              Qg(-4.5V) VGS=-10V, VDS=-15V                         20      30    nC
+
+Gate Source Charge                                   Qgs       ID=-14A                              6             nC
+
+Gate Drain Charge                                    Qgd                                            10            nC
+
+Turn-On DelayTime                                    tD(on)                                         11             ns
+
+Turn-On Rise Time                                      tr      VGS=-10V, VDS=-15V                   10             ns
+
+Turn-Off DelayTime                                   tD(off)   RL=1.05Ω,RGEN=3Ω                     40             ns
+
+Turn-Off Fall Time                                     tf                                           18             ns
+
+Body Diode Reverse Recovery Time                       trr     IF=-14A, dI/dt=500A/μs               14             ns
+
+Body Diode Reverse Recovery Charge                    Qrr      IF=-14A, dI/dt=500A/μs               25            nC
+
+
+
+
+                     UTD Semiconductor Co.,Limited
+                     Nov.2024                                                                                     3 of 10
+www.umw-ic.com                                                                     UMW AO4407A
+                                                                                                              P-Channel MOSFET
+
+
+
+
+                                                                 2
+ A. The value of RθJA is measured with the device mounted on 1in FR-4 board with 2oz. Copper, in a still air environment with
+
+ TA =25°C. The value in any given application depends on the user's specific board design.
+
+ B. The power dissipation PD is based on TJ(MAX)=150°C, using ≤ 10s junction-to-ambient thermal resistance.
+
+ C. Repetitive rating, pulse width limited by junction temperature TJ(MAX)=150°C. Ratings are based on low frequency and duty
+
+ cycles to keep initial TJ=25°C.
+
+ D. The RθJA is the sum of the thermal impedance from junction to lead RθJL and lead to ambient.
+
+ E. The static characteristics in Figures 1 to 6 are obtained using <300ms pulses, duty cycle 0.5% max.
+                                                                                                                                2
+ F. These curves are based on the junction-to-ambient thermal impedance which is measured with the device mounted on 1in
+
+ FR-4 board with 2oz. Copper, assuming a maximum junction temperature of TJ(MAX)=150°C. The SOA curve provides a
+
+ single pulse rating.
+
+
+
+
+                                                                        UTD Semiconductor Co.,Limited
+4 of 10                                                                                    Nov.2024
+www.umw-ic.com                                                                                                                                   UMW AO4407A
+                                                                                                                                                                                              P-Channel MOSFET
+
+
+
+
+7.1TYPICAL ELECTRICAL AND THERMAL CHARACTERISTICS
+
+
+                  100                                                                                                               100
+                                -10V                                                                                                            VDS=-5V
+
+                   80                                                                   -4.5V                                        80
+
+
+                   60                                                                                                                60
+  -ID(A)
+
+
+
+
+                                                                                                     -ID(A)
+                   40                                                                                                                40
+                                                                                                                                                             125°C
+                                                                                       -3.5V
+                   20                                                                                                                20
+                                                                                                                                                                                      25°C
+                                                                               VGS=-3V
+                    0                                                                                                                 0
+                            0              1              2           3            4            5                                          0           1          2         3          4        5      6
+                                                     -VDS (Volts)                                                                                            -VGS(Volts)
+
+                  Fig 1: On-Region Characteristics (Note E)                                                                     Figure 2: Transfer Characteristics (Note E)
+
+
+                   25                                                                                                               1.6
+                                                                                                     Normalized On-Resistance
+
+
+
+
+                                                                                                                                                             VGS=-10V
+                                                                                                                                    1.4                      ID=-14A
+                                                              VGS=-4.5V
+   RDS(ON)(mΩ)
+
+
+
+
+                   15
+                                                                                                                                    1.2
+
+                   10
+                                                                                                                                                                                       VGS=-4.5V
+                                                              VGS=-10V                                                                                                                 ID=-10A
+                                                                                                                                     1
+                    5
+
+
+                    0                                                                                                               0.8
+                            0          5             10          15       20       25           30                                        0       25         50        75       100     125     150   175
+
+                                                    -ID(A)                                                                                             Temperature (°C)
+                 Figure 3: On-Resistance vs. Drain Current                                           Figure 4: On-Resistance vs. Junction Temperature
+                         and Gate Voltage (Note E)                                                                       (Note E)
+
+                    40
+                                                                                                                                1.0E+01
+                                                                                   ID=-14A
+
+                                                                                                                                1.0E+00
+                    30
+                                                                                                                                                           125°C
+  RDS(ON)(mΩ)
+
+
+
+
+                                                                                                                                1.0E-01
+                                                                                                     -IS(A)
+
+
+
+
+                    20                                                     125°C
+                                                                                                                                1.0E-02
+
+
+                                                                                                                                1.0E-03                                                25°C
+                    10
+                                                          25°C
+                                                                                                                                1.0E-04
+
+                        0
+                                                                                                                                1.0E-05
+                            2                   4                 6            8                10
+                                                                                                                                          0.0          0.2            0.4        0.6          0.8     1.0
+                                                    -VGS(Volts)                                                                                               -VSD(Volts)
+  Figure 5: On-Resistance vs. Gate-Source Voltage
+                                                                                                                      Figure 6: Body-Diode Characteristics(Note E)
+                      (Note E)
+
+
+
+                                               UTD Semiconductor Co.,Limited
+                                               Nov.2024                                                                                                                                                     5 of 10
+www.umw-ic.com                                                                                                                                                               UMW AO4407A
+                                                                                                                                                                                                                         P-Channel MOSFET
+
+
+
+
+7.2TYPICAL ELECTRICAL AND THERMAL CHARACTERISTICS
+
+
+                                      10                                                                                                                 3000
+                                                           VDS=-15V
+                                                           ID=-14A
+                                                                                                                                                         2500
+                                           8
+
+
+
+
+                                                                                                                                    Capacitance (pF)
+                                                                                                                                                                                                      Ciss
+                                                                                                                                                         2000
+   -VGS(Volts)
+
+
+
+
+                                           6
+                                                                                                                                                         1500
+                                           4
+                                                                                                                                                         1000
+
+                                           2                                                                                                                                         Coss
+                                                                                                                                                          500
+
+                                                                                                                                                                      Crss
+                                           0                                                                                                                  0
+                                                     0                 10             20         30           40                                                  0          5           10       15          20        25      30
+                                                                              Qg(nC)                                                                                                  -VDS(Volts)
+
+                                     Figure 7: Gate-Charge Characteristics                                                                                Figure 8: Capacitance Characteristics
+
+
+                           100.0
+                                                                                                                                                  10000
+                                                                                                         10 µs                                                                                               TJ(Max)=150°C
+                                                           RDS(ON)                                       100 µs                                                                                              TA=25°C
+                                 10.0                      limited                                                                                     1000
+   -ID(Amps)
+
+
+
+
+                                                                                                         1ms
+                                                                                                                                Power(W)
+
+
+
+
+                                       1.0                                                               10ms                                          100
+                                                                                                         100ms
+
+                                       0.1                                                                                                               10
+                                                           TJ(Max)=150°C                                 DC
+                                                           TA=25°C
+                                       0.0
+                                          0.01                         0.1            1          10           100                                         1E-05              0.001              0.1                10        1000
+
+
+                                                                             -VDS(Volts)                                                                                           Pulse Width (s)
+   Figure 9: Maximum Forward Biased Safe Operating                                                                                           Figure 10: Single Pulse Power Rating Junction-to
+                    Area (Note F)                                                                                                                            -Ambient (Note F)
+
+                                                            10
+                                                                     D=Ton/T                                                                              In descending order
+          ZθJANormalized Transient
+
+
+
+
+                                                                     TJ,PK=TA+PDM.Z θJA .R θJA                                                            D=0.5, 0.3, 0.1, 0.05, 0.02, 0.01, single pulse
+                                     Thermal Resistance
+
+
+
+
+                                                              1      R θJA =75 °C/W
+
+
+
+                                                            0.1
+
+
+                                                                                                                                                                             PDM
+                                                           0.01                                                Single Pulse
+                                                                                                                                                                                   Ton
+                                                                                                                                                                                            T
+                                                          0.001
+                                                              1E-05              0.0001          0.001             0.01       0.1                             1                    10                   100              1000
+
+
+                                                                                                                     Pulse Width (s)
+
+                                                                         Figure 11: Normalized Maximum Transient Thermal Impedance (Note F)
+
+
+
+
+                                                                                                                                                        UTD Semiconductor Co.,Limited
+6 of 10                                                                                                                                                                    Nov.2024
+www.umw-ic.com                                                                                                                    UMW AO4407A
+                                                                                                                                                                                 P-Channel MOSFET
+
+
+
+
+                                                          Gate Charge Test Circuit & Waveform
+
+                                                                                                     Vgs
+                                                                                                                                  Qg
+
+                        -                                                                            -10V
+
+                  VDC
+                                                                      -                                         Qgs               Qgd
+                    +                                           VDC
+                                                                          Vds
+                                                                  +
+                                                          DUT
+                                       Vgs
+
+                                 Ig
+
+                                                                                                                                                                      Charge
+
+
+
+
+                                                  Resistive Switching Test Circuit & Waveforms
+
+                                                          RL
+                                            Vds                                                                      ton                                  toff
+
+
+                                                                                                            td(on)         tr                  t d(off)          tf
+                                                                                                Vgs
+                                                                                -
+                                                          DUT                       Vdd                                                                                    90%
+                                       Vgs                                VDC
+
+                            Rg
+                                                                                +
+
+         Vgs                                                                                                                                                               10%
+                                                                                                Vds
+
+
+
+
+                             Unclamped Inductive Switching (UIS) Test Circuit & Waveforms
+                                                                                                                     2
+                                                  L                                              E AR= 1/2 LIAR
+                                      Vds
+
+                                      Id                                                        Vds
+                                                                                      -                                                                                  BVDSS
+                                                            Vgs                                                                   Waveforms
+                             Vgs                                                VDC
+                                                                                          Vdd
+                  Rg
+                                                                                    +           Id
+                                                                                                                                                                         I AR
+                                                  DUT
+       Vgs                                                                                      Vgs
+
+
+
+
+                                                      Diode Recovery Test Circuit & Waveforms
+
+         Vds +                                                                                                              Q rr = - Idt
+                                            DUT
+                                                                                                 Vgs
+
+
+         Vds -                                                                                                                                t rr
+                                                      L                                         -Isd                  -I F
+                            Isd                                                                                                   dI/dt
+                                                                          + Vdd                                                       -I RM
+                    Vgs                                               VDC
+                                                                                                                                                                         Vdd
+             Ig
+                                                                            -                   -Vds
+
+
+
+
+                             UTD Semiconductor Co.,Limited
+                             Nov.2024                                                                                                                                                      7 of 10
+www.umw-ic.com                                                                          UMW AO4407A
+                                                                                                                      P-Channel MOSFET
+
+
+
+
+8.SOP-8 Package Outline Dimensions
+
+
+
+                                       D
+
+
+
+
+                                                                                           0.25
+
+
+                                                                                                  L
+                                                                                                          L1
+
+
+
+             E       E1
+
+
+
+
+                                                                                    h
+
+
+                                                                                                      θ
+
+
+
+
+                                                                                             c
+                                                          A3
+                                                               A2   A
+
+
+
+                                                     A1
+                                 e          b
+
+
+
+
+DIMENSIONS (mm are the original dimensions)
+
+   Symbol    A            A1         A2         A3    b                 c    D      E      E1         e         h         L
+      Min        -        0.05       1.30   0.60     0.39           0.20    4.70   5.80   3.80    1.24         0.30     0.50
+      Max   1.75          0.20       1.50   0.70     0.47           0.24    5.10   6.20   4.00    1.30         0.50     0.80
+
+
+   Symbol    L1            θ
+      Min   1.00           0°
+      Max   1.10           8°
+
+
+
+
+                                                                             UTD Semiconductor Co.,Limited
+8 of 10                                                                                         Nov.2024
+www.umw-ic.com                                                 UMW AO4407A
+                                                                                P-Channel MOSFET
+
+
+
+
+9.Ordering information
+
+
+
+
+                                           AO4407
+                                           UMW yyww
+                                                           yy: Year Code
+                                                           ww: Week Code
+
+
+
+
+    Order Code                  Package               Base QTY             Delivery Mode
+    UMW AO4407A                   SOP-8                 3000                Tape and reel
+
+
+
+
+                 UTD Semiconductor Co.,Limited
+                 Nov.2024                                                                   9 of 10
+www.umw-ic.com                                                               UMW AO4407A
+                                                                                                      P-Channel MOSFET
+
+
+
+
+10.Disclaimer
+UMW reserves the right to make changes to all products, specifications. Customers should obtain the latest version
+
+of product documentation and verify the completeness and currency of the information before placing an order.
+
+
+When applying our products, please do not exceed the maximum rated values, as this may affect the reliability of the
+
+entire system. Under certain conditions, any semiconductor product may experience faults or failures. Buyers are
+
+responsible for adhering to safety standards and implementing safety measures during system design, prototyping,
+
+and manufacturing when using our products to prevent potential failure risks that could lead to personal injury or
+
+property damage.
+
+
+Unless explicitly stated in writing, UMW products are not intended for use in medical, life-saving, or life-sustaining
+
+applications, nor for any other applications where product failure could result in personal injury or death. If customers
+
+use or sell the product for such applications without explicit authorization, they assume all associated risks.
+
+
+When reselling, applying, or exporting, please comply with export control laws and regulations of China, the United
+
+States, the United Kingdom, the European Union, and other relevant countries, regions, and international
+
+organizations.
+
+
+This document and any actions by UMW do not grant any intellectual property rights, whether express or implied,
+
+by estoppel or otherwise. The product names and marks mentioned herein may be trademarks of their respective
+
+owners.
+
+
+
+
+                                                                   UTD Semiconductor Co.,Limited
+10 of 10                                                                              Nov.2024
+

@@ -1,0 +1,3516 @@
+CH543 手册                                          1
+
+
+                USB PD 单片机 CH543、USB 单片机 CH541
+                                                  手册
+                                                版本：1E
+                                              http://wch.cn
+
+1、概述
+    CH543 芯片是一款兼容 MCS51 指令集的 USB 和 USB PD 增强型 E8051 内核 MCU，其 79%的指令是
+单字节单周期指令，平均指令速度比标准 MCS51 快 8～15 倍。
+    CH543 内置 16K 程序存储器 Flash-ROM 和 256 字节内部 iRAM 以及 256 字节片内 xRAM，xRAM 支
+持 DMA 直接内存存取。
+    CH543 内置了 USB Power Delivery 控制器和 PD BMC PHY 收发器，支持 USB type C、BC、PD2.0、
+PD3.0，支持 12V 高压电源，作为 PMIC 用于电源管理、受电端、供电端、DRP。
+    CH543 内置了 USB 主机控制器和收发器，支持全速和低速 USB Host 主机和 USB Device 设备。
+    CH543 还内置了 12 位 ADC 模数转换、电容式触摸按键检测模块、内置时钟、3 组定时器和 2 路
+信号捕捉、4 路 PWM、异步串口、SPI、I2C 从机、可编程灌电流模块等功能模块。
+    CH541 是支持 12V 电源的 USB 单片机，CH541 基于 CH543 去掉了 USB PD、USB 主机、可编程灌电
+流模块，保留了 type C 模块，其它与 CH543 相同，可参考 CH543 手册和资料。
+
+
+        程序+引导 xRAM          USB USB PD 定时器 异步 通用 I2C SPI 可编程 12 位 电容触
+ 型号
+        +EEPROM iRAM        主/从 type C /捕捉 串口 PWM 从机 主从 灌电流 ADC 摸按键
+        14KB+2KB                                3组
+CH543                       主/从           √                                            512 级
+         可合并          256                      定时器                                                    11 个
+                                                            √     4路       √      √            12 路
+         全用于         +256                 仅     2路                                                    通道
+CH541                       设备                                                           无
+        用户程序                            type C 捕捉
+
+
+   下面为 CH543 的内部框图，仅供参考。
+
+   Flash-ROM 16KB      iRAM 256B        Timer0    Timer2     PWM0        UART0        SPI0           I2C
+  Code/EEPROM Data     xRAM 256B        Timer1    Cap1~2    ~PWM3                 Master/Slave      Slave
+
+  PO Reset
+  LV Reset
+                       1T
+                                                   Internal Address & Data & DMA Bus
+  Watch-dog        E8051 Core
+    Reset
+                      USB-48M
+   Internal 48MHz
+                                                  USB PD         8 bit      ADC        8 bit     USB host
+     Oscillator         OVR           ISINK
+                                                 & type C       Port 1     tkey       Port 3     & device
+   LDO VolReg 12V->3.3V
+
+
+
+
+Pins: GND VDD12 VDD             RST                             P10~17                P30~37
+CH543 手册                         2
+
+
+2、特点
+ l Core：增强型 E8051 内核，兼容 MCS51 指令集，其 79%的指令是单字节单周期指令，平均指令
+   速度比标准 MCS51 快 8～15 倍，特有 XRAM 数据快速复制指令，双 DPTR 指针。
+ l ROM：16KB 非易失存储器 Flash-ROM，支持 10K 次擦写，可全部用于程序存储空间；或可分为
+   14KB 程序存储区和 256B 数据存储区 EEPROM 以及 1.75KB 引导代码 BootLoader/ISP 程序区。
+ l EEPROM：数据存储区 EEPROM 共 256 字节，分为 4 个独立块，支持单字节读、单字节写、块写
+   (1～64 字节)、块擦除(64 字节)操作，在典型环境下一般支持 100K 次擦写。
+ l OTP：一次性可编程数据存储区 OTP 共 32 字节，支持双字读（4 字节）、单字节写。
+ l RAM：256 字节内部 iRAM，可以用于快速数据暂存以及堆栈；256 字节片内 xRAM，可以用于数
+   据暂存以及 USB 或 USB PD 的 DMA 直接内存存取。
+ l USB：提供 USB 控制器和 USB 收发器，支持 USB-Host 主机模式和 USB-Device 设备模式，支持
+   USB 2.0 全速 12Mbps 或者低速 1.5Mbps。支持最大 64 字节数据包，内置 FIFO，支持 DMA。USB
+   端口支持 BC 充电协议，支持 UART 异步串口 RXD/TXD 引脚映射。
+ l USB PD 和 type C：提供 USB Power Delivery 控制器和 PD 收发器 PHY，支持 USB type-C 主从
+   检测，自动 BMC 编解码和 CRC，硬件边沿控制，支持 DMA，支持 USB PD2.0 和 PD3.0 电力传输
+   控制，支持 DRP。
+ l Timer：3 组 16 位定时器，T0/T1/T2 为标准 MCS51 定时器。
+ l Capture：定时器 T2 扩展为支持 2 路信号捕捉，支持前沿触发、后沿触发、周期检测。
+ l PWM：4 路 8 位普通 PWM 输出或者 2 路高精度 12 位 PWM 输出，支持交错输出。
+ l UART：标准 MCS51 异步串口，支持最高 3Mbps 或 460800bps 通讯波特率。
+ l SPI：支持 Master/Slave 主从模式，内置 FIFO，时钟频率最高可接近系统主频 Fsys 的一半，
+   支持串行数据输入输出单工复用。
+ l I2CS：I2C slave 从机控制器，支持 1MHz 时钟。
+ l ISINK：512 级可编程灌电流，相当于 9 位 DAC，支持 PPS。
+ l ADC：12 通道 12 位 A/D 模数转换器，可选输入缓冲或者简单放大。
+ l Touch-Key：支持 11 通道电容触摸按键检测，除 RST 外的每个 ADC 通道都支持触摸按键检测。
+ l GPIO：支持最多 17 个 GPIO 引脚(含 USB 和 USB PD 及 RST 引脚)，支持 MCS51 兼容的准双向模
+   式，新增高阻输入、推挽输出、开漏输出模式。
+ l P3.5 引脚支持 VDD12 高压 12V 输入输出，RST 引脚作为通用输入支持 VDD12 高压 12V。
+ l Interrupt：支持 14 组中断信号源，包括与标准 MCS51 兼容的 6 组中断(INT0、T0、INT1、T1、
+   UART0、T2)，以及扩展的 8 组中断(SPI0、I2C、USB、ADC、USB PD、PWMX/CMP、GPIO、WDOG)，
+   其中 GPIO 中断可以从多个引脚中选择。
+ l Watch-Dog：8 位可预设看门狗定时器 WDOG，支持定时中断。
+ l Reset：支持 7 种复位信号源，内置上电复位 POR 和电源低压检测复位 LVR 及电源过压复位 OVR
+   模块，支持软件复位和看门狗溢出复位，可选引脚外部输入复位，可选 USB PD 硬件复位。
+ l Clock：内置 48MHz 时钟源，用于产生所需频率的系统主频 Fsys 和 USB 时钟。
+ l Power：内置 12V 到 3.3V 或 4.7V 的低压差电压调整器，用于 USB 和 I/O 及 ADC 等模块，VDD12
+   支持 5V 或 3.3V 或 9V 甚至 12V 或 2.8V 电源电压。
+ l 支持 VDD12 高压放电、RST 引脚 12V 高压放电。
+ l Sleep：支持低功耗睡眠，支持 USB、USB PD/type C、UART0、SPI0 以及部分 GPIO 外部唤醒。
+ l 芯片内置唯一 ID 号，支持 ID 号和校验。
+ l 提供小体积的 QFN、低成本的 SOP16 等封装形式。
+      CH543 手册                                                                        3
+
+
+      3、封装
+             封装形式                        塑体宽度                                     引脚间距                          封装说明                      订货型号
+              QFN-20               3*3mm                                    0.40mm        15.7mil          四边无引线 20 脚                      CH543D
+             TSSOP-20              4.4mm                    173mil          0.65mm            25mil        薄小型的 20 脚贴片                     CH541T
+              SOP-16               3.9mm
+                                   15                       150mil          1.27mm            50mil        标准的 16 脚贴片                      CH541G
+                                   14
+                                   13
+                                   12
+                                   11
+                                                                                                                                CH541T
+                                                                                                       1                                                        20
+                                             P3.4/T0/PWM1
+                                          P3.3/INT1/PWM2_
+                                      P1.0/CC1/T2/CAP1/A0
+                                    P1.1/CC2/T2EX/CAP2/A1
+                                      P3.0/RXD/PWM0_/SCL_
+                                                                                                           P3.2/INT0/A2                              VDD/V33
+                                                                                                       2                                                        19
+                                                                                                           P1.4/T2_/CAP1_/SCS/PWM3/A4              VDD12/VHV
+                                                                                                       3                                                        18
+                                                                                                           P1.5/MOSI/PWM0/A5                         GND/VSS
+                                                                                                       4                                                        17
+                                                                                                           P1.6/MISO/SCL/RXD_/PWM2/A6      P1.2/INT0_/A10/CO
+                                                                                                       5                                                        16
+                                                                                                           P1.7/SCK/SDA/TXD_/A7                  P1.3/A11/CM
+                                                                                                       6                                                        15
+                                                                                                           RST/T2EX_/CAP2_/A3/CP                  P3.7/DM/A9
+                                                                                                       7                                                        14
+                                                                                                           P1.0/CC1/T2/CAP1/A0                    P3.6/DP/A8
+                                                                                                       8                                                        13
+                                                                                                           P1.1/CC2/T2EX/CAP2/A1                P3.5/T1/HVIO
+                                                                                                       9                                                        12
+                                                                                                           P3.1/TXD/PWM1_/SDA_                  P3.4/T0/PWM1
+                                                                                                      10                                                        11
+                                                                                                           P3.0/RXD/PWM0_/SCL_               P3.3/INT1/PWM2_
+16                                                                                              10
+     P3.5/T1/HVIO                                                       P3.1/TXD/PWM1_/SDA_
+17                                                                                              9
+     P3.6/DP/A8                                                       RST/T2EX_/CAP2_/A3/CP
+18                                                                                              8
+19
+     P3.7/DM/A9                       CH543D                           P1.7/SCK/SDA/TXD_/A7
+                                                                                                7
+     P1.3/FB/A11/CM                                              P1.6/MISO/SCL/RXD_/PWM2/A6
+20                                                                                              6
+     P1.2/INT0_/A10/CO                                                    P1.5/MOSI/PWM0/A5
+                                                                                                                                CH541G
+                                    P1.4/T2_/CAP1_/SCS/PWM3/A4
+
+
+
+
+                                                                                                      1                                                         16
+                                                                                                           P3.2/INT0/A2                               VDD/V33
+                                                                                                      2                                                         15
+                                                                                                           P1.4/T2_/CAP1_/SCS/PWM3/A4               VDD12/VHV
+                                                                                                      3                                                         14
+                                                                                                           P1.5/MOSI/PWM0/A5                          GND/VSS
+                                                                                                      4                                                         13
+                                                                                                           P1.6/MISO/SCL/RXD_/PWM2/A6              P3.7/DM/A9
+                                    P3.2/INT0/A2
+
+
+
+
+                                                                                                      5                                                         12
+                                                                                                           P1.7/SCK/SDA/TXD_/A7                    P3.6/DP/A8
+                                    VDD12/VHV
+
+
+
+
+                                                                                                      6                                                         11
+                                                                                                           RST/T2EX_/CAP2_/A3/CP                 P3.5/T1/HVIO
+                         GND/VSS
+
+
+
+                                    GND/VSS
+                                    VDD/V33
+
+
+
+
+                                                                                                      7                                                         10
+                                                                                                           P3.1/TXD/PWM1_/SDA_            P1.0/CC1/T2/CAP1/A0
+                                                                                                      8                                                         9
+                                                                                                           P3.0/RXD/PWM0_/SCL_          P1.1/CC2/T2EX/CAP2/A1
+                         0
+
+
+                                   1
+                                   2
+                                   3
+                                   4
+                                   5
+
+
+
+
+      4、引脚
+              引脚号                   引脚                     其它功能名称
+                                                                                                               其它功能描述
+       543D 541T 541G               名称                   (左侧功能最优先)
+                                                                                       电压调整器 LDO 的外部电源输入，兼 P3.5 引脚的高
+         1       19      15         VDD12 VHV
+                                                                                       压 I/O 电源输入，需要外接电源退耦电容。
+                                                                                       内部电压调整器 LDO 输出，USB 电源和 I/O 电源输入，
+         3       20      16           VDD               V33/VIO                        当电源电压小于 3.6V 时连接 VDD12 输入外部电源，
+                                                                                       当电源电压大于 3.6V 时外接电源退耦电容
+        0,2      18      14           GND               VSS                            公共接地端。Exposed-Pad 0#引脚是底板。
+        13       7       10         P1.0 CC1/T2/CAP1/A0   A0～A11：12 通道 ADC 模拟信号输入 AIN0～AIN11。
+        12       8         9        P1.1 CC2/T2EX/CAP2/A1 A0～A2、A4～A11：11 通道触摸按键输入。
+        20       17      无          P1.2 INT0_/A10/CO     T2：定时/计数器 2 的外部计数输入/时钟输出。
+        19       16      无          P1.3 FB/A11/CM        T2EX：定时/计数器 2 重载/捕捉输入。
+                                         T2_/CAP1_/SCS    CAP1、CAP2：定时/计数器 2 的捕捉输入 1、2。
+         4       2         2        P1.4
+                                         /PWM3/A4         SCS、MOSI、MISO、SCK：SPI0 接口，SCS 是片选输入，
+         6       3         3        P1.5 MOSI/PWM0/A5     MOSI 是主机输出/从机输入，MISO 是主机输入/从机
+         7       4         4        P1.6 MISO/SCL/RXD_    输出，SCK 是串行时钟主机输出/从机输入。
+CH543 手册                                    4
+
+                           /PWM2/A6         CC1、CC2：USB PD/type C 的 CC 信号端，默认下拉。
+  8    5    5    P1.7 SCK/SDA/TXD_/A7       FB：可编程电流 ISINK 的电流吸入端。
+ 11    10   8    P3.0 RXD/PWM0_/SCL_        PWM0～PWM3：4 通道 PWM 输出。
+ 10    9    7    P3.1 TXD/PWM1_/SDA_        SCL、SDA：I2C 从机串行时钟输入、双向串行数据。
+  5    1    1    P3.2 INT0/A2               CP、CM、CO：比较器 CMP 的正输入、负输入及输出。
+ 14    11   无    P3.3 INT1/PWM2_            RXD、TXD：UART0 串行数据输入、串行数据输出。
+ 15    12   无    P3.4 T0/PWM1               INT0、INT1：外部中断 0、外部中断 1 输入。
+ 16    13   11   P3.5 T1/HVIO               T0、T1：定时器 0、定时器 1 外部输入。
+                                            DM、DP：USB 主机或 USB 设备的 D-、D+信号端。
+                           DP/TXD11_
+ 17    14   12   P3.6                       HVIO：以 VDD12 为 I/O 电源的高压 GPIO。
+                           /RXD10_/A8
+                                            RST：外部复位输入，高电平有效，内置下拉电阻。
+                           DM/TXD10_
+ 18    15   13   P3.7                       INT0_ 、 T2_/CAP1_ 、 T2EX_/CAP2_ 、 RXD_ 、 TXD_ ：
+                           /RXD11_/A9
+                                            INT0/T2/CAP1/T2EX/CAP2/RXD/TXD 引脚映射。
+                           T2EX_/CAP2_/A3   RXD10_/TXD10_、RXD11_/TXD11_：在 MASK_UART_I2C
+  9    6    6    RST
+                           /CP              为 10 选项、11 选项下 RXD/TXD 的引脚映射。
+注：其它封装形式参考上表，同名引脚的功能相同。
+复位后，P1.0/P1.1 默认下拉 5.1K，P1.2/P1.3 默认浮空，P3.6/P3.7 默认弱下拉 2uA，RST 默认下
+拉 40K，CH543 的 P1.7 默认弱上拉 5uA，其它 GPIO 及 CH541 的 P1.7 默认 MCS51 兼容的上拉。
+USB 收发器按 USB2.0 全内置设计，P3.6/P3.7 引脚用于 USB 时不能串接电阻。
+
+
+5、特殊功能寄存器 SFR
+      本手册中在对寄存器进行描述时可能使用了下列缩写：
+                  缩写词                               描述
+                   RO             表示访问类型：只读
+                   WO             表示访问类型：只写，读取的值无效
+                   RW             表示访问类型：可读可写
+                       H          以其结束表示 16 进制数
+                       B          以其结束表示 2 进制数
+
+
+5.1 SFR 简介和地址分布
+    CH543 用特殊功能寄存器 SFR 控制、管理设备以及设置工作模式。
+    SFR 占用内部数据存储空间的 80h-FFh 地址范围，只能通过直接地址方式的指令访问。其中地
+址为 x0h 或 x8h 的寄存器是可以按位寻址的，这样就能避免访问某个具体的位时而修改其他位的值；
+其它地址为非 8 倍数的寄存器只能按字节访问。
+    部分 SFR 仅在安全模式下才能写入数据，而在非安全模式下是只读状态，例如：GLOBAL_CFG、
+CLOCK_CFG、WAKE_CTRL、POWER_CFG、GPIO_IE、ISINK_DATA。
+    部分 SFR 具有一个或者多个别名，例如：SPI0_CK_SE/SPI0_S_PRE、UDEV_CTRL/UHOST_CTRL、
+UEP1_CTRL/UH_SETUP、UEP2_CTRL/UH_RX_CTRL、UEP2_T_LEN/UH_EP_PID、UEP3_CTRL/UH_TX_CTRL、
+UEP3_T_LEN/UH_TX_LEN   、    UEP2_3_MOD/UH_EP_MOD   、    UEP2_DMA_L/UH_RX_DMA_L   、
+UEP3_DMA_L/UH_TX_DMA_L 、 ROM_ADDR_L/ROM_DATA_LL 、 ROM_ADDR_H/ROM_DATA_LH 、
+ROM_DATA_HL/ROM_DAT_BUF、ROM_DATA_HH/ROM_BUF_MOD。
+    部分地址对应于多个独立的 SFR，例如：SAFE_MOD/CHIP_ID、ROM_CTRL/ROM_STATUS。
+    CH543 包含 8051 标准 SFR 所有的寄存器，同时又增加了其他设备控制寄存器。具体 SFR 见下表。
+                            表 5.1.1 内部特殊功能寄存器表 SFR
+CH543 手册                                        5
+
+SFR      0、8         1、9          2、A          3、B           4、C          5、D           6、E          7、F
+                                             SPI0_CK_SE
+0xF8   SPI0_STAT   SPI0_DATA    SPI0_CTRL                 SPI0_SETUP                               WDOG_COUNT
+                                             SPI0_S_PRE
+0xF0      B        ANA_CTRL     TKEY_CTRL    ADC_CTRL     ADC_DAT_L     ADC_DAT_H     ADC_CHAN
+                                             UEP2_3_MOD
+0xE8    IE_EX        IP_EX      UEP4_1_MOD                UEP0_DMA_L                 UEP1_DMA_L
+                                             UH_EP_MOD
+                                                          UEP2_DMA_L                 UEP3_DMA_L
+0xE0      ACC      USB_INT_EN   USB_CTRL     USB_DEV_AD
+                                                          UH_RX_DMA_L                UH_TX_DMA_L
+0xD8 USB_INT_FG    USB_INT_ST   USB_MIS_ST   USB_RX_LEN   UEP0_CTRL     UEP0_T_LEN
+                   UDEV_CTRL    UEP1_CTRL                 UEP2_CTRL     UEP2_T_LEN   UEP3_CTRL     UEP3_T_LEN
+0xD0      PSW                                UEP1_T_LEN
+                   UHOST_CTRL   UH_SETUP                  UH_RX_CTRL    UH_EP_PID    UH_TX_CTRL    UH_TX_LEN
+0xC8    T2CON        T2MOD       RCAP2L       RCAP2H         TL2           TH2        T2CAP1L       T2CAP1H
+0xC0 UPD_INT_FG    UPD_INT_EN   UPD_CTRL     UPD_DATA     UPD_DMA_L                   CC1_CTRL     CC2_CTRL
+0xB8      IP       CLOCK_CFG    POWER_CFG    UPD_TIMER    UPD_COUNT     UPD_T_LEN    UPD_T_SOP     UPD_CRC32
+0xB0      P3       GLOBAL_CFG    GPIO_IE      PIN_RST      USB_PULL                  PWM_CYCLE_L PWM_CYCLE_H
+0xA8      IE       WAKE_CTRL    PIN_FUNC                                             ISINK_DATA    ISINK_LSB
+                   SAFE_MOD
+0xA0   I2CS_STAT                XBUS_AUX     PWM_DATA3    I2CS_CTRL     I2CS_DEV_A   I2CS_ADDR     I2CS_DATA
+                    CHIP_ID
+0x98     SCON        SBUF       PWM_DATA2    PWM_DATA1    PWM_DATA0     PWM_CTRL     PWM_CK_SE     PWM_CTRL2
+0x90      P1       PIN_MISC     P1_MOD_OC    P1_DIR_PU    P1_ANA_PIN    P3_ANA_PIN   P3_MOD_OC     P3_DIR_PU
+                                                                                     ROM_DATA_HL ROM_DATA_HH
+0x88     TCON        TMOD          TL0          TL1          TH0           TH1
+                                                                                     ROM_DAT_BUF ROM_BUF_MOD
+                                                          ROM_ADDR_L    ROM_ADDR_H    ROM_CTRL
+0x80                  SP           DPL          DPH                                                  PCON
+                                                          ROM_DATA_LL ROM_DATA_LH    ROM_STATUS
+备注：(1)、红色文本代表可以按位寻址；
+   (2)、以下是颜色框对应说明
+                           寄存器地址
+                           SPI0 相关寄存器
+                           I2C 相关寄存器
+                           ADC、TouchKey、CMP 相关寄存器
+                           USB 相关寄存器
+                           定时/计数器 2 相关寄存器
+                           端口设置相关寄存器
+                           PWMX 相关寄存器
+                           USB PD、USB type C 相关寄存器
+                           定时/计数器 0 和 1 相关寄存器
+                           UART0 相关寄存器
+                           ISINK 相关寄存器
+                           Flash-ROM 相关寄存器
+
+
+5.2 SFR 分类和复位值
+                                      表 5.2 SFR 描述和复位值
+   功能分类              名称           地址                           描述                                 复位值
+CH543 手册                              6
+
+             B             F0h   B 寄存器                                   0000 0000b
+             ACC           E0h   累加器                                     0000 0000b
+             PSW           D0h   程序状态寄存器                                 0000 0000b
+                                 全局配置寄存器(CH543 引导程序状态下)                  1110 0000b
+                                 全局配置寄存器(CH543 应用程序状态下)                  1100 0000b
+             GLOBAL_CFG    B1h
+                                 全局配置寄存器(CH541 引导程序状态下)                  0110 0000b
+  系统设置                           全局配置寄存器(CH541 应用程序状态下)                  0100 0000b
+ 相关寄存器                           CH543 芯片 ID 识别码(只读)                     0100 0011b
+             CHIP_ID       A1h
+                                 CH541 芯片 ID 识别码(只读)                     0100 0001b
+             SAFE_MOD      A1h   安全模式控制寄存器(只写)                           0000 0000b
+             DPH           83h   数据地址指针高 8 位                             0000 0000b
+             DPL           82h   数据地址指针低 8 位                             0000 0000b
+             DPTR          82h   DPL 和 DPH 组成 16 位 SFR                     0000h
+             SP            81h   堆栈指针                                    0000 0111b
+             WDOG_COUNT    FFh   看门狗计数寄存器                                0000 0000b
+ 时钟、睡眠       POWER_CFG     BAh   电源管理配置寄存器                               0000 0xxxb
+ 及电源控制       CLOCK_CFG     B9h   系统时钟配置寄存器                               0000 0011b
+ 相关寄存器       WAKE_CTRL     A9h   睡眠唤醒控制寄存器                               0000 0000b
+             PCON          87h   电源控制寄存器(上电复位状态下)                        0001 0000b
+             IP_EX         E9h   扩展中断优先级控制寄存器                            0000 0000b
+             IE_EX         E8h   扩展中断使能寄存器                               0000 0000b
+  中断控制
+             IP            B8h   中断优先级控制寄存器                              0000 0000b
+ 相关寄存器
+             IE            A8h   中断使能寄存器                                 0000 0000b
+             GPIO_IE       B2h   GPIO 中断使能寄存器                            0000 0000b
+             ROM_DATA_HH   8Fh   flash-ROM 数据寄存器高字的高字节(只读)               xxxx xxxxb
+             ROM_DATA_HL   8Eh   flash-ROM 数据寄存器高字的低字节(只读)               xxxx xxxxb
+             ROM_DATA_HI   8Eh   ROM_DATA_HL 和 ROM_DATA_HH 组成 16 位 SFR     xxxxh
+             ROM_BUF_MOD   8Fh   flash-ROM 擦写操作的缓冲区模式寄存器                 xxxx xxxxb
+             ROM_DAT_BUF   8Eh   flash-ROM 擦写操作的数据缓冲寄存器                  xxxx xxxxb
+             ROM_STATUS    86h   flash-ROM 状态寄存器(只读)                     0000 0000b
+ Flash-ROM
+             ROM_CTRL      86h   flash-ROM 控制寄存器(只写)                     0000 0000b
+ 相关寄存器
+             ROM_ADDR_H    85h   flash-ROM 地址寄存器高字节                      xxxx xxxxb
+             ROM_ADDR_L    84h   flash-ROM 地址寄存器低字节                      xxxx xxxxb
+             ROM_ADDR      84h   ROM_ADDR_L 和 ROM_ADDR_H 组成 16 位 SFR       xxxxh
+             ROM_DATA_LH   85h   flash-ROM 数据寄存器低字的高字节(只读)               xxxx xxxxb
+             ROM_DATA_LL   84h   flash-ROM 数据寄存器低字的低字节(只读)               xxxx xxxxb
+             ROM_DATA_LO   84h   ROM_DATA_LL 和 ROM_DATA_LH 组成 16 位 SFR     xxxxh
+             PIN_RST       B3h   RST 引脚配置寄存器                             0000 0111b
+             PIN_FUNC      AAh   引脚功能选择寄存器                               0000 0000b
+  端口设置       XBUS_AUX      A2h   外部总线辅助设置寄存器                             0000 0000b
+ 相关寄存器       P3_DIR_PU     97h   P3 端口方向控制和上拉使能寄存器                       1111 1111b
+             P3_MOD_OC     96h   P3 端口输出模式寄存器                            1111 1111b
+             P3_ANA_PIN    95h   P3 端口模拟模式控制寄存器                          0000 0000b
+CH543 手册                            7
+
+                               CH543：P1 端口方向控制和上拉使能寄存器                 0111 0000b
+           P1_DIR_PU     93h
+                               CH541：P1 端口方向控制和上拉使能寄存器                 1111 0000b
+           P1_MOD_OC     92h   P1 端口输出模式寄存器                            1111 1111b
+           P1_ANA_PIN    94h   P1 端口模拟模式控制寄存器                          0000 0000b
+                               CH543：杂项 I/O 控制寄存器                      1000 0000b
+           PIN_MISC      91h
+                               CH541：杂项 I/O 控制寄存器                      0000 0000b
+           P3            B0h   P3 端口输入输出寄存器                            1111 1111b
+           P1            90h   P1 端口输入输出寄存器                            1111 1111b
+           TH1           8Dh   Timer1 计数高字节                            0000 0000b
+           TH0           8Ch   Timer0 计数高字节                            0000 0000b
+ 定时/计数器
+           TL1           8Bh   Timer1 计数低字节                            0000 0000b
+  0和1
+           TL0           8Ah   Timer0 计数低字节                            0000 0000b
+ 相关寄存器
+           TMOD          89h   Timer0/1 方式寄存器                          0000 0000b
+           TCON          88h   Timer0/1 控制寄存器                          0000 0000b
+  UART0    SBUF          99h   UART0 数据寄存器                             xxxx xxxxb
+ 相关寄存器     SCON          98h   UART0 控制寄存器                             0000 0000b
+           T2CAP1H       CFh   Timer2 捕捉 1 数据高字节(只读)                   0000 0000b
+           T2CAP1L       CEh   Timer2 捕捉 1 数据低字节(只读)                   0000 0000b
+           T2CAP1        CEh   T2CAP1L 和 T2CAP1H 组成 16 位 SFR             0000h
+           TH2           CDh   Timer2 计数器高字节                           0000 0000b
+           TL2           CCh   Timer2 计数器低字节                           0000 0000b
+定时/计数器
+           T2COUNT       CCh   TL2 和 TH2 组成 16 位 SFR                     0000h
+2 相关寄存器
+           RCAP2H        CBh   计数重载/捕捉 2 数据寄存器高字节                      0000 0000b
+           RCAP2L        CAh   计数重载/捕捉 2 数据寄存器低字节                      0000 0000b
+           RCAP2         CAh   RCAP2L 和 RCAP2H 组成 16 位 SFR               0000h
+           T2MOD         C9h   Timer2 方式寄存器                            0000 0000b
+           T2CON         C8h   Timer2 控制寄存器                            0000 0000b
+           PWM_CYCLE_H   B7h   PWM 周期值寄存器高字节                           0000 0000b
+           PWM_CYCLE_L   B6h   PWM 周期值寄存器低字节                           0000 0000b
+           PWM_CYCLE     B6h   PWM_CYCLE_L 和 PWM_CYCLE_H 组成 16 位 SFR     0000h
+           PWM_DATA3     A3h   PWM3 数据寄存器                              0000 0000b
+   PWMX    PWM_CTRL2     9Fh   PWM 扩展控制寄存器                             0000 0000b
+ 相关寄存器     PWM_CK_SE     9Eh   PWM 时钟分频设置寄存器                           0000 0000b
+           PWM_CTRL      9Dh   PWM 控制寄存器                               0000 0010b
+           PWM_DATA0     9Ch   PWM0 数据寄存器                              0000 0000b
+           PWM_DATA1     9Bh   PWM1 数据寄存器                              0000 0000b
+           PWM_DATA2     9Ah   PWM2 数据寄存器                              0000 0000b
+           SPI0_SETUP    FCh   SPI0 设置寄存器                              0000 0000b
+           SPI0_S_PRE    FBh   SPI0 从机模式预置数据寄存器                        0010 0000b
+   SPI0    SPI0_CK_SE    FBh   SPI0 时钟分频设置寄存器                          0010 0000b
+ 相关寄存器     SPI0_CTRL     FAh   SPI0 控制寄存器                              0000 0010b
+           SPI0_DATA     F9h   SPI0 数据收发寄存器                            xxxx xxxxb
+           SPI0_STAT     F8h   SPI0 状态寄存器                              0000 1000b
+CH543 手册                            8
+
+           I2CS_DATA     A7h   I2CS 从机数据收发寄存器                      xxxx xxxxb
+           I2CS_ADDR     A6h   I2CS 从机数据地址寄存器(只读)                  xxxx xxxxb
+  I2C 从机
+           I2CS_DEV_A    A5h   I2CS 从机设备地址寄存器                      0000 0000b
+ 相关寄存器
+           I2CS_CTRL     A4h   I2CS 从机控制寄存器                        0000 0x00b
+           I2CS_STAT     A0h   I2CS 从机状态寄存器                        0000 1100b
+           ADC_CHAN      F6h   ADC 模拟信号通道选择寄存器                     0000 0000b
+           ADC_DAT_H     F5h   ADC 结果数据的高字节(只读)                    0000 xxxxb
+    ADC
+           ADC_DAT_L     F4h   ADC 结果数据的低字节(只读)                    xxxx xxxxb
+  /TKEY
+           ADC_DAT       F4h   ADC_DAT_L 和 ADC_DAT_H 组成 16 位 SFR     0xxxh
+   /CMP
+           ADC_CTRL      F3h   ADC 控制和状态寄存器                        0000 0000b
+ 相关寄存器
+           TKEY_CTRL     F2h   触摸按键充电脉冲宽度控制寄存器(只写)                 0000 0000b
+           ANA_CTRL      F1h   模拟比较器 CMP 控制寄存器                     0000 0000b
+           ISINK_LSB     AFh   可编程电流 ISINK 预置最低位寄存器(只写)            0000 0000b
+  ISINK
+           ISINK_LSB     AFh   可编程电流 ISINK 当前最低位寄存器(只读)            0000 0000b
+ 相关寄存器
+           ISINK_DATA    AEh   可编程电流 ISINK 高 8 位数据寄存器              0000 0000b
+           UEP1_DMA_L    EEh   端点 1 缓冲区起始地址低字节                     xxxx xxxxb
+           UEP0_DMA_L    ECh   端点 0 缓冲区起始地址低字节                     xxxx xxxxb
+           UEP2_3_MOD    EBh   端点 2、3 模式控制寄存器                      0000 0000b
+           UH_EP_MOD     EBh   USB 主机端点模式控制寄存器                     0000 0000b
+           UEP4_1_MOD    EAh   端点 1 模式控制寄存器                        0000 0000b
+           UEP3_DMA_L    E6h   端点 3 缓冲区起始地址低字节                     xxxx xxxxb
+           UH_TX_DMA_L   E6h   USB 主机发送缓冲区起始地址低字节                  xxxx xxxxb
+           UEP2_DMA_L    E4h   端点 2 缓冲区起始地址低字节                     xxxx xxxxb
+           UH_RX_DMA_L   E4h   USB 主机接收缓冲区起始地址低字节                  xxxx xxxxb
+           USB_DEV_AD    E3h   USB 设备地址寄存器                         0000 0000b
+           USB_CTRL      E2h   USB 控制寄存器                           0000 0110b
+           USB_INT_EN    E1h   USB 中断使能寄存器                         0000 0000b
+           UEP0_T_LEN    DDh   端点 0 发送长度寄存器                        0000 0000b
+   USB     UEP0_CTRL     DCh   端点 0 控制寄存器                          0000 0000b
+ 相关寄存器     USB_RX_LEN    DBh   USB 接收长度寄存器(只读)                     0xxx xxxxb
+           USB_MIS_ST    DAh   USB 杂项状态寄存器(只读)                     xx10 1000b
+           USB_INT_ST    D9h   USB 中断状态寄存器(只读)                     0011 xxxxb
+           USB_INT_FG    D8h   USB 中断标志寄存器                         0000 0000b
+           UEP3_T_LEN    D7h   端点 3 发送长度寄存器                        0000 0000b
+           UH_TX_LEN     D7h   USB 主机发送长度寄存器                       0000 0000b
+           UEP3_CTRL     D6h   端点 3 控制寄存器                          0000 0000b
+           UH_TX_CTRL    D6h   USB 主机发送端点控制寄存器                     0000 0000b
+           UEP2_T_LEN    D5h   端点 2 发送长度寄存器                        0000 0000b
+           UH_EP_PID     D5h   USB 主机令牌设置寄存器                       0000 0000b
+           UEP2_CTRL     D4h   端点 2 控制寄存器                          0000 0000b
+           UH_RX_CTRL    D4h   USB 主机接收端点控制寄存器                     0000 0000b
+           UEP1_T_LEN    D3h   端点 1 发送长度寄存器                        0000 0000b
+           UEP1_CTRL     D2h   端点 1 控制寄存器                          0000 0000b
+CH543 手册                                       9
+
+                    UH_SETUP        D2h   USB 主机辅助设置寄存器            0000 0000b
+                    UDEV_CTRL       D1h   USB 设备端口控制寄存器            0000 0000b
+                    UHOST_CTRL      D1h   USB 主机端口控制寄存器            0000 0000b
+                    USB_PULL        B4h   USB 端口上拉/下拉的电阻/电流控制寄存器   0001 0001b
+                    CC2_CTRL        C7h   PD/type C 的 CC2 控制寄存器    0000 0011b
+                    CC1_CTRL        C6h   PD/type C 的 CC1 控制寄存器    0000 0011b
+                    UPD_DMA_L       C4h   PD 缓冲区起始地址低字节            xxxx xxxxb
+                    UPD_DATA        C3h   PD 数据寄存器                 xxxx xxxxb
+                    UPD_CTRL        C2h   PD 控制寄存器                 0000 0010b
+   USB PD
+                    UPD_INT_EN      C1h   PD 中断使能寄存器               0000 0000b
+  /type C
+                    UPD_INT_FG      C0h   PD 中断标志寄存器               0000 0000b
+ 相关寄存器
+                    UPD_CRC32       BFh   PD CRC32 数据检查寄存器(只读)     xxxx xxxxb
+                    UPD_T_SOP       BEh   PD 发送 SOP 配置寄存器          0000 0000b
+                    UPD_T_LEN       BDh   PD 发送长度寄存器               0000 0000b
+                    UPD_COUNT       BCh   PD 数据字节计数寄存器(只读)         0xxx xxxxb
+                    UPD_TIMER       BBh   PD BMC 定时寄存器             0000 0000b
+
+
+5.3 通用 8051 寄存器
+                                    表 5.3.1 通用 8051 寄存器列表
+         名称             地址                               描述          复位值
+          B             F0h      B 寄存器                                00h
+      A、ACC             E0h      累加器                                  00h
+         PSW            D0h      程序状态寄存器                              00h
+                                 全局配置寄存器(CH543 引导程序状态下)               E0h
+                                 全局配置寄存器(CH543 应用程序状态下)               C0h
+   GLOBAL_CFG           B1h
+                                 全局配置寄存器(CH541 引导程序状态下)               60h
+                                 全局配置寄存器(CH541 应用程序状态下)               40h
+                                 CH543 芯片 ID 识别码(只读)                  43h
+      CHIP_ID           A1h
+                                 CH541 芯片 ID 识别码(只读)                  41h
+    SAFE_MOD            A1h      安全模式控制寄存器(只写)                        00h
+         PCON           87h      电源控制寄存器(上电复位状态下)                     10h
+         DPH            83h      数据地址指针高 8 位                          00h
+         DPL            82h      数据地址指针低 8 位                          00h
+         DPTR           82h      DPL 和 DPH 组成 16 位 SFR               0000h
+          SP            81h      堆栈指针                                 07h
+
+
+B 寄存器(B)：
+  位             名称      访问                               描述           复位值
+ [7:0]          B        RW      算术运算寄存器，主要用于乘法和除法运算，可按位寻址              00h
+
+
+A 累加器(A、ACC)：
+  位             名称      访问                               描述           复位值
+ [7:0]         A/ACC     RW      算术运算累加器，可按位寻址                          00h
+CH543 手册                                      10
+
+
+程序状态寄存器(PSW)：
+位        名称       访问                                  描述                            复位值
+                            进位标志位：执行算术运算和逻辑运算指令时，用于记录最高位的
+                            进位或者借位；进行 8 位加法运算时，最高位进位，则该位置位，
+ 7          CY     RW                                                                    0
+                            否则清零；进行 8 位减法运算时，若借位，则该位置位，否则清零；
+                            逻辑指令可使该位置位或清零
+                            辅助进位标志位：记录加减法运算时，低 4 位向高 4 位有进位或借
+ 6          AC     RW                                                                    0
+                            位，AC 置位，否则清零
+ 5          F0     RW       可按位寻址的通用标志位 0：使用者可自己定义，可软件清零或置位                              0
+ 4       RS1       RW       寄存器组选择位高位                                                    0
+ 3       RS0       RW       寄存器组选择位低位                                                    0
+                            溢出标志位：加减法运算时，运算结果超过 8 位二进制数，则 OV 置
+ 2          OV     RW                                                                    0
+                            1，标志溢出，否则清 0
+ 1          F1     RW       可按位寻址的通用标志位 1：使用者可自己定义，可软件清零或置位                              0
+                            奇偶标志位：记录指令执行后累加器 A 中 1 的奇偶性，奇数个 1 则 P
+ 0          P      RO                                                                 0
+                            置位，偶数个 1 则 P 清零
+    处理器的状态保存在状态寄存器 PSW 中，PSW 支持按位寻址。状态字中包括进位标志位，用于
+BCD 码处理的辅助进位标志位，奇偶标志位，溢出标志位，还有用于工作寄存器组选择的 RS0 和 RS1。
+工作寄存器组所在的区域都可以通过直接或者间接方式进行访问。
+               表 5.3.2 RS1 和 RS0 工作寄存器组选择表
+                             RS1        RS0                     工作寄存器组
+                              0          0                      0 组(00h-07h)
+                              0          1                      1 组(08h-0Fh)
+                              1          0                      2 组(10h-17h)
+                              1          1                      3 组(18h-1Fh)
+                           表 5.3.3 影响标志位的操作(X 表示标志位与操作结果有关)
+     操作            CY              OV    AC           操作            CY         OV   AC
+      ADD              X           X     X           SETB C          1
+     ADDC              X           X     X           CLR C           0
+     SUBB              X           X     X           CPL C           X
+      MUL              0           X               MOV C, bit        X
+      DIV              0           X               ANL C, bit        X
+     DA A              X                           ANL C,/bit        X
+     RRC A             X                           ORL C, bit        X
+     RLC A             X                           ORL C,/bit        X
+     CJNE              X
+
+
+数据地址指针(DPTR)：
+     位           名称          访问                          描述                         复位值
+ [7:0]           DPL         RW     数据指针低字节                                          00h
+ [7:0]           DPH         RW     数据指针高字节                                          00h
+      DPL 和 DPH 组成 16 位数据指针 DPTR，用于访问 xRAM 数据存储器或者程序存储器，实际 DPTR
+CH543 手册                                   11
+
+对应 DPTR0 和 DPTR1 两组物理上的 16 位数据指针，由 XBUS_AUX 中的 DPS 动态选择。
+
+堆栈指针(SP)：
+  位         名称          访问                        描述                    复位值
+ [7:0]       SP         RW        堆栈指针，主要用于程序调用和中断调用以及数据进出栈             07h
+  堆栈具体功能：保护断点和保护现场，按先入后出的原则进行管理。入栈时 SP 指针自动加 1，
+保存数据或断点信息；出栈时取 SP 指针指向数据单元，SP 指针自动减 1。SP 在复位后的初值是 07h，
+相应的默认堆栈存储从 08h 开始。
+
+5.4 特有寄存器
+全局配置寄存器(GLOBAL_CFG)，仅在安全模式下可写：
+  位          名称          访问                           描述                复位值
+                                   对于 CH543，是固定值 11                     11b
+ [7:6]       保留              RO
+                                   对于 CH541，是固定值 01                     01b
+                                   Boot loader 状态位，用于区分 ISP 引导程序状态或者应
+                                   用程序状态：电源上电时置 1，软件复位时清 0。
+  5        bBOOT_LOAD        RO    对于有 ISP 引导程序的芯片，该位为 1 说明从未软件复位        1
+                                   过，通常是上电后运行的 ISP 引导程序状态；该位为 0
+                                   说明已经软件复位过，通常是应用程序状态
+  4        bSW_RESET         RW    软件复位控制位：置 1 导致软件复位，硬件自动清零             0
+                                   Flash-ROM 写允许位：
+  3         bCODE_WE         RW                                          0
+                                   该位为 0 则写保护；为 1 则 Flash-ROM 可写可擦
+                                   Flash-ROM 的 DataFlash 区域写允许位：
+  2         bDATA_WE         RW                                          0
+                                   该位为 0 则写保护；为 1 则 DataFlash 区域可写可擦
+  1          保留              RO    保留                                    0
+                                   看门狗复位使能位：该位为 0 看门狗只用作定时器；该位
+  0         bWDOG_EN         RW                                          0
+                                   为 1 允许计时溢出时产生看门狗复位
+
+
+芯片 ID 识别码(CHIP_ID)：
+  位          名称         访问                         描述                   复位值
+                                  对于 CH543，是固定值 43h，用于识别芯片              43h
+ [7:0]     CHIP_ID       RO
+                                  对于 CH541，是固定值 41h，用于识别芯片              41h
+
+
+安全模式控制寄存器(SAFE_MOD)：
+  位          名称         访问                         描述                   复位值
+ [7:0]     SAFE_MOD      WO       用于进入或者终止安全模式                          00h
+   部分 SFR 仅在安全模式下才能写入数据，而在非安全模式下总是只读状态。进入安全模式步骤：
+(1)、向该寄存器写入 55h；
+(2)、接着向该寄存器写入 AAh；
+(3)、此后约 13 到 23 个系统主频周期都处于安全模式下，该有效期内可以改写一个或多个安全类
+    SFR 或普通 SFR
+(4)、超出上述有效期后自动终止安全模式
+(5)、或者再向该寄存器写任意值可以提前终止安全模式
+CH543 手册                                   12
+
+
+6、存储器结构
+6.1 存储器空间
+   CH543 寻址空间分为程序存储空间、内部数据存储空间、外部数据存储空间、只读和 OTP 空间。
+                      图 6.1 存储器结构图
+
+   Internal Data Address Space
+  FFH
+             Upper 128 bytes internal RAM               SFR
+           (indirect addressing by @R0/R1)      (Direct addressing)
+  80H
+  7FH        Lower 128 bytes internal RAM                                           03FH
+                                                               OTP data
+           (direct or indirect addressing)                                          020H
+  00H                                                                               01FH
+                                                         Read Only information
+                                                                                    000H
+   External Data Address Space                        Program Address Space
+
+ FFFFH                                                 Configuration information    3FFFH
+                Reserved area @xdata                         ROM_CFG_ADDR           3FFEH
+                                                                                    3FFDH
+                                                        Boot Loader Code Flash
+ 0100H                                                      BOOT_LOAD_ADDR
+                                                                                    3900H
+ 00FFH                                                                              38FFH
+                                                       Data Flash or Code Flash
+                     256 Bytes                             DATA_FLASH_ADDR
+                                                                                    3800H
+            on-chip expanded xRAM @xdata
+                                                                                    37FFH
+           (indirect addressing by MOVX)
+                                                        Application Code Flash
+ 0000H                                                                              0000H
+
+
+
+6.2 程序存储空间
+    程序地址空间共 64KB，其中低 16KB 提供 flash-ROM，如图 6.1 所示，包括保存指令代码的 Code
+Flash 区域、保存非易失数据的 Data Flash 区域、以及配置信息 Configuration Information 区域。
+    Data Flash（EEPROM）地址范围为 3800h 到 38FFH，支持单字节读(8 位)、单字节写(8 位)、块
+写(1～64 字节)、块擦除(64 字节)操作，芯片掉电后数据保持不变，也可用作 Code Flash。
+    Code Flash 包括低地址区域的应用程序代码和高地址区域的引导程序代码，也可将这两块区域
+以及 Data Flash 合并用于保存单一应用程序代码。
+    配置信息 Configuration Information 共 16 位数据，由编程器根据需要设定，参考表 6.1。
+                         表 6.2 flash-ROM 配置信息描述
+ 位地址           位名称                                 说明                              建议值
+                           flash-ROM 中的代码和数据保护模式：
+   15       Code_Protect                                                           0/1
+                           0-允许读出；1-禁止编程器读出，程序保密
+                           使能 BootLoader 引导代码启动模式：
+   14       No_Boot_Load   0-从 0000h 地址的应用程序启动；                                     1
+                           1-从 3900h 地址的引导程序启动
+                           使能上电复位期间的额外延时复位：
+   13      En_Long_Reset                                                            0
+                           0-标准短复位；1-宽复位，额外增加 44mS 复位时间
+CH543 手册                                 13
+
+   12        En_RST_RESET    使能 RST 作为手工复位输入引脚：0-禁止；1-使能 RST                 0
+   11                        保留                                              0
+   10                        保留                                              0
+   9            Must_1       (由编程器根据需要自动设定为 1)                               1
+   8            Must_0       (由编程器根据需要自动设定为 0)                               0
+ [7:3]           All_0       (由编程器根据需要自动设定为 00000b)                        00000b
+                             选择内部电压调整器 LDO 的输出电压（I/O 电压）
+                                                       ：
+  [2]           LDO_VOL                                                      0
+                             0-选择 3.3V；1-选择 4.7V
+  [1]          Default_0     (由编程器根据需要自动设定为 0)                               0
+              LV_RST_VOL     选择电源低压检测复位模块 LVR 的门限电压（误差 8%）
+                                                         ：
+  [0]                                                                        0
+                (Vpot)       0-选择 2.8V；1-选择 2.3V
+
+
+6.3 数据存储空间
+   内部数据存储空间共 256 字节，如图 6.1 所示，已全部用于 SFR 和 iRAM，其中 iRAM 用于堆栈
+和快速数据暂存，可细分为工作寄存器 R0-R7、位变量 bdata、字节变量 data、idata 等。
+   外部数据地址空间共 64KB，如图 6.1 所示，除了低 256 字节用于片内扩充 xRAM，剩余的 0100h
+到 FFFFh 地址范围是保留区域。
+   只读信息和 OTP 数据各 32 字节，如图 6.1 所示，需要通过专用操作实现存取。
+
+6.4 flash-ROM 寄存器
+                             表 6.4 flash-ROM 操作寄存器列表
+           名称               地址                       描述                    复位值
+        ROM_DATA_HH         8Fh    flash-ROM 数据寄存器高字的高字节(只读)                xxh
+        ROM_DATA_HL         8Eh    flash-ROM 数据寄存器高字的低字节(只读)                xxh
+        ROM_DATA_HI         8Eh    ROM_DATA_HL 和 ROM_DATA_HH 组成 16 位 SFR   xxxxh
+        ROM_BUF_MOD         8Fh    flash-ROM 擦写操作的缓冲区模式寄存器                  xxh
+        ROM_DAT_BUF         8Eh    flash-ROM 擦写操作的数据缓冲寄存器                   xxh
+        ROM_STATUS          86h    flash-ROM 状态寄存器(只读)                      00h
+         ROM_CTRL           86h    flash-ROM 控制寄存器(只写)                      00h
+        ROM_ADDR_H          85h    flash-ROM 地址寄存器高字节                       xxh
+        ROM_ADDR_L          84h    flash-ROM 地址寄存器低字节                       xxh
+         ROM_ADDR           84h    ROM_ADDR_L 和 ROM_ADDR_H 组成 16 位 SFR     xxxxh
+        ROM_DATA_LH         85h    flash-ROM 数据寄存器低字的高字节(只读)                xxh
+        ROM_DATA_LL         84h    flash-ROM 数据寄存器低字的低字节(只读)                xxh
+        ROM_DATA_LO         84h    ROM_DATA_LL 和 ROM_DATA_LH 组成 16 位 SFR   xxxxh
+
+
+flash-ROM 地址寄存器(ROM_ADDR)：
+  位             名称          访问                        描述                   复位值
+ [7:0]       ROM_ADDR_H     RW    flash-ROM 地址高字节                            xxh
+ [7:0]       ROM_ADDR_L     RW    flash-ROM 地址低字节                            xxh
+
+
+flash-ROM 数据寄存器(ROM_DATA_HI、ROM_DATA_LO)：
+  位             名称          访问                        描述                   复位值
+CH543 手册                                    14
+
+ [7:0]     ROM_DATA_HH     RO        flash-ROM 数据寄存器高字(16 位)的高字节               xxh
+ [7:0]     ROM_DATA_HL     RO        flash-ROM 数据寄存器高字(16 位)的低字节               xxh
+ [7:0]     ROM_DATA_LH     RO        flash-ROM 数据寄存器低字(16 位)的高字节               xxh
+ [7:0]     ROM_DATA_LL     RO        flash-ROM 数据寄存器低字(16 位)的低字节               xxh
+
+
+flash-ROM 擦写操作的缓冲区模式寄存器(ROM_BUF_MOD)：
+  位             名称          访问                         描述                     复位值
+                                       flash-ROM 擦写操作（擦除或编程）的缓冲区模式：
+                                       该位为 0 选择数据块编程模式，待写数据存放于由
+                                       DPTR 指向的 xRAM 中，编程时 CH543 自动从 xRAM 依
+                                       次取出数据暂存于 ROM_DAT_BUF 再写入 flash-ROM，
+  7        bROM_BUF_BYTE        RW                                             x
+                                       支持 1 字节到 64 字节数据长度，实际长度
+                                       =MASK_ROM_ADR_END-ROM_ADDR_L[5:0]+1；
+                                       为 1 选择单字节编程或者 64 字节块擦除模式，待
+                                       写数据直接存放于 ROM_DAT_BUF 中
+  6             保留              RW     保留                                       x
+                                       在 flash-ROM 数据块编程模式下，为 flash-ROM 块
+                                       编程操作的结束地址的低 6 位（含该地址）       ；
+ [5:0]     MASK_ROM_ADDR        RW                                            xxh
+                                       在 flash-ROM 单字节编程或者 64 字节块擦除模式
+                                       下，为保留，建议为 00h
+
+
+flash-ROM 擦写操作的数据缓冲寄存器(ROM_DAT_BUF)：
+  位           名称           访问                          描述                     复位值
+ [7:0]     ROM_DAT_BUF     RW        flash-ROM 擦写操作的数据缓冲寄存器                   xxh
+
+
+flash-ROM 控制寄存器(ROM_CTRL)：
+  位           名称           访问                          描述                     复位值
+ [7:0]      ROM_CTRL       WO        flash-ROM 控制寄存器                          00h
+
+
+flash-ROM 状态寄存器(ROM_STATUS)：
+  位           名称           访问                          描述                     复位值
+  7           保留           RO        保留                                         1
+                                     flash-ROM 操作地址有效状态位：
+  6        bROM_ADDR_OK    RO                                                   0
+                                     该位为 0 表示参数无效；为 1 表示地址有效
+ [5:2]        保留           RO        保留                                       0000b
+                                     flash-ROM 操作命令错误状态位：
+  1        bROM_CMD_ERR    RO                                                   0
+                                     该位为 0 表示命令有效；为 1 表示是未知命令或超时
+  0           保留           RO        保留                                         0
+
+
+6.5 flash-ROM 操作步骤
+ 1、擦除 flash-ROM，将目标块中全部数据位变为 0：
+ (1)、使能安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (2)、设置全局配置寄存器 GLOBAL_CFG 开启写使能(bCODE_WE 或 bDATA_WE 对应 code 或 data)；
+CH543 手册                       15
+
+ (3)、设置地址寄存器 ROM_ADDR，写入 16 位目标地址，实际仅高 10 位有效；
+ (4)、设置擦写操作的缓冲区模式寄存器 ROM_BUF_MOD 为 80h，选择 64 字节块擦除模式；
+ (5)、可选，设置擦写操作的数据缓冲寄存器 ROM_DAT_BUF 为 00h；
+ (6)、设置操作控制寄存器 ROM_CTRL 为 0A6h，执行块擦除操作，操作期间程序自动暂停运行；
+ (7)、操作完成后程序恢复运行，此时查询状态寄存器 ROM_STATUS 可以查看此次操作状态；如果
+     要擦除多个块，则循环(3)、(4)、(5)、(6)、(7)步骤，步骤(3)、(4)、(5)顺序可对调；
+ (8)、再次进入安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (9)、设置全局配置寄存器 GLOBAL_CFG 开启写保护(bCODE_WE=0，bDATA_WE=0)。
+
+ 2、单字节写 flash-ROM，将目标字节中部分数据位从 0 变为 1（无法将位数据从 1 变为 0）            ：
+ (1)、使能安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (2)、设置全局配置寄存器 GLOBAL_CFG 开启写使能(bCODE_WE 或 bDATA_WE 对应 code 或 data)；
+ (3)、设置地址寄存器 ROM_ADDR，写入 16 位目标地址；
+ (4)、设置擦写操作的缓冲区模式寄存器 ROM_BUF_MOD 为 80h，选择单字节编程模式；
+ (5)、设置擦写操作的数据缓冲寄存器 ROM_DAT_BUF 为要写入的字节数据；
+ (6)、设置操作控制寄存器 ROM_CTRL 为 09Ah，执行写操作，操作期间程序自动暂停运行；
+ (7)、操作完成后程序恢复运行，此时查询状态寄存器 ROM_STATUS 可以查看此次操作状态；如果
+     要写多个数据，则循环(3)、(4)、(5)、(6)、(7)步骤，步骤(3)、(4)、(5)顺序可对调；
+ (8)、再次进入安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (9)、设置全局配置寄存器 GLOBAL_CFG 开启写保护(bCODE_WE=0，bDATA_WE=0)。
+
+ 3、块写 flash-ROM，将多个目标字节中部分数据位从 0 变为 1（无法将位数据从 1 变为 0）            ：
+ (1)、使能安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (2)、设置全局配置寄存器 GLOBAL_CFG 开启写使能(bCODE_WE 或 bDATA_WE 对应 code 或 data)；
+ (3)、设置地址寄存器 ROM_ADDR，写入 16 位起始目标地址，例如 1357h；
+ (4)、设置擦写操作的缓冲区模式寄存器 ROM_BUF_MOD 为结束目标地址（含）的低 6 位，该结束地
+     址应该大于或等于 ROM_ADDR_L[5:0]起始目标地址，选择数据块编程模式，例如结束地址为
+     1364h，则 ROM_BUF_MOD 应该设置为 24h（64h&3Fh），计算出数据块的字节数=0Dh；
+ (5)、在 xRAM 中分配一个按 64 字节对齐的缓冲区域，例如 0080h～00BFh，用起始目标地址的低 6
+     位指定在该缓冲区域中的偏移地址，得到本次数据块编程操作的 xRAM 缓冲区起始地址，将
+     待写数据块从该 xRAM 缓冲区起始地址开始存放，并将该 xRAM 缓冲区起始地址置入 DPTR，
+     例如 DPTR=0080h+(57h&3Fh)=0097h，实际本次编程操作只用到 0097h～00A4h 地址的 xRAM；
+ (6)、设置操作控制寄存器 ROM_CTRL 为 09Ah，执行写操作，操作期间程序自动暂停运行；
+ (7)、操作完成后程序恢复运行，此时查询状态寄存器 ROM_STATUS 可以查看此次操作状态；如果
+     要写多个数据，则循环(3)、(4)、(5)、(6)、(7)步骤，步骤(3)、(4)、(5)顺序可对调；
+ (8)、再次进入安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (9)、设置全局配置寄存器 GLOBAL_CFG 开启写保护(bCODE_WE=0，bDATA_WE=0)。
+
+ 4、读 flash-ROM：
+  直接使用 MOVC 指令，或通过指向程序存储空间的指针，读取目标地址的 code 或 data。
+
+ 5、单字节写 OTP 数据区域，将目标字节中部分数据位从 0 变为 1（无法将位数据从 1 变为 0）          ：
+ (1)、使能安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (2)、设置全局配置寄存器 GLOBAL_CFG 开启写使能(bDATA_WE)；
+ (3)、设置地址寄存器 ROM_ADDR，写入目标地址（20h～3Fh）       ，实际仅低 6 位中的高 4 位有效；
+ (4)、设置擦写操作的缓冲区模式寄存器 ROM_BUF_MOD 为 80h，选择单字节编程模式；
+CH543 手册                         16
+
+ (5)、设置擦写操作的数据缓冲寄存器 ROM_DAT_BUF 为要写入的字节数据；
+ (6)、设置操作控制寄存器 ROM_CTRL 为 099h，执行写操作，操作期间程序自动暂停运行；
+ (7)、操作完成后程序恢复运行，此时查询状态寄存器 ROM_STATUS 可以查看此次操作状态；如果
+     要写多个数据，则循环(3)、(4)、(5)、(6)、(7)步骤，步骤(3)、(4)、(5)顺序可对调；
+ (8)、再次进入安全模式，SAFE_MOD = 55h；SAFE_MOD = 0AAh；
+ (9)、设置全局配置寄存器 GLOBAL_CFG 开启写保护(bCODE_WE=0，bDATA_WE=0)。
+
+ 6、以 4 字节为单位读取 ReadOnly 只读信息区域或者 OTP 数据区域：
+ (1)、设置地址寄存器 ROM_ADDR，写入按 4 字节对齐的目标地址（00h～3Fh）           ，实际仅低 6 位有效；
+ (2)、设置操作控制寄存器 ROM_CTRL 为 08Dh，执行读操作，操作期间程序自动暂停运行；
+ (3)、操作完成后程序恢复运行，此时查询状态寄存器 ROM_STATUS 可以查看此次操作状态；
+ (4)、从 flash-ROM 数据寄存器 ROM_DATA_HI 和 ROM_DATA_LO 中获得 4 字节数据。
+
+ 7、注意事项：对 flash-ROM/EEPROM 进行擦写操作时，建议只在-20℃～85℃环境温度下进行。如
+果在超出上述温度范围时进行编程擦写操作，虽然一般情况下是正常的，但是不排除有降低数据保
+持能力 TDR 和降低擦写次数 NEPCE 甚至影响数据准确性的可能性。
+
+6.6 在板编程和 ISP 下载
+  当配置信息 Code_Protect=0 时，CH543 芯片 flash-ROM 中的代码和数据可以由外部的编程器通
+过同步串行接口读写；当配置信息 Code_Protect=1 时，flash-ROM 中的代码和数据被保护，无法读
+出，但是可以被擦除，擦除后重新上电则解除代码保护。
+  当 CH543 芯片被预置了 BootLoader 引导程序后，CH543 可以支持 USB 或者异步串口等多种 ISP
+下载方式加载应用程序；但在没有引导程序的情况下，CH543 只能由外部专用编程器写入引导程序
+或者应用程序。为了支持在板编程，电路中需要预留 CH543 与编程器之间的 4 根连接引脚，最少的
+必要连接引脚是 3 根：P1.4（如果没有 P1.4 引脚，则用 P3.6 和 P3.7 代替）   、P1.6、P1.7。
+                        表 6.6.1 与编程器之间的连接引脚
+      引脚     GPIO                       引脚描述
+      VDD    VDD12    编程状态需要控制芯片电源
+      SCS    P1.4     编程状态下的片选输入引脚（必要）
+                                     ，默认高电平，低电平有效
+      SCK    P1.7     编程状态下的时钟输入引脚（必要）
+      MISO   P1.6     编程状态下的数据输出引脚（必要）
+
+
+6.7 芯片唯一 ID 号
+  每只单片机出厂时都具有唯一 ID 号，即芯片身份识别号。该 ID 数据及其校验和共 8 个字节，
+存储于只读信息区域的偏移地址为 10h 的区域中，具体操作请参考 C 语言例子程序。
+                    表 6.7.1 芯片 ID 地址表
+       偏移地址                           ID 数据描述
+       10h、11h       ID 首字数据，依次是 ID 号的最低字节、次低字节
+       12h、13h       ID 次字数据，依次是 ID 号的次高字节、高字节
+       14h、15h       ID 末字数据，依次是 48 位 ID 号的次最高字节、最高字节
+       16h、17h       ID 首字、次字、末字数据的 16 位累加和，用于 ID 校验
+   ID 号可以配合下载工具用于对目标程序进行加密，一般的应用，只需使用到 ID 号前 32 位。
+CH543 手册                                    17
+
+
+7、电源管理、睡眠及复位
+7.1 外部电源输入
+    CH543 芯片内置 12V 到 3.3V 的低压差电压调整器 LDO，产生的 3.3V 电源用于 USB 模块和 I/O
+电源。LDO 也可选择产生 4.7V 电源，只是不支持 USB 通讯，其它同 3.3V。P3.5 引脚用 VDD12 作为
+I/O 电源，支持高电压输入输出，其它 I/O 引脚用 VDD 作为 I/O 电源。CH543 支持外部 5V、9V 或者
+3.3V 甚至 12V、2.8V 电源电压输入，两种电源电压输入模式参考下表。
+                             VDD12 引脚电压：            VDD 引脚电压：支持 I/O 电压最高 5.5V
+  外部电源电压
+                           支持外部电压最高 12.6V           （注：睡眠时 VDD 自动短接到 VDD12）
+  额定 3.3V，           输入外部电源电压到电压调整器，                短接 VDD12 输入作为 I/O 和 USB 电源，
+ 支持 2.8V～5.5V        建议对地接不小于 0.1uF 退耦电容             必须对地接不小于 0.1uF 退耦电容
+                      输入外部高电压到电压调整器，      内部 LDO 输出及 I/O 和 USB 电源输入，
+   额定 5V，
+                     必须对地接不小于 0.1uF 退耦电容， 必须对地接不小于 0.1uF 退耦电容，
+   支持 4V～6V
+                      建议对地接 1uF 及以上退耦电容       建议对地接 1uF 退耦电容
+ 5V、9V、12V，          输入外部高电压到电压调整器，                 内部 LDO 输出及 I/O 和 USB 电源输入，
+ 支持 4V～12.6V         必须对地接不小于 10uF 退耦电容              必须对地接不小于 1uF 退耦电容
+  在电源上电或者系统复位后，CH543 默认处于运行状态。在性能满足要求的前提下，适当降低
+系统主频可以降低运行时的功耗。当 CH543 完全不需要运行时，可以设置 PCON 中的 PD 进入睡眠状
+态，睡眠状态下可以选择通过 USB、USB PD、UART0、I2C、SPI0 以及部分 GPIO 进行外部唤醒。
+
+7.2 电源和睡眠控制寄存器
+                                表 7.2.1 电源和睡眠控制寄存器列表
+         名称                地址                        描述                    复位值
+      WDOG_COUNT           FFh       看门狗计数寄存器                               00h
+      POWER_CFG            BAh       电源管理配置寄存器                              0xh
+      WAKE_CTRL            A9h       睡眠唤醒控制寄存器                              00h
+         PCON              87h       电源控制寄存器                                10h
+
+
+看门狗计数寄存器(WDOG_COUNT)：
+  位             名称         访问                        描述                    复位值
+                                     看门狗当前计数，计满 0FFh 转向 00h 时溢出，溢出时自
+ [7:0]     WDOG_COUNT      RW                                               00h
+                                     动设置中断标志 bWDOG_IF_TO 为 1
+
+
+电源管理配置寄存器(POWER_CFG)，仅在安全模式下可写：
+  位             名称          访问                        描述                   复位值
+                                      选择睡眠下电模式，再另通过设置 PD 位启用：
+                                      00-选择 shutdown 下电/深度睡眠模式，全部断电，更
+                                      省电但唤醒最慢；
+ [7:6]     MASK_SLP_MODE        RW    01-选择 sleep 睡眠模式，flash-ROM 和时钟关闭，较    00b
+                                      省电，唤醒慢；
+                                      10-选择 halt 暂停模式，仅时钟关闭，快速唤醒；
+                                      11-选择 idle 空闲模式，时钟不停，立即唤醒
+                                      选择内部电压调整器在 VDD 引脚的输出电压：
+  5        bLDO_3V3_SEL         RW                                           0
+                                      该位为 0 选择 3.3V 电压；为 1 选择 4.7V 电压
+CH543 手册                                        18
+
+                                         电压调整器 LDO 的关闭控制（睡眠时自动关闭）         ：
+     4       bLDO_3V3_OFF         RW     该位为 0 则由 VDD12 电源产生 3.3V 电压用于 I/O 或 USB      0
+                                         等模块；为 1 则禁用 LDO 并内部短接 VDD 到 VDD12
+                                         内核电压模式：
+     3      bLDO_CORE_VOL         RW     该位为 0 是正常电压模式；                               0
+                                         该位为 1 是提升电压模式，性能更好，支持更高主频
+                                         选择在下电/深度睡眠模式下的数据保持电源电压：
+                                         000-选择 1.5V；001-选择 1.57V；010-选择 1.64V；
+ [2:0]      MASK_ULLDO_VOL        RW     011-选择 1.71V；100-选择 1.78V；101-选择 1.85V；     xxxb
+                                         110-选择 1.92V；111-选择 1.99V。
+                                         上述数值仅供参考，不建议修改
+
+
+睡眠唤醒控制寄存器(WAKE_CTRL)，仅在安全模式下可写：
+位            名称             访问                             描述                        复位值
+ 7        bWAK_BY_USB        RW        USB 事件唤醒使能，该位为 0 禁止唤醒                          0
+ 6        bWAK_P1_7_LO       RW        P1.7 低电平唤醒使能，为 0 禁止唤醒                          0
+ 5        bWAK_P1_5_LO       RW        P1.5 低电平唤醒使能，为 0 禁止唤醒                          0
+ 4        bWAK_P1_4_LO       RW        P1.4 低电平唤醒使能，为 0 禁止唤醒                          0
+ 3        bWAK_P1_3_LO       RW        P1.3 低电平唤醒使能，为 0 禁止唤醒                          0
+ 2        bWAK_P3_3_LO       RW        P3.3 低电平唤醒使能，为 0 禁止唤醒。                         0
+                                       INT0 边沿变化唤醒使能，为 0 禁止唤醒。
+ 1       bWAK_INT0_EDGE      RW                                                       0
+                                       根据 bINT0_PIN_X=0/1 选择 INT0 或 INT0_引脚
+                                       UART0 接收输入低电平唤醒使能，为 0 禁止唤醒。
+ 0        bWAK_RXD0_LO       RW        根据 MASK_UART_I2C=00/01/10/11 选择 RXD 或 RXD_、    0
+                                       RXD10_、RXD11_引脚
+其它能够唤醒芯片的信号源还有：
+  当 bWAK_BY_USBPD 为 1 时，USB PD 或 USB type C 事件将唤醒芯片。
+  当 En_RST_RESET 为 1 时，RST 引脚的高电平将唤醒并复位芯片。
+  当 En_RST_RESET 为 0、bRST_ANA 为 0 并且 bRST_VOL_SEL 为 1、bRST_PD1 为 1、bRST_PD0 为 1
+时，RST 引脚的高电平将唤醒芯片。
+
+电源控制寄存器(PCON)：
+位            名称             访问                             描述                        复位值
+                                       当用定时器 1 产生 UART0 波特率时，选择 UART0 模式 1、
+ 7           SMOD            RW                                                       0
+                                       2、3 的通讯波特率：0-慢速模式；1-快速模式
+ 6           保留              RO        保留                                             0
+ 5         bRST_FLAG1        R0        芯片最近一次复位标志高位                                   0
+ 4         bRST_FLAG0        R0        芯片最近一次复位标志低位                                   1
+ 3            GF1            RW        通用标志位 1：使用者可自己定义，可软件清零或置位                      0
+ 2            GF0            RW        通用标志位 0：使用者可自己定义，可软件清零或置位                      0
+                                       睡眠模式使能，置 1 后睡眠，唤醒后硬件自动清零。
+ 1            PD             RW                                                       0
+                                       强烈建议在睡眠前关闭全局中断（EA=0）
+                                                          。
+ 0           保留              RO        保留                                             0
+                                  表 7.2.2 芯片最近一次复位标志描述
+CH543 手册                              19
+
+bRST_FLAG1   bRST_FLAG0                       复位标志描述
+                          软件复位，来源：bSW_RESET=1 并且(bBOOT_LOAD=0 或 bWDOG_EN=1)，
+    0            0
+                          或者是 bPD_RST_EN 为 1 时由 USB PD 复位信号产生
+    0            1        电源上电复位或低压复位或过压复位，来源：VDD12 引脚电压检测
+    1            0        看门狗复位，来源：bWDOG_EN=1 并且看门狗超时溢出
+    1            1        外部引脚手工复位，来源：En_RST_RESET=1 并且 RST 输入高电平
+
+
+7.3 复位控制
+    CH543 有 7 个复位源：上电复位和电源低压检测复位及电源过压复位、外部复位、软件复位、
+USB PD 复位信号、看门狗复位，后四者属于热复位。
+
+7.3.1 上电复位和电源低压检测复位及电源过压复位
+    上电复位 POR 由片内上电检测电路产生，并经由硬件自动延时 Tpor 以保持复位状态，延时结束
+后 CH543 运行。
+    电源低压检测复位 LVR 由片内电压检测电路产生。LVR 电路持续监控 VDD12 引脚的电源电压，
+低于检测电平 Vpot 时产生低压复位，并由硬件自动延时 Tpor 以保持复位状态，延时结束后 CH543
+运行。
+    电源过压复位 OVR 由片内高压检测电路产生，OVR 持续监控 VDD12 电压，高于检测电平 Vovr 时
+产生过压复位，并由硬件自动延时 Tpor 以保持复位状态，延时结束后 CH543 运行。
+    只有上电复位和低压复位及过压复位才使 CH543 重新加载配置信息，其它热复位不影响。
+
+7.3.2 外部复位
+    外部复位由外加于 RST 引脚的高电平产生。当配置信息 En_RST_RESET 为 1，并且 RST 引脚上的
+高电平持续时间大于 Trst 时触发复位过程。当外加高电平信号撤消后，硬件自动延时 Trdl 以保持
+复位状态，延时结束后 CH543 从 0 地址开始执行。
+
+7.3.3 软件复位
+    CH543 支持内部软件复位，以便不需要外部干预即可主动复位 CPU 状态并重新运行。设置全局
+配置寄存器 GLOBAL_CFG 中的 bSW_RESET 为 1，即可软件复位，并且自动延时 Trdl 以保持复位状态，
+延时结束后 CH543 从 0 地址开始执行，bSW_RESET 位由硬件自动清零。
+    当 bSW_RESET 置 1 时，如果 bBOOT_LOAD=0 或者 bWDOG_EN=1，那么复位后 bRST_FLAG1/0 将指示
+为软件复位；当 bSW_RESET 置 1 时，如果 bBOOT_LOAD=1 并且 bWDOG_EN=0，那么 bRST_FLAG1/0 将不
+产生新的复位标志，而是保持前一次的复位标志不变。
+    对于有 ISP 引导程序的芯片，电源上电复位后，先运行引导程序，该程序根据需要软件复位芯
+片以切换到应用程序状态，此次软件复位只导致 bBOOT_LOAD 清零，不影响 bRST_FLAG1/0 的状态(由
+于复位前 bBOOT_LOAD=1)，所以当切换到应用程序状态时，bRST_FLAG1/0 仍指示为上电复位状态。
+
+7.3.4 USB PD 复位信号
+    当 bPD_RST_EN 为 1 时，CH543 支持 USB PD 信号帧 Hard Reset 产生的复位；如果 bPIE_RX_RST
+也为 1，则还支持信号帧 Cable Reset 产生的复位。USB PD 产生的复位标志同软件复位。
+
+7.3.5 看门狗复位
+    看门狗复位由看门狗定时器超时溢出时产生。看门狗定时器是 8 位计数器，其计数的时钟频率
+为系统主频 Fsys/131072，当计满 0FFh 转向 00h 时产生溢出信号。
+    看门狗定时器溢出信号将触发中断标志 bWDOG_IF_TO 为 1，该中断标志在重新加载 WDOG_COUNT
+CH543 手册                  20
+
+时或者进入相应的中断服务程序时被自动清零。
+  通过向 WDOG_COUNT 写入不同的计数初始值，从而实现不同的定时周期 Twdc。在 12MHz 主频下，
+写入 00h 时的看门狗定时周期 Twdc 约为 2.8 秒，写入 80h 时约为 1.4 秒。
+  如果看门狗定时器溢出时 bWDOG_EN=1，那么产生看门狗复位，并且自动延时 Trdl 以保持复位
+状态，延时结束后 CH543 从 0 地址开始执行。
+  当 bWDOG_EN=1 时为了避免被看门狗复位，必须及时重置 WDOG_COUNT，避免其溢出。
+CH543 手册                                    21
+
+
+8、系统时钟
+8.1 时钟框图
+
+                                     Fosc         USB时钟 48MHz
+                   内部时钟48MHz
+
+                                                 系统时钟分频选择
+                                                 MASK_SYS_CK_SEL
+
+                                                  Fsys
+
+                                                                         USB
+         I2CS
+                                                            分频器
+                                                           PWM_CK_SE
+                          倍频器                                           PWMX
+        UART0
+                         bUART_2X
+                                                            分频器
+                        分频器                               bADC_CLK0/1
+      Watch-DOG                                                          ADC
+                       除以131072
+
+                                                             分频器
+                                                           SPI0_CK_SE
+         xRAM                                                           SPI0
+
+
+                                                            分频器
+            E8051_core
+                                                           UPD_TIMER
+          T0/T1/T2/GPIO                                                 USB PD
+        FlashROM/iRAM/SFR            Fsys
+
+
+                       图 8.1.1 时钟系统及结构图
+  内部时钟为原始时钟 Fosc，兼 USB 模块的时钟 Fusb4x，经过分频器得到系统时钟 Fsys，系统
+时钟 Fsys 直接提供给 CH543 的各个模块。
+
+8.2 寄存器描述
+                                表 8.2.1 时钟控制寄存器列表
+        名称               地址                              描述                      复位值
+      CLOCK_CFG          B9h        系统时钟配置寄存器                                    03h
+
+
+系统时钟配置寄存器(CLOCK_CFG)，仅在安全模式下可写：
+  位               名称           访问                          描述                     复位值
+  7               保留           RO    保留                                                0
+                                     USB 模块时钟使能：
+                                     该位为 0 则禁止 USB 时钟以降低功耗；
+  6        bUSB_CLK_EN         RW                                                      0
+                                     该位为 1 则允许 USB 时钟。
+                                     访问 USB 的寄存器两次之后将自动开启 USB 时钟
+                                     看门狗定时器中断标志位，该位为 1 表示有中断，由
+  5        bWDOG_IF_TO         RO    定时器溢出信号触发；该位为 0 表示无中断。该位在                      0
+                                     重新加载看门狗计数寄存器 WDOG_COUNT 时或者进入
+CH543 手册                                  22
+
+                                     相应的中断服务程序后自动清零
+                                     UART0 模块倍频模式：
+  4           bUART_2X         RW    0-使用 Fsys 作为参考时钟，产生正常通讯波特率；                 0
+                                     1-使用 2 倍频的 Fsys，产生两倍的通讯波特率
+  3               保留           RO    保留                                          0
+ [2:0]    MASK_SYS_CK_SEL      RW    系统时钟频率选择，参考下表 8.2.2                     011b
+
+
+                                    表 8.2.2 系统主频选择表
+      MASK_SYS_CK_SEL    系统主频 Fsys        Fsys 频率               说明
+           000b             Fosc / 128     ～5KHz          低频，误差较大，省电
+           001b             Fosc / 128     375KHz
+           010b             Fosc / 16          3MHz
+           011b              Fosc / 4          12MHz
+           100b              Fosc / 3          16MHz
+           101b              Fosc / 2          24MHz     减小唤醒延时，快速醒来
+           110b              Fosc / 2          24MHz           正常唤醒
+                                                        对于 CH541 芯片为禁止使用。
+                                                       对于定制 CH543 芯片为 48MHz，
+           111b              Fosc / 1          48MHz    需配合 bLDO_CORE_VOL 置 1，
+                                                           48MHz 温度范围窄，
+                                                       仅限 CH543 定制芯片的特殊用途
+
+
+8.3 时钟配置
+   CH543 芯片上电后默认使用内部时钟，内部时钟频率是 48MHz。
+   原始时钟频率 Fosc = MASK_SYS_CK_SEL != 000 ? 48MHz : ～400KHz；
+   USB 时钟频率 Fusb4x = Fosc；
+   系统主频 Fsys 参考表 8.2.2 由 Fosc 分频获得。
+   复位后的默认状态下，Fosc=48MHz，Fusb4x=48MHz，Fsys=12MHz。
+
+   修改系统主频的步骤如下：
+(1)、进入安全模式，步骤一 SAFE_MOD = 55h；步骤二 SAFE_MOD = AAh；
+(2)、向 CLOCK_CFG 写入新数值；
+(3)、关闭安全模式，向 SAFE_MOD 写入任意数值提前终止安全模式。
+
+   备注：
+(1)、在用全速 USB 时，系统主频 Fsys 不低于 6MHz；在用低速 USB 时，主频 Fsys 不低于 3MHz。
+(2)、内置时钟精度不高，可能不适用于 USB 主机应用或要求较高的 USB 设备应用。
+(3)、优先使用较低的系统时钟频率 Fsys，从而降低系统动态功耗，并使工作温度范围变宽。
+CH543 手册                               23
+
+
+9、中断
+    CH543 芯片支持 16 组中断信号源，包括与标准 MCS51 兼容的 6 组中断：INT0、T0、INT1、T1、
+UART0、T2，以及扩展的 9 组中断：SPI0、I2C、USB、ADC、USB PD、PWMX/CMP、GPIO、WDOG，其中
+GPIO 中断可以从多个 I/O 引脚中选择。USB 中断在关闭 USB、启用 GPIO 时为 P3.6/P3.7 电平变化中
+断，USB PD 中断在关闭 USB PD、启用 GPIO 时为 P1.0/P1.1 电平变化中断。
+    中断服务程序建议尽量精简，尽量不调用函数和子程序，尽量不读写 xdata 变量和 code 常量。
+
+9.1 寄存器描述
+                                   表 9.1.1 中断向量表
+       中断源         入口地址       中断号                 描述              默认优先权顺序
+     INT_NO_INT0    0x0003     0    外部中断 0
+                                                                   高优先权
+     INT_NO_TMR0    0x000B     1    定时器 0 中断                        ↓
+     INT_NO_INT1    0x0013     2    外部中断 1                          ↓
+     INT_NO_TMR1    0x001B     3    定时器 1 中断                        ↓
+ INT_NO_UART0       0x0023     4    UART0 中断                        ↓
+     INT_NO_TMR2    0x002B     5    定时器 2 中断                        ↓
+     INT_NO_SPI0    0x0033     6    SPI0 中断                         ↓
+     INT_NO_I2C     0x003B     7    I2C 中断                          ↓
+     INT_NO_USB     0x0043     8    USB 中断、P3.6/P3.7 电平变化中断         ↓
+     INT_NO_ADC     0x004B     9    ADC/TKEY 中断                     ↓
+ INT_NO_USBPD       0x0053    10    USBPD 中断、P1.0/P1.1 电平变化中断       ↓
+     INT_NO_PWMX                    PWMX/CMP 中断                     ↓
+                    0x005B    11                                    ↓
+     INT_NO_CMP                     根据 bPWM_IE_END 和 bCMP_IE 分析
+     INT_NO_GPIO    0x0063    12    GPIO 中断                         ↓
+                                                                   低优先权
+     INT_NO_WDOG    0x006B    13    看门狗定时器中断
+
+
+                              表 9.1.2 中断相关寄存器列表
+         名称             地址                        描述                复位值
+        IP_EX           E9h    扩展中断优先级控制寄存器                          00h
+        IE_EX           E8h    扩展中断使能寄存器                             00h
+       GPIO_IE          B2h    GPIO 中断使能寄存器                          00h
+          IP            B8h    中断优先级控制寄存器                            00h
+          IE            A8h    中断使能寄存器                               00h
+
+
+中断使能寄存器(IE)：
+位        名称        访问                          描述                     复位值
+                        全局中断使能控制位，该位为 1 并且 E_DIS 为 0 则允许中断；该
+ 7        EA       RW                                                      0
+                        位为 0 屏蔽所有中断请求
+                        全局中断禁用控制位，该位为 1 屏蔽所有中断请求；该位为 0 并
+ 6       E_DIS     RW   且 EA 为 1 则允许中断。该位通常用于在 flash-ROM 操作期间临时            0
+                        禁止中断
+ 5        ET2      RW   定时器 2 中断使能位，该位为 1 允许 T2 中断；为 0 屏蔽                  0
+CH543 手册                                24
+
+ 4     ES          RW    异步串口 0 中断使能位，该位为 1 允许 UART0 中断；为 0 屏蔽                0
+ 3    ET1          RW    定时器 1 中断使能位，该位为 1 允许 T1 中断；为 0 屏蔽                    0
+ 2    EX1          RW    外部中断 1 使能位，该位为 1 允许 INT1 中断；为 0 屏蔽                   0
+ 1    ET0          RW    定时器 0 中断使能位，该位为 1 允许 T0 中断；为 0 屏蔽                    0
+ 0    EX0          RW    外部中断 0 使能位，该位为 1 允许 INT0 中断；为 0 屏蔽                   0
+
+
+扩展中断使能寄存器(IE_EX)：
+位      名称          访问                           描述                           复位值
+ 7   IE_WDOG        RW    看门狗定时器中断使能位，该位为 1 允许 WDOG 中断；为 0 屏蔽                 0
+                          GPIO 中断使能位，该位为 1 允许 GPIO_IE 中使能的中断；为 0
+ 6   IE_GPIO        RW                                                        0
+                          屏蔽 GPIO_IE 中所有中断
+     IE_PWMX
+ 5                  RW    PWMX、CMP 使能使能位，该位为 1 允许中断；为 0 屏蔽                    0
+      IE_CMP
+ 4   IE_USBPD       RW    USB PD 中断使能位，该位为 1 允许 PD 中断；为 0 屏蔽                  0
+ 3    IE_ADC        RW    ADC 模数转换中断使能位，该位为 1 允许 ADC 中断；为 0 屏蔽                0
+ 2    IE_USB        RW    USB 中断使能位，该位为 1 允许 USB 中断；为 0 屏蔽                    0
+ 1    IE_I2C        RW    I2C Slave 中断使能位，该位为 1 允许 I2C 中断；为 0 屏蔽              0
+ 0   IE_SPI0        RW    SPI0 中断使能位，该位为 1 允许 SPI0 中断；为 0 屏蔽                  0
+
+
+GPIO 中断使能寄存器(GPIO_IE) ，仅在安全模式下可写：
+位          名称            访问                       描述                         复位值
+                              GPIO 边沿中断模式使能：
+                              该位为 0 选择电平中断模式，GPIO 引脚输入有效电平则
+                              bIO_INT_ACT 为 1 并一直请求中断，GPIO 输入无效电平时
+                              bIO_INT_ACT 为 0 并取消中断请求；
+ 7   bIE_IO_EDGE         RW                                                   0
+                              该位为 1 选择边沿中断模式，GPIO 引脚输入有效边沿时产
+                              生中断标志 bIO_INT_ACT 并请求中断，该中断标志无法软
+                              件清零，只能在复位时或电平中断模式下或进入相应的中
+                              断服务程序时被自动清零
+                              该位为 1 使能 P1.7 中断(电平模式低电平有效，边沿模式
+ 6   bIE_P1_7_LO         RW                                                   0
+                              下降沿有效)；该位为 0 禁止
+                              该位为 1 使能 P1.5 中断(电平模式低电平有效，边沿模式
+ 5   bIE_P1_5_LO         RW                                                   0
+                              下降沿有效)；该位为 0 禁止
+                              该位为 1 使能 P1.4 中断(电平模式低电平有效，边沿模式
+ 4   bIE_P1_4_LO         RW                                                   0
+                              下降沿有效)；该位为 0 禁止
+                              该位为 1 使能 P1.3 中断(电平模式低电平有效，边沿模式
+ 3   bIE_P1_3_LO         RW                                                   0
+                              下降沿有效)；该位为 0 禁止
+                              该位为 1 使能 RST 中断(电平模式高电平有效，边沿模式上
+ 2    bIE_RST_HI         RW                                                   0
+                              升沿有效)；该位为 0 禁止
+                              该位为 1 使能 P3.1 中断(电平模式低电平有效，边沿模式
+ 1   bIE_P3_1_LO         RW                                                   0
+                              下降沿有效)；该位为 0 禁止
+                              该位为 1 使能 UART0 接收引脚中断(电平模式低电平有效，
+ 0   bIE_RXD0_LO         RW   边沿模式下降沿有效)；该位为 0 禁止。                            0
+                              根据 MASK_UART_I2C=00/01/10/11 选择 RXD 或 RXD_ 、
+CH543 手册                                  25
+
+                                RXD10_、RXD11_引脚
+
+
+中断优先级控制寄存器(IP)：
+位      名称                 访问                      描述          复位值
+ 7    PH_FLAG             RO   高优先级中断正在执行标志位                   0
+ 6    PL_FLAG             RO   低优先级中断正在执行标志位                   0
+ 5         PT2            RW   定时器 2 中断优先级控制位                  0
+ 4         PS             RW   UART0 中断优先级控制位                  0
+ 3         PT1            RW   定时器 1 中断优先级控制位                  0
+ 2         PX1            RW   外部中断 1 的中断优先级控制位                0
+ 1         PT0            RW   定时器 0 中断优先级控制位                  0
+ 0         PX0            RW   外部中断 0 的中断优先级控制位                0
+
+
+扩展中断优先级控制寄存器(IP_EX)：
+位      名称                 访问                      描述          复位值
+                               当前中断嵌套等级标志位，该位为 0 则表示无中断或者嵌套
+ 7   bIP_LEVEL            RO                                   0
+                               2 级中断；该位为 1 则表示当前嵌套 1 级中断
+ 6    bIP_GPIO            RW   GPIO 中断优先级控制位                   0
+      bIP_PWMX
+ 5                        RW   PWMX、CMP 中断优先级控制位               0
+       bIP_CMP
+ 4   bIP_USBPD            RW   USB PD 中断优先级控制位                 0
+ 3    bIP_ADC             RW   ADC 中断优先级控制位                    0
+ 2    bIP_USB             RW   USB 中断优先级控制位                    0
+ 1    bIP_I2C             RW   I2C 中断优先级控制位                    0
+ 0    bIP_SPI0            RW   SPI0 中断优先级控制位                   0
+
+
+  IP 和 IP_EX 寄存器用于设定中断优先级，如果某位被置 1，则对应的中断源被设定为高优先级；
+如果某位被清 0，则对应的中断源被设为低优先级。对于同级中断源，系统有默认的优先权顺序，
+默认优先极顺序如表 9.1.1 所示。其中 PH_FLAG 和 PL_FLAG 组合表示当前中断的优先级。
+                     表 9.1.3 当前中断优先级状态指示
+                PH_FLAG        PL_FLAG            当前中断优先级状态
+                  0              0       当前无中断
+                  0              1       当前正在执行低优先级中断
+                  1              0       当前正在执行高优先级中断
+                  1              1       意外状态，未知错误
+CH543 手册                                  26
+
+
+10、I/O 端口
+10.1 GPIO 简介
+   CH543 提供最多 17 个 I/O 引脚，部分引脚具有复用功能，除 RST 之外的端口的输入和输出都可
+以按位寻址。
+   如果引脚没有被配置成复用功能，则默认是通用 I/O 引脚状态。作为通用数字 I/O 使用时，所
+有 I/O 端口都具有真正的“读–修改–写”功能，支持 SETB 或者 CLR 等位操作指令独立地改变某些
+引脚的方向或者端口电平等。
+   注：P1.0 和 P1.1 内置了防电流倒灌电路，不支持 VDD 满幅电压输出。
+
+10.2 GPIO 寄存器
+  本节所有的寄存器和位以通用格式表示：小写的“n”表示端口的序号(n=1、3)，而小写的“x”
+代表位的序号(x=0、1、2、3、4、5、6、7)。
+                    表 10.2.1 GPIO 寄存器列表
+           名称                 地址                    描述             复位值
+                                      CH543：杂项 I/O 控制寄存器            80h
+         PIN_MISC             91h
+                                      CH541：杂项 I/O 控制寄存器            00h
+            P1                90h     P1 端口输入输出寄存器                  FFh
+                                      CH543：P1 端口方向控制和上拉使能寄存器       70h
+         P1_DIR_PU            93h
+                                      CH541：P1 端口方向控制和上拉使能寄存器       F0h
+         P1_MOD_OC            92h     P1 端口输出模式寄存器                  FFh
+      P1_ANA_PIN              94h     P1 端口模拟模式控制寄存器                00h
+            P3                B0h     P3 端口输入输出寄存器                  FFh
+         P3_DIR_PU            97h     P3 端口方向控制和上拉使能寄存器             FFh
+         P3_MOD_OC            96h     P3 端口输出模式寄存器                  FFh
+      P3_ANA_PIN              95h     P3 端口模拟模式控制寄存器                00h
+         XBUS_AUX             A2h     外部总线辅助设置寄存器                   00h
+         PIN_FUNC             AAh     引脚功能选择寄存器                     00h
+          PIN_RST             B3h     RST 引脚配置寄存器                   07h
+
+
+Pn 端口输入输出寄存器(Pn)：
+  位              名称       访问                        描述              复位值
+ [7:0]       Pn.0～Pn.7        RW    Pn.x 引脚状态输入和数据输出位，可以按位寻址         FFh
+
+
+Pn 端口输出模式寄存器(Pn_MOD_OC)：
+  位              名称       访问                        描述              复位值
+ [7:0]       Pn_MOD_OC        RW    Pn.x 引脚输出模式设置：0-推挽输出；1-开漏输出      FFh
+
+
+Pn 端口方向控制和上拉使能寄存器(Pn_DIR_PU)：
+  位              名称      访问                     描述                复位值
+                                   在推挽输出模式下是 Pn.x 引脚方向控制：         CH543 的
+ [7:0]      Pn_DIR_PU    RW        0-输入；1-输出。                     P1：70h
+CH543 手册                                      27
+
+                                     在开漏输出模式下是 Pn.x 引脚上拉电阻使能控制：                CH541 的
+                                     0-禁止上拉电阻；1-使能上拉电阻。                        P1：F0h
+                                     例外：PD 输出、USB 输出、SPI 从机输出 MISO 都是
+                                     由控制器驱动为输出方向，无需在此设置输出。
+                                                                              对于 P3：
+                                     P1.0、P1.1、P3.6、P3.7 上拉电阻都不在此控制，
+                                                                               FFh
+                                     参考 CC1_CTRL、CC2_CTRL、USB_PULL
+
+
+P1 端口模拟模式控制寄存器(P1_ANA_PIN)：
+  位           名称           访问                           描述                         复位值
+                                     P1.x 引脚模拟模式设置：
+ [7:0]      bP1_x_ANA      RW        0-允许模拟双向/数字输入输出；                              00h
+                                     1-允许模拟双向/数字输出，禁止数字输入以节约功耗
+
+
+P3 端口模拟模式控制寄存器(P3_ANA_PIN)：
+  位            名称           访问                           描述                        复位值
+                                       P3.7 引脚模拟模式设置：
+  7          bP3_7_ANA          RW     0-允许模拟双向/数字输入输出；                             0
+                                       1-允许模拟双向/数字输出，禁止数字输入以节约功耗
+                                       P3.6 引脚模拟模式设置：
+  6          bP3_6_ANA          RW     0-允许模拟双向/数字输入输出；                             0
+                                       1-允许模拟双向/数字输出，禁止数字输入以节约功耗
+ [5:3]         保留               RO     保留                                          000b
+                                       P3.2 引脚模拟模式设置：
+  2          bP3_2_ANA          RW     0-允许模拟双向/数字输入输出；                             0
+                                       1-允许模拟双向/数字输出，禁止数字输入以节约功耗
+                                       MASK_USB_OUT_VOL 选择在 DP/DM 引脚输出静态电压以
+                                       支持 BC 或者其它充电协议：
+  1        bUSB_OUT_VOL1        RW                                                  0
+                                       00-禁止输出电压；
+                                       01-如 果 bUDP_PDE=1 则在 DM 输出 约 0.6V，如果
+                                       bUDM_PDE=1 则在 DP 输出约 0.6V，如果 bUDP_PDE=0 且
+                                       bUDM_PDE=0 则内部短接 DP 和 DM，支持 CDP、DCP；
+  0        bUSB_OUT_VOL0        RW                                                  0
+                                       10-同时在 DP 和 DM 引脚输出约 1.2V；
+                                       11-同时在 DP 和 DM 引脚输出约 2.7V
+
+
+   由 Pn_MOD_OC[x]和 Pn_DIR_PU[x]组合实现 Pn 端口的相关配置，具体如下。
+                           表 10.2.2 端口配置寄存器组合
+Pn_MOD_OC    Pn_DIR_PU               工作模式描述（P1.0/P1.1/P3.6/P3.7 上拉电阻另行控制）
+      0          0         高阻输入模式，引脚没有上拉和下拉电阻
+      0          1         推挽输出模式，具有对称驱动能力，可以输出或者吸收较大电流
+      1          0         开漏输出，支持高阻输入，引脚没有上拉电阻
+                           准双向模式(标准 8051)，开漏输出，支持输入，引脚有上拉电阻，当输出
+      1          1
+                           从低电平转高电平时自动驱动 2 个时钟周期的高电平以加速转换
+
+
+   P1、P3 端口支持纯输入或推挽输出以及准双向等模式。各引脚都有可以自由控制的内部上拉电
+CH543 手册                                     28
+
+阻，例外是 P1.0、P1.1、P3.6、P3.7 的上拉电阻阻值不同，且均为另行控制。各引脚都有连接到
+VDD 和 GND 的保护二极管，例外：P1.0、P1.1、RST 没有连接 VDD 的二极管，外部高于 VDD 的电压不
+会导致倒灌电流进 VDD；P3.5 的输出 PMOS 和二极管不连接 VDD，而是连接 VDD12。
+    图 10.2.1 是 P1 端口的 P1.x 引脚和 P3 端口的 P3.x 引脚的等效原理图，部分引脚不支持模拟输
+入，没有 AIN 和 ADC_PIN 以及 ADC_CHAN。
+                            图 10.2.1 I/O 引脚等效原理图
+                                                                 VCC
+                                        Pn_MOD_OC[x]
+ Pn_DIR_PU[x]
+
+                                                                       55K
+
+                                                                VCC          9K
+
+
+
+                 Delay 2 Clock
+  Pn[x]
+   OUT                                                                                 Pn[x]
+
+                                                                              VCC
+      Pn_MOD_OC[x]
+                                            ANA_PIN[x/2]
+                                                                GND                      AIN[x]
+                                                            0
+                           Pn[x]
+                                           //
+                             IN                                  VCC                ADC_CHAN[x]
+                                                            1
+
+
+
+
+RST 引脚配置寄存器(PIN_RST)：
+  位             名称          访问                             描述                                  复位值
+                                   GPIO 中断请求激活状态：
+                                   当 bIE_IO_EDGE=0 时，该位为 1 表示 GPIO 输入有效电
+                                   平，将请求中断，为 0 表示输入无效电平；
+  7        bIO_INT_ACT       R0    当 bIE_IO_EDGE=1 时，该位作为边沿中断标志，为 1 表                              0
+                                   示检测到有效边沿，该位无法软件清零，只能在复位时
+                                   或电平中断模式下或进入相应的中断服务程序时被自
+                                   动清零
+  6             bRST         RO    RST 引脚状态输入位                                                    0
+ [5:4]          保留           RO    保留                                                             00b
+                                   RST 引脚模拟模式设置：
+  3          bRST_ANA        RW    0-允许模拟双向和数字输入；                                                 0
+                                   1-允许模拟双向，禁止数字输入以节约功耗
+                                   RST 引脚模拟电压比例和下拉电阻设置：
+  2       bRST_VOL_SEL       RW    0-无下拉电阻，引脚电压直接用于模拟；                                             1
+                                   1-启用 40KΩ 下拉电阻，引脚电压降到 25%后用于模拟
+                                   RST 引脚下拉电流选择：
+                                   00-禁止下拉/灌电流；
+ [1:0]     MASK_RST_PD       RW    01-下拉约 8mA 电流（14mA@VDD=4V7） ，不建议连续放电；                          11b
+                                   10-下拉约 1.4mA 电流（2.3mA@VDD=4V7）；
+                                   11-当 bRST_VOL_SEL=0 时下拉约 5uA 电流，否则合并
+CH543 手册                                      29
+
+
+杂项 I/O 控制寄存器(PIN_MISC)：
+     位             名称             访问                      描述                      复位值
+                                       P1.7 弱上拉电流使能（仅 CH543，CH541 固定 0）：
+     7           bP1_7_WPU        RW                                               1
+                                       0-禁止弱上拉；1-使能弱上拉电流，约 5uA
+                                       VDD12 泄放电流（消耗电流）使能（仅 CH543）   ：
+     6           bVHV_SINK        RW                                               0
+                                       0-禁止泄放；1-使能放电约 6.6mA（9mA@VDD=4V7）
+                                       P3.5 下拉电阻/电流使能：
+     5           bP3_5_PDE        RW                                               0
+                                       0-禁止下拉；1-使能下拉电阻/电流（40～300uA）
+                                       INT0 或 INT0_信号极性选择：
+     4        bINT0_POLAR         RW                                               0
+                                       0-低电平（下降沿）有效；1-高电平（上升沿）有效
+     3       bWAK_BY_USBPD        RW   USB PD 或 type C 事件唤醒使能，该位为 0 禁止唤醒           0
+ [2:0]             保留             RO   保留                                         000b
+
+
+10.3 GPIO 复用与映射
+  CH543 部分 I/O 引脚具有复用功能，上电后默认均为通用 I/O 引脚，使能不同功能模块后，相
+应引脚被配置成各自功能模块对应的功能引脚。
+
+引脚功能选择寄存器(PIN_FUNC)：
+位           名称           访问                            描述                         复位值
+                                  PWM1 引脚映射使能位，该位为 0 则 PWM1 使用 P3.4；该位为
+ 7       bPWM1_PIN_X         RW                                                    0
+                                  1 则 PWM1 使用 P3.1
+                                  PWM0 引脚映射使能位，该位为 0 则 PWM0 使用 P1.5；该位为
+ 6       bPWM0_PIN_X         RW                                                    0
+                                  1 则 PWM0 使用 P3.0
+                                  PWM2 引脚映射使能位，该位为 0 则 PWM2 使用 P1.6；该位为
+ 5       bPWM2_PIN_X         RW                                                    0
+                                  1 则 PWM2 使用 P3.3
+                                  MASK_UART_I2C 选择 UART0 引脚和 I2C 引脚的映射模式：
+ 4       bUART0_PIN_X        RW
+                                  00-RXD/TXD 使用 P3.0/P3.1，SCL/SDA 使用 P1.6/P1.7；
+                                  01-RXD/TXD 使用 P1.6/P1.7，SCL/SDA 使用 P3.0/P3.1；   00b
+ 3        bI2C_PIN_X         RW   10-RXD/TXD 使用 P3.6/P3.7，SCL/SDA 使用 P1.6/P1.7；
+                                  11-RXD/TXD 使用 P3.7/P3.6，SCL/SDA 使用 P1.6/P1.7
+                                  INT0 引脚映射使能位，该位为 0 则 INT0 使用 P3.2；该位为
+ 2       bINT0_PIN_X         RW                                                    0
+                                  1 则 INT0 使用 P1.2
+                                  T2EX/CAP2 引脚映射使能位，该位为 0 则 T2EX/CAP2 使用
+ 1       bT2EX_PIN_X         RW                                                    0
+                                  P1.1；该位为 1 则 T2EX/CAP2 使用 RST
+                                  T2/CAP1 引脚映射使能位，该位为 0 则 T2/CAP1 使用 P1.0；
+ 0        bT2_PIN_X          RW                                                    0
+                                  该位为 1 则 T2/CAP1 使用 P1.4
+
+
+                                       表 10.3.1 GPIO 引脚复用功能列表
+          GPIO                              其它功能：按从左到右的优先顺序
+         P1[0]          CC1/bCC1、T2/bT2、CAP1/bCAP1、AIN0、P1.0
+         P1[1]          CC2/bCC2、T2EX/bT2EX、CAP2/bCAP2、AIN1、P1.1
+         P1[2]          INT0_/bINT0、AIN10、CO/bCO、P1.2
+         P1[3]          FB/bFB、AIN11、CM/bCM、P1.3
+CH543 手册                               30
+
+      P1[4]         T2_/bT2_、CAP1_/bCAP1_、SCS/bSCS、PWM3/bPWM3、AIN4、P1.4
+      P1[5]         MOSI/bMOSI、PWM0/bPWM0、AIN5、P1.5
+      P1[6]         MISO/bMISO、SCL/bSCL、RXD_/bRXD_、PWM2/bPWM2、AIN6、P1.6
+      P1[7]         SCK/bSCK、SDA/bSDA、TXD_/bTXD_、AIN7、P1.7
+      P3[0]         RXD/bRXD、PWM0_/bPWM0_、SCL_/bSCL_、P3.0
+      P3[1]         TXD/bTXD、PWM1_/bPWM1_、SDA_/bSDA_、P3.1
+      P3[2]         INT0/bINT0、AIN2、P3.2
+      P3[3]         INT1/bINT1、PWM2_/bPWM2_、P3.3
+      P3[4]         T0/bT0、PWM1/bPWM1、P3.4
+      P3[5]         T1/bT1、HVIO/bHVIO、P3.5
+      P3[6]         bDP/bDP、TXD11、RXD10、AIN8、P3.6
+      P3[7]         bDM/bDM、TXD10、RXD11、AIN9、P3.7
+       RST          bT2EX_、bCAP2_、bAIN3、bCP、bRST
+     上表中所述按从左到右的优先顺序，是指多个功能模块竞争使用该 GPIO 时的优先顺序。
+
+
+11、外部总线 xBUS
+     CH543 不向芯片外部提供总线信号，不支持外部总线，但是可以正常访问片内 xRAM。
+
+外部总线辅助设置寄存器(XBUS_AUX)：
+位            名称        访问                          描述                     复位值
+ 7      bUART0_TX       R0   指示 UART0 的发送状态，为 1 表示正在发送过程中                  0
+ 6      bUART0_RX       R0   指示 UART0 的接收状态，为 1 表示正在接收过程中                  0
+ 5    bSAFE_MOD_ACT     R0   指示安全模式状态，为 1 表示当前正在安全模式下                      0
+ 4           保留         RO   保留                                            0
+ 3            GF2       RW   通用标志位 2：使用者可自己定义，可软件清零或置位                     0
+ 2    bDPTR_AUTO_INC    RW   使能在 MOVX_@DPTR 指令完成后 DPTR 自动加 1               0
+ 1           保留         RO   保留                                            0
+                             双 DPTR 数据指针选择位：
+ 0            DPS       RW                                                 0
+                             该位为 0 选择 DPTR0；该位为 1 选择 DPTR1
+CH543 手册                          31
+
+
+12、定时器 Timer
+12.1 Timer0/1
+   Timer0/1 是 2 个 16 位定时/计数器，通过 TCON 和 TMOD 来配置 Timer0 和 Timer1，TCON 用于定
+时/计数器 T0 和 T1 的启动控制与溢出中断以及外部中断控制。每个定时器都是由 2 个 8 位寄存器组
+成的 16 位定时单元。定时器 0 的高字节计数器是 TH0，低字节是 TL0；定时器 1 的高字节计数器是
+TH1，低字节是 TL1。定时器 1 还可以作为 UART0 的波特率发生器。
+                         表 12.1.1 Timer0/1 相关寄存器列表
+       名称            地址                     描述                   复位值
+       TH1           8Dh   Timer1 计数高字节                           00h
+       TH0           8Ch   Timer0 计数高字节                           00h
+       TL1           8Bh   Timer1 计数低字节                           00h
+       TL0           8Ah   Timer0 计数低字节                           00h
+       TMOD          89h   Timer0/1 方式寄存器                         00h
+       TCON          88h   Timer0/1 控制寄存器                         00h
+
+
+定时/计数器 0/1 控制寄存器(TCON)：
+位      名称       访问                          描述                     复位值
+ 7     TF1      RW   Timer1 溢出中断标志位，进入定时器 1 中断后自动清零                     0
+ 6     TR1      RW   Timer1 启动/停止位，置 1 启动，由软件置位或者清零                     0
+ 5     TF0      RW   Timer0 溢出中断标志位，进入定时器 0 中断后自动清零                     0
+ 4     TR0      RW   Timer0 启动/停止位，置 1 启动，由软件置位或者清零                     0
+ 3     IE1      RW   INT1 外部中断 1 的中断请求标志位，进入中断后自动清零                     0
+                     INT1 外部中断 1 触发方式控制位，该位为 0 选择外部中断为低
+ 2     IT1      RW                                                      0
+                     电平触发；该位为 1 选择外部中断为下降边沿触发
+ 1     IE0      RW   INT0 外部中断 0 的中断请求标志位，进入中断后自动清零                     0
+                     INT0 外部中断 0 触发方式控制位，该位为 0 选择外部中断为低
+ 0     IT0      RW                                                      0
+                     电平触发；该位为 1 选择外部中断为下降边沿触发
+
+
+定时/计数器 0/1 方式寄存器(TMOD)：
+位      名称       访问                          描述                     复位值
+                     门控使能位，控制 Timer1 启动是否受外部中断信号 INT1 的影
+ 7   bT1_GATE   RW   响。该位为 0 则定时/计数器 1 是否启动与 INT1 无关；该位为 1              0
+                     则只有 INT1 引脚为高电平并且 TR1 为 1 时才能启动
+                     定时或者计数方式选择位，该位为 0 工作于定时方式；该位为 1
+ 6    bT1_CT    RW                                                      0
+                     工作于计数方式，使用 T1 引脚的下降沿作为时钟
+ 5    bT1_M1    RW   定时/计数器 1 模式选择高位                                    0
+ 4    bT1_M0    RW   定时/计数器 1 模式选择低位                                    0
+                     门控使能位，控制 Timer0 启动是否受外部中断信号 INT0 的影
+ 3   bT0_GATE   RW   响。该位为 0 则定时/计数器 0 是否启动与 INT0 无关；该位为 1              0
+                     则只有 INT0 引脚为高电平并且 TR0 为 1 时才能启动
+                     定时或者计数方式选择位，该位为 0 工作于定时方式；该位为 1
+ 2    bT0_CT    RW                                                      0
+                     工作于计数方式，使用 T0 引脚的下降沿作为时钟
+ 1    bT0_M1    RW   定时/计数器 0 模式选择高位                                    0
+CH543 手册                                           32
+
+ 0        bT0_M0            RW     定时/计数器 0 模式选择低位                                 0
+                           表 12.1.2 bTn_M1 和 bTn_M0 选择 Timern 工作模式(n=0、1)
+bTn_M1      bTn_M0                                 Timern 工作模式(n=0、1)
+                           模式 0：13 位定时/计数器 n，计数单元由 TLn 的低 5 位和 THn 组成，TLn 的高 3
+     0           0
+                           位无效。计数从 13 位全为 1 变成全为 0 时，设置溢出标志 TFn，并需重置初值
+                           模式 1：16 位定时/计数器 n，计数单元由 TLn 和 THn 组成。计数从 16 位全为 1
+     0           1
+                           变成全为 0 时，设置溢出标志 TFn，并需重置初值
+                           模式 2：8 位重载定时/计数器 n，计数单元使用 TLn，THn 作为重载计数单元。
+     1           0
+                           计数从 8 位全为 1 变成全为 0 时，设置溢出标志 TFn，并自动从 THn 加载初值
+                           模式 3：如果是定时/计数器 0，那么定时/计数器 0 被分成 2 个部分 TL0 和 TH0，
+                           TL0 作为 8 位定时/计数器使用，占用 Timer0 的全部控制位；而 TH0 也做另一个
+     1           1         8 位定时器使用，占用 Timer1 的 TR1、TF1 和中断资源，并且此时 Timer1 仍然
+                           可用，只是不能使用启动控制位 TR1 和溢出标志位 TF1。
+                           如果是定时/计数器 1，那么进入模式 3 将停止定时/计数器 1。
+
+
+Timern 计数低字节(TLn)(n=0、1)：
+     位            名称             访问                           描述              复位值
+ [7:0]               TLn         RW    Timern 计数低字节                            00h
+
+
+Timern 计数高字节(THn)(n=0、1)：
+     位            名称             访问                           描述              复位值
+ [7:0]               THn         RW    Timern 计数高字节                            00h
+
+
+12.2 Timer2
+  Timer2 是 16 位自动重载定时/计数器，通过 T2CON 和 T2MOD 寄存器进行配置，定时器 2 的高字
+节计数器是 TH2，低字节是 TL2。Timer2 可以作为 UART0 的波特率发生器，还具有 2 路信号电平捕
+捉功能，捕捉计数存储于 RCAP2 和 T2CAP1 寄存器中。
+                     表 12.2.1 Timer2 相关寄存器列表
+          名称                 地址                           描述                复位值
+          TH2                CDh      Timer2 计数器高字节                          00h
+          TL2                CCh      Timer2 计数器低字节                          00h
+         T2COUNT             CCh      TL2 和 TH2 组成 16 位 SFR                 0000h
+         T2CAP1H             CFh      Timer2 捕捉 1 数据高字节(只读)                  00h
+         T2CAP1L             CEh      Timer2 捕捉 1 数据低字节(只读)                  00h
+         T2CAP1              CEh      T2CAP1L 和 T2CAP1H 组成 16 位 SFR         0000h
+         RCAP2H              CBh      计数重载/捕捉 2 数据寄存器高字节                     00h
+         RCAP2L              CAh      计数重载/捕捉 2 数据寄存器低字节                     00h
+         RCAP2               CAh      RCAP2L 和 RCAP2H 组成 16 位 SFR           0000h
+         T2MOD               C9h      Timer2 方式寄存器                           00h
+         T2CON               C8h      Timer2 控制寄存器                           00h
+
+
+定时/计数器 2 控制寄存器(T2CON)：
+位           名称              访问                                描述              复位值
+CH543 手册                             33
+
+                        当 bT2_CAP1_EN=0 时，是 Timer2 的溢出中断标志，当 Timer2
+ 7      TF2        RW   计数从 16 位全为 1 变成全为 0 时，设置该溢出标志为 1，需                 0
+                        要软件清零；当 RCLK=1 或者 TCLK=1 时，该位不会被置 1
+                        当 bT2_CAP1_EN=1 时，是 Timer2 捕捉 1 中断标志，由 T2 有效
+ 7     CAP1F       RW                                                      0
+                        边沿触发，需要软件清零
+                        Timer2 的外部触发标志，当 EXEN2=1 时由 T2EX 有效边沿触发
+ 6      EXF2       RW                                                      0
+                        置 1，需要软件清零
+                        UART0 接收时钟选择，该位为 0 选择 Timer1 溢出脉冲产生波
+ 5      RCLK       RW                                                      0
+                        特率；该位为 1 选择 Timer2 溢出脉冲产生波特率
+                        UART0 发送时钟选择，该位为 0 选择 Timer1 溢出脉冲产生波
+ 4      TCLK       RW                                                      0
+                        特率；该位为 1 选择 Timer2 溢出脉冲产生波特率
+                        T2EX 触发使能位，该位为 0 忽略 T2EX；该位为 1 使能在 T2EX
+ 3     EXEN2       RW                                                      0
+                        有效边沿时触发重载或者捕捉
+ 2      TR2        RW   Timer2 启动/停止位，置 1 启动，由软件置位或者清零                     0
+                        Timer2 时钟源选择位，该位为 0 使用内部时钟；该位为 1 使
+ 1      C_T2       RW                                                      0
+                        用基于 T2 引脚下降沿的边沿计数
+                        Timer2 功能选择位，如果 RCLK 或者 TCLK 为 1，则该位应该强
+                        制为 0。该位为 0 则 Timer2 作为定时/计数器，并且当计数器
+ 0     CP_RL2      RW                                                      0
+                        溢出或者 T2EX 电平变化时能够自动重载计数初值；该位为 1
+                        使能 Timer2 的捕捉 2 功能，捕捉 T2EX 有效边沿
+
+
+定时/计数器 2 方式寄存器(T2MOD)：
+位       名称         访问                        描述                           复位值
+                        已选择快速时钟的 T0/T1/T2 定时器的最快时钟模式使能，该
+ 7    bTMR_CLK     RW   位为 1 则使用没有分频的系统主频 Fsys 作为计数时钟；该位                   0
+                        为 0 则使用分频时钟。该位对选择标准时钟的定时器没有影响
+                        Timer2 内部时钟频率选择位，该位为 0 选标准时钟，定时/计
+                        数模式为 Fsys/12，UART0 时钟模式为 Fsys/4；该位为 1 选快
+ 6     bT2_CLK     RW   速 时 钟 ， 定 时 / 计 数 模 式 为 Fsys/4(bTMR_CLK=0) 或       0
+                        Fsys(bTMR_CLK=1)，UART0 时钟模式为 Fsys/2(bTMR_CLK=0)
+                        或 Fsys(bTMR_CLK=1)
+                        Timer1 内部时钟频率选择位，该位为 0 选标准时钟 Fsys/12；
+ 5     bT1_CLK     RW                                                      0
+                        为 1 选快速时钟 Fsys/4(bTMR_CLK=0)或 Fsys(bTMR_CLK=1)
+                        Timer0 内部时钟频率选择位，该位为 0 选标准时钟 Fsys/12；
+ 4     bT0_CLK     RW                                                      0
+                        为 1 选快速时钟 Fsys/4(bTMR_CLK=0)或 Fsys(bTMR_CLK=1)
+                                           捕捉模式选择：
+ 3   bT2_CAP_M1    RW   Timer2 捕捉模式高位                                      0
+                                           X0：从下降沿到下降沿
+                                           01：从任意沿到任意沿，即电平变化
+ 2   bT2_CAP_M0    RW   Timer2 捕捉模式低位                                      0
+                                           11：从上升沿到上升沿
+                        Timer2 时钟输出使能位，该位为 0 禁止输出；该位为 1 使能
+ 1      T2OE       RW                                                      0
+                        T2 引脚输出时钟，频率为 Timer2 溢出速率的一半
+                        当 RCLK=0、TCLK=0、CP_RL2=1、C_T2=0、T2OE=0 时的捕捉 1
+ 0   bT2_CAP1_EN   RW   模式使能，该位为 1 启用捕捉 1 功能捕捉 T2 有效边沿；该位                  0
+                        为 0 禁用捕捉 1
+CH543 手册                                 34
+
+
+计数重载/捕捉 2 数据寄存器(RCAP2)：
+  位          名称      访问                           描述                     复位值
+                           在定时/计数器模式下是重载值的高字节；在捕捉模式下是
+ [7:0]      RCAP2H   RW                                                    00h
+                           CAP2 捕捉到的定时器的高字节
+                           在定时/计数器模式下是重载值的低字节；在捕捉模式下是
+ [7:0]      RCAP2L   RW                                                    00h
+                           CAP2 捕捉到的定时器的低字节
+
+
+Timer2 计数器(T2COUNT)：
+  位          名称      访问                           描述                     复位值
+ [7:0]       TH2     RW    当前计数器高字节                                        00h
+ [7:0]       TL2     RW    当前计数器低字节                                        00h
+
+
+Timer2 捕捉 1 数据(T2CAP1)：
+  位          名称      访问                           描述                     复位值
+ [7:0]     T2CAP1H   RO    CAP1 捕捉到的定时器的高字节                                00h
+ [7:0]     T2CAP1L   RO    CAP1 捕捉到的定时器的低字节                                00h
+
+
+12.3 PWM 相关寄存器
+   本节 PWM_DATA 寄存器以通用格式表示：小写的“n”表示端口的序号(n=0～3)。
+                     表 12.3.1 PWMX 相关寄存器列表
+           名称             地址                       描述                   复位值
+      PWM_CK_SE           9Eh   PWM 时钟分频设置寄存器                            00h
+         PWM_CTRL         9Dh   PWM 控制寄存器                                02h
+      PWM_CTRL2           9Fh   PWM 扩展控制寄存器                              00h
+      PWM_DATA0           9Ch   PWM0 数据寄存器                               00h
+      PWM_DATA1           9Bh   PWM1 数据寄存器                               00h
+      PWM_DATA2           9Ah   PWM2 数据寄存器                               00h
+      PWM_DATA3           A3h   PWM3 数据寄存器                               00h
+      PWM_CYCLE_L         B6h   PWM 周期值寄存器低字节                            00h
+      PWM_CYCLE_H         B7h   PWM 周期值寄存器高字节                            00h
+      PWM_CYCLE           B6h   PWM_CYCLE_L 和 PWM_CYCLE_H 组成 16 位 SFR   0000h
+
+
+PWMn 数据寄存器(PWM_DATAn)：
+  位             名称        访问                         描述                  复位值
+                                在 8 位数据宽度模式下，存储 PWMn 当前数据，
+ [7:0]       PWM_DATAn     RW                                              00h
+                                PWMn 输出有效电平的占空比=PWM_DATAn/PWM_CYCLE
+    在 12 位数据宽度模式下，PWM_DATA2 低 4 位提供 PWM0 数据高 4 位，PWM_DATA0 提供 PWM0 数据
+低 8 位；PWM_DATA3 低 4 位提供 PWM1 数据高 4 位，PWM_DATA1 提供 PWM1 数据低 8 位。PWM0 输出有
+效电平的占空比=(PWM_DATA2[3:0]*256+PWM_DATA0[7:0])/PWM_CYCLE，PWM1 类似。
+
+PWM 周期值寄存器(PWM_CYCLE)：
+  位             名称        访问                        描述                   复位值
+CH543 手册                                35
+
+ [7:4]          保留         RO   保留                                     0h
+ [3:0]      PWM_CYCLE_H    RW   PWM 周期值寄存器高字节的低 4 位，周期值的[11:8]         0h
+ [7:0]      PWM_CYCLE_L    RW   PWM 周期值寄存器低字节                         00h
+
+
+PWM 控制寄存器(PWM_CTRL)：
+位             名称           访问                    描述                   复位值
+                                PWM 循环周期结束中断使能：
+ 7        bPWM_IE_END      RO                                          0
+                                0-禁止中断；1-允许中断
+                                控制 PWM1 输出极性，该位为 0 则默认低电平，高电平有
+ 6        bPWM1_POLAR      RW                                          0
+                                效；该位为 1 则默认高电平，低电平有效
+                                控制 PWM0 输出极性，该位为 0 则默认低电平，高电平有
+ 5        bPWM0_POLAR      RW                                          0
+                                效；该位为 1 则默认高电平，低电平有效
+                                PWM 循环周期结束中断标志位，该位为 1 表示有中断，写
+ 4        bPWM_IF_END      RW                                          0
+                                1 清零或重新加载 PWM_DATA0 数据时清零
+ 3        bPWM1_OUT_EN     RW   PWM1 输出使能，该位为 1 使能 PWM1 输出             0
+ 2        bPWM0_OUT_EN     RW   PWM0 输出使能，该位为 1 使能 PWM0 输出             0
+ 1        bPWM_CLR_ALL     RW   该位为 1 清空 PWM 计数和 FIFO，需要软件清零           1
+ 0            保留           RO   保留                                     0
+
+
+PWM 扩展控制寄存器(PWM_CTRL2)：
+位             名称           访问                    描述                   复位值
+                                PWM 数据宽度 12 位模式：
+ 7       bPWM_MOD_12BIT    RW   该位为 0 选择 8 位数据，支持 PWM0～PWM3；           0
+                                该位为 1 选择 12 位数据，仅 PWM0 和 PWM1 可用
+                                PWM 交错输出状态，该位为 0 表示 PWM1/PWM3 处于消隐状
+ 6       bPWM_STAG_STAT    RO                                          0
+                                态；该位为 1 表示 PWM0/PWM2 处于消隐状态
+                                PWM2/PWM3 交错输出使能：
+ 5       bPWM2_3_STAG_EN   RW                                          0
+                                0-各自独立输出；1-PWM2/PWM3 交错输出（隔一周期）
+                                PWM0/PWM1 交错输出使能：
+ 4       bPWM0_1_STAG_EN   RW                                          0
+                                0-各自独立输出；1-PWM0/PWM1 交错输出（隔一周期）
+                                PWM1/PWM3 延时输出模式使能：
+ 3       bPWM1_3_DELAY     RW   0-正常输出，与 PWM0/PWM2 周期同步；               0
+                                1-相比 PWM0/PWM2 的周期，延时 1 个时钟输出
+ 2            保留           RO   保留                                     0
+ 1        bPWM3_OUT_EN     RW   PWM3 输出使能，该位为 1 使能 PWM3 输出             0
+ 0        bPWM2_OUT_EN     RW   PWM2 输出使能，该位为 1 使能 PWM2 输出             0
+
+
+PWM 时钟分频设置寄存器(PWM_CK_SE)：
+     位          名称         访问                    描述                   复位值
+ [7:0]        PWM_CK_SE    RW   设置 PWM 时钟分频除数                         00h
+
+
+12.4 PWM 功能
+  CH543 和 CH541 提供了 4 路 8 位 PWM 或者 2 路 12 位 PWM，可以动态修改 PWM 的输出占空比，通
+过简单 RC 电阻电容进行积分低通滤波后，即可获得各种输出电压，相当于低速数模转换器 DAC。其
+CH543 手册                          36
+
+中，PWM0 和 PWM1 还可以选择反极性输出以及默认的输出极性为低电平或者高电平，PWM0 和 PWM1
+还支持 12 位数据宽度模式。
+  PWM_CYCLE = PWM_CYCLE_H*256+PWM_CYCLE_L；
+  8 位数据模式下，PWMn 输出占空比= PWM_DATAn / PWM_CYCLE；
+  12 位数据模式下，PWMn 输出占空比= (PWM_DATA(n+2)[3:0]*256+PWM_DATAn) / PWM_CYCLE。
+  支持范围 0％到 100％占空比，如果 PWM_DATAn 数值大于 PWM_CYCLE 则按 100％处理。
+  实际应用中，建议允许 PWM 引脚输出并且设置 PWM 输出引脚为推挽输出模式。
+
+12.5 Timer 功能
+12.5.1 Timer0/1
+(1)、设置 T2MOD 选择 Timer 内部时钟频率，如果 bTn_CLK(n=0/1)为 0，那么 Timer0/1 对应的时钟
+     为 Fsys/12；如果 bTn_CLK 为 1，那么由 bTMR_CLK=0 或 1 选择 Fsys/4 或者 Fsys 作为时钟。
+(2)、设置 TMOD 配置 Timer 的工作模式。
+
+   模式 0：13 位定时/计数器
+
+
+
+
+                         图 12.5.1.1 Timer0/1 模式 0
+
+   模式 1：16 位定时/计数器
+
+
+
+
+                         图 12.5.1.2 Timer0/1 模式 1
+
+   模式 2：自动重载 8 位定时/计数器
+CH543 手册                        37
+
+
+
+
+                       图 12.5.1.3 Timer0/1 模式 2
+
+  模式 3：Timer0 分解为两个独立的 8 位定时/计数器，并借用 Timer1 的 TR1 控制位；Timer1 通
+过是否启动模式 3 代替被借用的 TR1 控制位，Timer1 进入模式 3 则 Timer1 停止运行。
+
+
+
+
+                        图 12.5.1.4 Timer0 模式 3
+
+(3)、设置定时/计数器初值 TLn 和 THn(n=0/1)。
+(4)、设置 TCON 中的位 TRn(n=0/1)开启或者停止定时/计数器，可以通过位 TFn(n=0/1)查询或者通
+    过中断方式进行检测。
+
+12.5.2 Timer2
+Timer2 16 位重载定时/计数器模式：
+(1)、设置 T2CON 中的位 RCLK 和 TCLK 都为 0，选择非串口波特率发生器模式。
+(2)、设置 T2CON 中的位 C_T2 为 0 选择使用内部时钟，转步骤(3)；也可置 1 选择 T2 引脚的下降沿
+     作为计数时钟，跳过步骤(3)。
+(3)、设置 T2MOD 选择 Timer 内部时钟频率，如果 bT2_CLK 为 0，那么 Timer2 的时钟为 Fsys/12；如
+     果 bT2_CLK 为 1，那么由 bTMR_CLK=0 或 1 选择 Fsys/4 或者 Fsys 作为时钟。
+(4)、设置 T2CON 的位 CP_RL2 为 0，选择 Timer2 的 16 位重载定时/计数器功能。
+(5)、设定 RCAP2L 和 RCAP2H 为定时器溢出后的重载值，设定 TL2 和 TH2 为定时器的初值(一般与
+     RCAP2L 和 RCAP2H 相同)，设置 TR2 为 1，开启 Timer2。
+(6)、通过查询 TF2 或者定时器 2 中断可以获取当前定时/计数器状态。
+CH543 手册                        38
+
+
+
+
+                  图 12.5.2.1 Timer2 16 位重载定时/计数器
+
+Timer2 时钟输出模式：
+    参考 16 位重载定时/计数器模式，并且再设置 T2MOD 中的位 T2OE 为 1，则使能从 T2 引脚输出
+TF2 频率的二分频时钟。
+
+Timer2 串口 0 波特率发生器模式：
+(1)、设置 T2CON 中的位 C_T2 为 0 选择使用内部时钟，也可置 1 选择 T2 引脚的下降沿作为时钟，根
+     据需要设置 T2CON 中的位 RCLK 和 TCLK 为 1 或其中之一为 1，选择串口波特率发生器模式。
+(2)、设置 T2MOD 选择 Timer 内部时钟频率，如果 bT2_CLK 为 0，那么 Timer2 的时钟为 Fsys/4；如
+     果 bT2_CLK 为 1，那么由 bTMR_CLK=0 或 1 选择 Fsys/2 或者 Fsys 作为时钟。
+(3)、设定 RCAP2L 和 RCAP2H 为定时器溢出后的重载值，设置 TR2 为 1，开启 Timer2。
+
+
+
+
+                   图 12.5.2.2 Timer2 UART0 波特率发生器
+
+Timer2 信号通道捕捉模式：
+(1)、设置 T2CON 中的位 RCLK 和 TCLK 都为 0，选择非串口波特率发生器模式。
+(2)、设置 T2CON 中的位 C_T2 为 0 选择使用内部时钟，转步骤(3)；也可置 1 则选择 T2 引脚的下降
+     沿作为计数时钟，跳过步骤(3)。
+(3)、设置 T2MOD 选择 Timer 内部时钟频率，如果 bT2_CLK 为 0，那么 Timer2 的时钟为 Fsys/12；如
+     果 bT2_CLK 为 1，那么由 bTMR_CLK=0 或 1 选择 Fsys/4 或者 Fsys 作为时钟。
+(4)、设置 T2MOD 的位 bT2_CAP_M1 和 bT2_CAP_M0 选择相应的边沿捕捉模式。
+(5)、设置 T2CON 的位 CP_RL2 为 1，选择 Timer2 对 T2EX 引脚的捕捉功能。
+(6)、设定 TL2 和 TH2 为定时器的初值，设置 TR2 为 1，开启 Timer2。
+CH543 手册                                                 39
+
+(7)、当 CAP2 捕捉完成，RCAP2L 和 RCAP2H 会保存当时 TL2 和 TH2 的计数值，并使 EXF2 置位，产生
+    中断，下一次捕捉到的 RCAP2L 和 RCAP2H 与上一次捕捉到的 RCAP2L 和 RCAP2H 之间的差值，
+    就是两次有效边沿之间的信号宽度。
+(8)、如果 T2CON 中的位 C_T2 为 0，并且 T2MOD 中的位 bT2_CAP1_EN 为 1，那么将同时使能 Timer2
+    对 T2 引脚的捕捉功能，当 CAP1 捕捉完成，T2CAP1L 和 T2CAP1H 会保存当时 TL2 和 TH2 的计数
+    值，并使 CAP1F 置位，产生中断。
+          C_T2
+   bT2_CAP1_EN
+
+  Transition Detector
+          T2
+                                                              T2CAP1L T2CAP1H
+                                                               (8bit)   (8bit)
+                                                                                    bT2_CAP1_EN
+                  bTMR_CLK
+                                                                                    1
+    ÷4            0                                                                               TF2/CAP1F
+                             bT2_CLK
+                                           C_T2                                     0
+   Fsys           1          1
+                                       0
+                                                               TL2       TH2
+                 ÷12         0                                 (8bit)   (8bit)
+                                       1
+     T2
+                                                   TR2                                                  Timer2
+                                                              RCAP2L    RCAP2H                         Interrupt
+                                                               (8bit)   (8bit)
+                                           EXEN2
+  Transition Detector
+          T2EX                                                                   EXF2
+
+
+                                           图 12.5.2.3 Timer2 捕捉模式
+CH543 手册                                    40
+
+
+13、通用异步收发器 UART
+13.1 UART 简介
+   CH543 芯片提供了标准 MCS51 的全双工异步串口，且支持双倍波特率，其数据接收和发送是通
+过 SBUF 访问物理上分开的收/发寄存器实现的。写入 SBUF 的数据装入发送寄存器，对 SBUF 的读操
+作则对应于接收缓冲寄存器。
+
+13.2 UART 寄存器
+                                   表 13.2.1 UART 相关寄存器列表
+            名称               地址                        描述               复位值
+            SBUF             99h    UART0 数据寄存器                           xxh
+            SCON             98h    UART0 控制寄存器                           00h
+
+
+UART0 控制寄存器(SCON)：
+位         名称         访问                           描述                      复位值
+                          UART0 工作方式选择位 0，该位为 0 选择 8 位数据异步通信；该位为 1
+ 7        SM0        RW                                                         0
+                          选择 9 位数据异步通信
+                          UART0 工作方式选择位 1，该位为 0 设置固定波特率；该位为 1 设置可
+ 6        SM1        RW                                                       0
+                          变波特率，由定时器 T1 或者 T2 产生
+                          UART0 多机通信控制位：
+                          在模式 2 和 3 接收数据时，当 SM2=1 时，如果 RB8 为 0，那么 RI 不置
+                          1，接收无效；如果 RB8 为 1，那么 RI 置 1，接收有效；当 SM2=0 时，
+ 5        SM2        RW   不管 RB8 为 0 或者 1，RI 接收数据时都置位，接收有效；                   0
+                          在模式 1 时，如果 SM2=1，那么只有接收到有效的停止位时，接收才
+                          有效；
+                          在模式 0 时，SM2 位必须置 0
+ 4        REN        RW   UART0 允许接收控制位，该位为 0 禁止接收；该位为 1 允许接收                   0
+                          发送数据的第 9 位，在模式 2 和 3 时，TB8 用于写入发送数据的第 9
+ 3        TB8        RW   位，可以是奇偶校验位；在多机通信中，用于表示主机发送的是地址                        0
+                          字节还是数据字节，TB8=0 为数据，TB8=1 为地址
+                          接收数据的第 9 位，在模式 2 和 3 时，RB8 用于存放接收数据的第 9
+ 2        RB8        RW   位；在模式 1 时，如果 SM2=0，那么 RB8 用于存放接收到的停止位；                0
+                          在模式 0 时，不使用 RB8
+ 1        TI         RW   发送中断标志位，一个数据字节发送完后由硬件置位，需要软件清零                        0
+                          接收中断标志位，一个数据字节接收有效后由硬件置位，需要软件清
+ 0        RI         RW                                                         0
+                          零
+                                   表 13.2.1.1 UART0 工作模式选择
+ SM0           SM1                                 描述
+     0          0     模式 0，移位寄存器方式，波特率固定是 Fsys/12
+     0          1     模式 1，8 位异步通信方式，波特率可变，由定时器 T1 或者 T2 产生
+     1          0     模式 2，9 位异步通信方式，波特率是 Fsys/128(SMOD=0)或 Fsys/32(SMOD=1)
+     1          1     模式 3，9 位异步通讯方式，波特率可变，由定时器 T1 或者 T2 产生
+
+
+         在模式 1 和 3 下，当 RCLK=0 并且 TCLK=0 时，UART0 波特率由定时器 T1 产生。应该设置 T1 为
+CH543 手册                                  41
+
+模式 2 自动重载 8 位定时器模式，bT1_CT 和 bT1_GATE 必须都为 0，分为以下几类时钟情况。
+               表 13.2.1.2 由 T1 产生 UART0 波特率的计算公式
+ bTMR_CLK    bT1_CLK        SMOD   bUART_2X                      描述
+      1            1         0        0        TH1 = 256 - Fsys / 32 / 波特率
+      1            1         1        0        TH1 = 256 - Fsys / 16 / 波特率
+      0            1         0        0        TH1 = 256 - Fsys / 4 / 32 / 波特率
+      0            1         1        0        TH1 = 256 - Fsys / 4 / 16 / 波特率
+      X            0         0        0        TH1 = 256 - Fsys / 12 / 32 / 波特率
+      X            0         1        0        TH1 = 256 - Fsys / 12 / 16 / 波特率
+      1            1         0        1        TH1 = 256 - Fsys * 2 / 32 / 波特率
+      1            1         1        1        TH1 = 256 - Fsys * 2 / 16 / 波特率
+      0            1         0        1        TH1 = 256 - Fsys * 2 / 4 / 32 / 波特率
+      0            1         1        1        TH1 = 256 - Fsys * 2 / 4 / 16 / 波特率
+      X            0         0        1        TH1 = 256 - Fsys * 2 / 12 / 32 / 波特率
+      X            0         1        1        TH1 = 256 - Fsys * 2 / 12 / 16 / 波特率
+
+
+    在模式 1 和 3 下，当 RCLK=1 或者 TCLK=1 时，UART0 波特率由定时器 T2 产生。应该设置 T2 为
+16 位自动重载波特率发生器模式，C_T2 和 CP_RL2 必须都为 0，分为以下几类时钟情况。
+                 表 13.2.1.3 由 T2 产生 UART0 波特率的计算公式
+ bTMR_CLK    bT2_CLK    bUART_2X                            描述
+      1            1          0    RCAP2 = 65536 - Fsys / 16 / 波特率
+      0            1          0    RCAP2 = 65536 - Fsys / 2 / 16 / 波特率
+      X            0          0    RCAP2 = 65536 - Fsys / 4 / 16 / 波特率
+      1            1          1    RCAP2 = 65536 - Fsys * 2 / 16 / 波特率
+      0            1          1    RCAP2 = 65536 - Fsys * 2 / 2 / 16 / 波特率
+      X            0          1    RCAP2 = 65536 - Fsys * 2 / 4 / 16 / 波特率
+
+
+UART0 数据寄存器(SBUF)：
+  位         名称         访问                            描述                           复位值
+                              UART0 数据寄存器，包括发送和接收两个物理上分开的寄存
+ [7:0]      SBUF       RW     器。向 SBUF 写数据对应发送数据寄存器；从 SBUF 读数据                    xxh
+                              对应接收数据寄存器
+
+
+13.3 UART 应用
+(1)、设置 MASK_UART_I2C 选择引脚
+(2)、选择 UART0 的波特率发生器，可以选择来自定时器 T1 或者 T2，并配置相应计数器，根据需要
+    设置 bTMR_CLK、SMOD、bUART_2X。
+(3)、开启定时器 T1 或者 T2。
+(4)、设置 SCON 的 SM0、SM1、SM2 选择串口 0 的工作模式。设置 REN 为 1，使能 UART0 接收。
+(5)、可以设置串口中断或者查询 RI 和 TI 的中断状态。
+(6)、读写 SBUF 实现串口数据收发，串口接收信号的允许波特率误差不大于 2％。
+CH543 手册                                 42
+
+
+14、同步串行接口 SPI
+14.1 SPI 简介
+   CH543 芯片提供了 SPI 接口，用于与外设之间进行高速的同步数据传输。特性：
+(1)、支持 master 主机模式和 slave 从机模式；
+(2)、支持模式 0 和模式 3 时钟模式；
+(3)、可选 3 线全双工或者 2 线半双工方式；
+(4)、可选 MSB 高位首先发送或者 LSB 低位首先发送；
+(5)、时钟频率可调，最高可达系统主频的一半；
+(6)、内置 1 字节接收 FIFO 和 1 字节发送 FIFO；
+(7)、从机模式下支持首字节预加载数据，便于主机在首字节立即获得返回数据。
+
+14.2 SPI 寄存器
+                                 表 14.2.1 SPI 相关寄存器列表
+            名称             地址                   描述                   复位值
+         SPI0_SETUP        FCh   SPI0 设置寄存器                          00h
+         SPI0_S_PRE        FBh   SPI0 从机模式预置数据寄存器                    20h
+         SPI0_CK_SE        FBh   SPI0 时钟分频设置寄存器                      20h
+         SPI0_CTRL         FAh   SPI0 控制寄存器                          02h
+         SPI0_DATA         F9h   SPI0 数据收发寄存器                        xxh
+         SPI0_STAT         F8h   SPI0 状态寄存器                          08h
+
+
+SPI0 设置寄存器(SPI0_SETUP)：
+位             名称           访问                    描述                   复位值
+                                 SPI0 主从模式选择位，该位为 0 则 SPI0 为主机模式；该
+ 7        bS0_MODE_SLV     RW                                           0
+                                 位为 1 则 SPI0 为从机模式/设备模式
+                                 从机模式下 FIFO 溢出中断使能位，该位为 1 使能 FIFO
+ 6       bS0_IE_FIFO_OV    RW                                              0
+                                 溢出中断；该位为 0 则 FIFO 溢出不产生中断
+                                 从机模式下接收首字节完成中断使能位，该位为 1 则从机
+ 5        bS0_IE_FIRST     RW    模式下接收到第一个数据字节时触发中断；该位为 0 则接               0
+                                 收到第一字节时不产生中断
+                                 数据字节传输完成中断使能位，该位为 1 允许字节传输完
+ 4        bS0_IE_BYTE      RW                                              0
+                                 成中断；该位为 0 则字节传输完成不产生中断
+                                 数据字节的位序控制位，该位为 0 则 MSB 高位在前；该位
+ 3       bS0_BIT_ORDER     RW                                              0
+                                 为 1 则 LSB 低位在前
+ 2            保留           RO    保留                                        0
+                                 从机模式下片选激活状态位，该位为 0 表示当前没有被选
+ 1        bS0_SLV_SELT     R0                                              0
+                                 中；该位为 1 表示当前处于选中状态
+                                 从机模式下预加载数据状态位，该位为 1 表示当前处于片
+ 0       bS0_SLV_PRELOAD   R0                                              0
+                                 选有效之后、尚未传输数据之前的预加载状态
+
+
+SPI0 时钟分频设置寄存器(SPI0_CK_SE)：
+     位           名称        访问                     描述                  复位值
+ [7:0]       SPI0_CK_SE    RW    主机模式下设置 SPI0 时钟分频系数                   20h
+CH543 手册                               43
+
+
+SPI0 从机模式预置数据寄存器(SPI0_S_PRE)：
+     位         名称        访问                     描述                        复位值
+ [7:0]      SPI0_S_PRE   RW   预先加载从机模式下的首次传输数据                            20h
+
+
+SPI0 控制寄存器(SPI0_CTRL)：
+位           名称           访问                     描述                        复位值
+                              SPI0 的 MISO 输出使能控制位，该位为 1 允许输出；该位
+ 7       bS0_MISO_OE     RW                                                0
+                              为 0 禁止输出
+                              SPI0 的 MOSI 输出使能控制位，该位为 1 允许输出；该位
+ 6       bS0_MOSI_OE     RW                                                0
+                              为 0 禁止输出
+                              SPI0 的 SCK 输出使能控制位，该位为 1 允许输出；该位
+ 5        bS0_SCK_OE     RW                                                0
+                              为 0 禁止输出
+                              SPI0 数据方向控制位，该位为 0 则输出数据，仅将写 FIFO
+ 4       bS0_DATA_DIR    RW   作为有效操作，启动一次 SPI 传输；该位为 1 则输入数据，              0
+                              写或读 FIFO 都作为有效操作，启动一次 SPI 传输
+                              SPI0 主机时钟模式控制位，该位为 0 则模式 0，SCK 空闲
+ 3       bS0_MST_CLK     RW                                                0
+                              时默认低电平；该位为 1 则模式 3，SCK 默认高电平
+                              SPI0 的 2 线半双工模式使能位，该位为 0 则 3 线全双工
+ 2        bS0_2_WIRE     RW   方式，包括 SCK、MOSI、MISO；该位为 1 则 2 线半双工方          0
+                              式，包括 SCK、MISO
+ 1       bS0_CLR_ALL     RW   该位为 1 清空 SPI0 中断标志和 FIFO，需要软件清零              1
+                              允许通过 FIFO 有效操作自动清零字节接收完成中断标志
+ 0       bS0_AUTO_IF     RW   的使能位，该位为 1 则在 FIFO 有效读写操作时自动清零               0
+                              字节接收完成中断标志 S0_IF_BYTE
+
+
+SPI0 数据收发寄存器(SPI0_DATA)：
+     位         名称        访问                     描述                        复位值
+                              包括发送和接收两个物理上分开的 FIFO，读操作对应接
+ [7:0]      SPI0_DATA    RW   收数据 FIFO；写操作对应发送数据 FIFO，有效读写操作              xxh
+                              可以启动一次 SPI 传输
+
+
+SPI0 状态寄存器(SPI0_STAT)：
+位           名称           访问                     描述                        复位值
+ 7        S0_FST_ACT     R0   该位为 1 表示当前状态是从机模式下接收首字节完成                    0
+                              从机模式下 FIFO 溢出标志位，该位为 1 表示 FIFO 溢出中
+                              断；该位为 0 则无中断。直接位写 0 清零或寄存器对应位
+ 6         S0_IF_OV      RW                                                0
+                              写 1 清零。 当 bS0_DATA_DIR=0 时由发送 FIFO 空触发中断；
+                              当 bS0_DATA_DIR=1 时由接收 FIFO 满触发中断
+                              从机模式下接收首字节完成中断标志位，该位为 1 则表示
+ 5       S0_IF_FIRST     RW                                                0
+                              接收到首字节。直接位写 0 清零或寄存器对应位写 1 清零
+                              数据字节传输完成中断标志位，该位为 1 则表示一个字节
+ 4        S0_IF_BYTE     RW   传输完成。直接位写 0 清零或寄存器对应位写 1 清零，或                0
+                              者在 bS0_AUTO_IF=1 时通过 FIFO 有效操作清零
+CH543 手册                            44
+
+                            SPI0 空闲标志位，该位为 1 表示当前没有 SPI 移位，通
+ 3       S0_FREE      R0                                                 1
+                            常是处于数据字节之间的空档期
+ 2      S0_T_FIFO     R0    SPI0 发送 FIFO 计数，有效值是 0 或者 1                  0
+ 1         保留         R0    保留                                           0
+ 0      S0_R_FIFO     R0    SPI0 接收 FIFO 计数，有效值是 0 或者 1                  0
+
+
+14.3 SPI 传输格式
+  SPI 主机模式支持模式 0 和模式 3 两种传输格式，可以通过设置 SPI 控制寄存器 SPIn_CTRL 中
+的位 bSn_MST_CLK 选择，CH543 总是在 CLK 上升沿采样 MISO 数据。数据传输格式如下图所示。
+  模式 0：bSn_MST_CLK = 0
+
+
+
+
+                            图 14.3.1 SPI 模式 0 时序图
+
+     模式 3：bSn_MST_CLK = 1
+
+
+
+
+                            图 14.3.2 SPI 模式 3 时序图
+
+14.4 SPI 配置
+14.4.1 SPI 主机模式配置
+    SPI 主机模式下，SCK 引脚输出串行时钟，片选输出引脚可以指定为任意 I/O 引脚。
+    SPI0 配置步骤：
+(1)、设置 SPI 时钟分频设置寄存器 SPI0_CK_SE，配置 SPI 时钟频率。
+(2)、设置 SPI 设置寄存器 SPI0_SETUP 的位 bS0_MODE_SLV 为 0，配置为主机模式。
+(3)、设置 SPI 控制寄存器 SPI0_CTRL 的位 bS0_MST_CLK，根据需求设置为模式 0 或者 3。
+(4)、设置 SPI 控制寄存器 SPI0_CTRL 的位 bS0_SCK_OE 和 bS0_MOSI_OE 为 1，bS0_MISO_OE 位为 0，
+     设置 P1 端口方向 bSCK、bMOSI 为输出，bMISO 为输入，以及片选引脚为输出。
+    数据发送过程：
+(1)、写 SPI0_DATA 寄存器，向 FIFO 写入要发送的数据，自动启动一次 SPI 传输。
+(2)、等待 S0_FREE 为 1，说明发送完成，可以继续发送下一字节。
+
+   数据接收过程：
+(1)、写 SPI0_DATA 寄存器，向 FIFO 写入任意数据例如 0FFh 以启动一次 SPI 传输。
+(2)、等待 S0_FREE 为 1，说明接收完成，可以读取 SPI0_DATA 获得接收到的数据。
+(3)、如果之前 bS0_DATA_DIR 已置 1，则上述读操作也会启动下一次 SPI 传输，否则不启动。
+CH543 手册                           45
+
+
+14.4.2 SPI 从机模式配置
+    只有 SPI0 支持从机模式，从机模式下，SCK 引脚用于接收连接的 SPI 主机的串行时钟。
+(1)、设置 SPI0 设置寄存器 SPI0_SETUP 的位 bS0_MODE_SLV 为 1，配置为从机模式。
+(2)、设置 SPI0 控制寄存器 SPI0_CTRL 的位 bS0_SCK_OE 和 bS0_MOSI_OE 为 0，设置 bS0_MISO_OE 为
+     1，设置 P1 端口方向 bSCK、bMOSI 和 bMISO 以及片选引脚都为输入。当 SCS 片选有效（低电
+     平）时，MISO 将自动使能输出。同时建议设置 MISO 引脚为高阻输入模式（P1_MOD_OC[6]=0、
+     P1_DIR_PU[6]=0），使 MISO 在片选无效期间不输出，便于共享 SPI 总线。
+(3)、可选的，设置 SPI 从机模式预置数据存器 SPI0_S_PRE，用于被片选后首次自动加载到缓冲区
+     中用于对外输出。在 8 个串行时钟之后，即首个数据字节传输交换完毕，CH543 得到外部 SPI
+     主机发来的首字节数据(可能是命令码)，          外部 SPI 主机交换得到 SPI0_S_PRE 中的预置数据(可
+     能是状态值)。寄存器 SPI0_S_PRE 的位 7 将在 SPI 片选有效后的 SCK 低电平期间自动加载到
+     MISO 引脚上，对于 SPI 模式 0，如果 CH543 预置了 SPI0_S_PRE 的位 7，那么外部 SPI 主机将
+     在 SPI 片选有效但尚未传输数据时，就能够通过查询 MISO 引脚得到 SPI0_S_PRE 的位 7 的预
+     置值，从而通过仅仅有效一下 SPI 片选就能获得 SPI0_S_PRE 的位 7 的值。
+
+    数据发送过程：
+    查询 S0_IF_BYTE 或者等待中断，在每次 SPI 数据字节传输完成后，写 SPI0_DATA 寄存器，向
+FIFO 写入要发送的数据。或者等待 S0_FREE 从 0 变为 1，可以继续发送下一字节。
+
+    数据接收过程：
+    查询 S0_IF_BYTE 或者等待中断，在每次 SPI 数据字节传输完成后，读 SPI0_DATA 寄存器，从
+FIFO 获得接收到的数据。查询 S0_R_FIFO 可以获知 FIFO 中是否有剩余字节。
+CH543 手册                                         46
+
+
+15、ADC、TKEY 和 CMP 及 ISINK
+15.1 ADC/TKEY/CMP/ISINK 简介
+    CH543 芯片的信号链模拟模块包括：12 位模数转换器 ADC、电容触摸按键充电和放电模块 TKEY、
+电压比较器 CMP/缓冲器 BUF 模块、可编程灌电流 ISINK。CH541 不支持 ISINK 模块。
+    ADC 具有 12 个外部模拟信号输入通道和 2 个内部输入通道，可以分时采集，支持 0 到 VDD 模拟
+输入电压范围，其中 P1.0/P1.1/RST 仅支持 0 到 VDD-0.6V 范围，bRST_VOL_SEL=1 时 RST 支持 0 到
+4*VDD-2.4V 范围。除 RST 之外的外部通道都支持电容触摸按键检测。
+    电压比较器 CMP/缓冲器 BUF 可选三种应用：
+    (1)、用于 ADC 信号输入缓冲，从而支持高阻信号源快速采样和 ADC；
+    (2)、将输入模拟信号简单放大后输出到 P1.2、可选送给 ADC，需外接两个电阻设定增益；
+    (3)、将输入模拟信号与 P1.3 输入模拟信号进行电压比较，结果输出到 P1.2/INT0_。
+    可编程灌电流 ISINK 用于从外部吸收电流，共 9 位数据宽度，512 级电流，步距约为 0.465uA。
+如果该电流作用于外部串联的 43KΩ 电阻上，则产生步距 20mV 的可编程电压，相当于 9 位 DAC。
+                                                      VDD
+
+
+                                                      Itkey                      Fsys/2
+                                                                TKEY_CTRL
+
+                                                                 charge
+                              ADC_CHAN
+                                                                                 timer
+     AIN0          0000                                         discharge
+     AIN1          0001
+     AIN2
+     AIN3~            1/14                                                              bADC_CLK1/0
+     AIN10             MUX            Rsw             GND
+     AIN11                                               bADC_START            clock
+   VDD12*25%       1100
+                                                 bCMP_OUT_ADC               sample
+   VREF1.2V        1101
+                                                      0                           D0～D11    ADC_DAT
+                                                                            VIN
+                                                         1
+          bRST_VOL_SEL                                           Ca              ADC_END
+
+            100%                                                      GND       ADC
+                                   bCMP_CHAN_P
+                MUX
+            25%                       0
+                                              IN+                             bADC_EN
+    RST
+                                      1        CMP/BUF            bCMP_CHAN_X           to_interrupt
+                bCMP_CHAN_N
+                                              IN-
+    P1.3              1
+    AIN11                                                                                  P1.2
+                      0             bCMP_EN                                               AIN10
+
+
+                      图 15.1.1 ADC/TKEY/CMP 结构图（蓝色线为模拟信号）
+
+15.2 模数转换器 ADC 寄存器
+                                    表 15.2.1 ADC 相关寄存器列表
+       名称                    地址                               描述                                  复位值
+     ADC_CTRL                F3h     ADC 控制和状态寄存器                                                 00h
+CH543 手册                                           47
+
+      ADC_DAT_H                F5h      ADC 结果数据的高字节(只读)                                0xh
+      ADC_DAT_L                F4h      ADC 结果数据的低字节(只读)                                xxh
+          ADC_DAT              F4h      ADC_DAT_L 和 ADC_DAT_H 组成 16 位 SFR              0xxxh
+          ADC_CHAN             F6h      ADC 模拟信号通道选择寄存器                                 00h
+
+
+ADC 控制和状态寄存器(ADC_CTRL)：
+  位                  名称               访问                          描述                    复位值
+                                              指示触摸按键检测运行状态，为 1 表示正在给电容
+  7               bTKEY_ACT           RO                                                  0
+                                              充电和 ADC 测量过程中
+  6                  保留               R0      保留                                          0
+                                              ADC 转换完成中断标志，该位为 1 表示一次 ADC 转
+  5                 bADC_IF           RW      换完成，写 1 清零或写 ADC_CHAN 或写 TKEY_CTRL          0
+                                              数据时清零
+                                              ADC 启动控制位，置 1 启动一次 ADC 转换，该位在
+  4               bADC_START          RW                                                  0
+                                              ADC 转换完成后自动清零
+                                              ADC 模块的电源控制位，该位为 0 表示关闭 ADC 模
+  3                 bADC_EN           RW                                                  0
+                                              块的电源，进入睡眠状态；该位为 1 表示开启
+  2                  保留               R0      保留                                          0
+  1               bADC_CLK1           RW      ADC 参考时钟频率选择高位                              0
+  0               bADC_CLK0           RW      ADC 参考时钟频率选择低位                              0
+
+
+                                       表 15.2.2 ADC 参考时钟频率选择表
+bADC_CLK1 bADC_CLK0 ADC 参考时钟频率                     完成一次 ADC 所需时间               适用范围
+      0              0               750KHz             1024 个 Fosc 周期   Rs<=20KΩ或 Cs>=0.08uF
+      0              1               1.5MHz             512 个 Fosc 周期    Rs<=10KΩ或 Cs>=0.08uF
+      1              0                3MHz              256 个 Fosc 周期    Rs<=5KΩ或 Cs>=0.08uF
+      1              1                6MHz              128 个 Fosc 周期    Rs<=2KΩ或 Cs>=0.08uF
+注：采样时间为 4 个参考时钟，Cs 指信号源并联电容值，Rs 指信号源串联内阻值。
+对于 RST 和两个内部 ADC 通道，内阻大，需选择较慢的参考时钟，或者多采样几次，丢弃前值。
+当 P1.0/P1.1 输入模拟电压较高、接近 VDD 时，需选择较慢的参考时钟，或者多采样几次。
+
+ADC 模拟信号通道选择寄存器(ADC_CHAN)：
+  位                  名称               访问                          描述                    复位值
+ [7:4]               保留               R0      保留                                        0000b
+                                              当 bADC_EN=1 时选择模拟信号通道的信号源；
+ [3:0]           MASK_ADC_CHAN        RW                                                0000b
+                                              当 bADC_EN=0 时模拟信号通道关闭
+
+
+                 表 15.2.1 电压比较器 CMP 正相输入端和 ADC/TKEY 输入外部信号通道选择表
+          bADC_EN        ADC_CHAN                        选择模拟信号通道的信号源
+             0            xxxxb         断开内部和外部信号通道（AIN0～AIN11）
+                                                              ，悬空
+             1            0000b         连接到外部信号：AIN0（P1.0）
+             1            0001b         连接到外部信号：AIN1（P1.1）
+             1            0010b         连接到外部信号：AIN2（P3.2）
+             1            0011b         连接到外部信号：AIN3（RST 或 RST 的 25%），不支持 TKEY
+CH543 手册                                    48
+
+           1               0100b     连接到外部信号：AIN4（P1.4）
+           1               0101b     连接到外部信号：AIN5（P1.5）
+           1               0110b     连接到外部信号：AIN6（P1.6）
+           1               0111b     连接到外部信号：AIN7（P1.7）
+           1               1000b     连接到外部信号：AIN8（P3.6）
+           1               1001b     连接到外部信号：AIN9（P3.7）
+           1               1010b     连接到外部信号：AIN10（P1.2）
+           1               1011b     连接到外部信号：AIN11（P1.3）
+           1               1100b     连接到内部电源电压：VDD12 的 25%
+           1               1101b     连接到内部参考电压：约 1.2V 电压 VREF12，可能有噪声
+
+
+ADC 数据寄存器(ADC_DAT)：
+  位              名称           访问                     描述                  复位值
+ [7:0]         ADC_DAT_H       RO    ADC 采样结果数据的高字节                       0xh
+ [7:0]         ADC_DAT_L       RO    ADC 采样结果数据的低字节                       xxh
+
+
+15.3 触摸按键 TKEY 寄存器
+                                    表 15.3.1 TKEY 相关寄存器列表
+         名称                  地址                     描述                   复位值
+      TKEY_CTRL               F2h    触摸按键充电脉冲宽度控制寄存器(只写)                 00h
+
+
+触摸按键充电脉冲宽度控制寄存器(TKEY_CTRL)：
+  位                名称               访问                 描述                复位值
+                                         电容触摸按键充电脉冲宽度值，仅低 7 位有效，以
+ [7:0]           TKEY_CTRL          WO   2 倍的系统周期为单位（2/Fsys）计数，计时到则       00h
+                                         自动启动 ADC 测量电容上电压
+
+
+15.4 比较器 CMP 寄存器
+                           表 15.4.1 比较器 CMP、缓冲器 BUF 相关寄存器列表
+         名称                  地址                     描述                   复位值
+      ANA_CTRL                F1h    模拟比较器 CMP 控制寄存器                     00h
+
+
+模拟比较器 CMP 控制寄存器(ANA_CTRL)：
+  位                名称               访问                 描述                复位值
+                                         模拟比较器对外输出 CO 使能：
+  7             bCMP_CHAN_X         RW                                     0
+                                         该位为 0 禁止输出；为 1 将结果输出到 P1.2 引脚
+                                         ADC 采样输入信号源选择：
+  6            bCMP_OUT_ADC         RW   该位为 0 切换到 ADC_CHAN 选择的模拟通道直接输     0
+                                         入；为 1 切换到 CMP 缓冲或者放大后的模拟信号
+                                         模拟比较器-端信号 CM 选择：
+  5             bCMP_CHAN_N         RW   该位为 0 切换到比较器的输出，作为信号缓冲器；          0
+                                         为 1 切换到 P1.3 引脚
+  4             bCMP_CHAN_P         RW   模拟比较器+端信号 CP 选择：                  0
+CH543 手册                                   49
+
+                                      该位为 0 切换到 ADC_CHAN 选择的模拟通道；为 1
+                                      切换到 RST 引脚，由 bRST_VOL_SEL 控制分压
+                                      CMP 模块的电源控制位，该位为 0 表示关闭 CMP 模
+  3            bCMP_EN           RW                                      0
+                                      块的电源，进入睡眠状态；该位为 1 表示开启
+                                      CMP 结果改变的中断使能位，该位为 1 允许比较结
+  2            bCMP_IE           RW                                      0
+                                      果变化时中断；该位为 0 则比较器不产生中断
+                                      CMP 结果变化中断标志，该位为 1 表示比较结果至
+  1            bCMP_IF           RW   少变化过一次，写 1 清零或进入相应的中断服务程           0
+                                      序时被自动清零
+  0                                   保留                                 0
+
+
+15.5 可编程灌电流 ISINK 寄存器
+                                 表 15.5.1 ISINK 相关寄存器列表
+         名称                地址                     描述                   复位值
+      ISINK_DATA           AEh    可编程电流 ISINK 高 8 位数据寄存器               00h
+      ISINK_LSB            AFh    可编程电流 ISINK 预置最低位寄存器(只写)             00h
+      ISINK_LSB            AFh    可编程电流 ISINK 当前最低位寄存器(只读)             00h
+
+
+可编程电流 ISINK 数据寄存器(ISINK_DATA、ISINK_LSB)，ISINK_DATA 仅在安全模式下可写：
+  位                名称            访问                 描述                 复位值
+ [7:1]             保留            RO   保留                                00h
+  0           ISINK_LSB          WO   预置的可编程电流数据的最低位，待生效                 0
+  0           ISINK_LSB          RO   当前已生效的 9 位可编程电流数据的最低位              0
+                                      可编程电流数据的高 8 位。
+                                      先预置最低位，再写入高 8 位数据，由硬件自动将
+ [7:0]        ISINK_DATA         RW                                     00h
+                                      预置位同步写入到 9 位宽度的可编程电流数据中。
+                                      当 9 位数据都为 0 时可编程电流模块 ISINK 关闭
+
+
+15.6 ADC 和 Touch-Key 功能
+    ADC 采样模式配置步骤：
+(1)、设置 ADC_CTRL 寄存器中的 bADC_EN 位为 1，开启 ADC 模块，设置 bADC_CLK0/1 选择频率。
+(2)、设置 ADC_CHAN 寄存器，选择外部或内部信号通道。
+(3)、可选的，清零中断标志 bADC_IF。可选的，如果使用中断模式，还需要在此使能中断。
+(4)、设置 ADC_CTRL 寄存器中的 bADC_START，启动一次 ADC 转换。
+(5)、等待 bADC_START 变为 0，或者 bADC_IF 被置 1（如果之前已清零） ，表示 ADC 转换结束，可通
+     过 ADC_DAT 读取结果数据。该数据是输入电压相对于 VDD 电压的 4095 等份的值，例如，结果
+     数据是 475，说明输入电压接近 VDD 电压的 475/4095。如果 VDD 电压也不确定，那么可以另
+     测一个确定的参考电压值，再按比例计算出被测的输入电压值和 VDD 电压值。
+(6)、如果再次设置 bADC_START 则可启动下一次 ADC 转换。
+(7)、如果 ADC 参考时钟频率较高导致采样时间较短，或者信号源串联内阻值较大，或者电源电压较
+     低导致 Rsw 内阻较大，那么有可能 Ca 采样不到足够的信号电压，影响 ADC 结果。解决方法是
+     丢弃第一次 ADC 数据，立即启动第二次 ADC 并用其 ADC 结果数据，相当于采样两次。
+(7)、对精度要求较高时，建议使用前校准，用软件消除固有偏差。
+CH543 手册                             50
+
+    Touch-Key 检测步骤：
+(1)、设置 ADC_CTRL 寄存器中的 bADC_EN 位为 1，开启 ADC 模块，设置 bADC_CLK0/1 选择频率。
+(2)、设置 ADC_CHAN 寄存器中，选择触摸按键信号通道。
+(3)、根据触摸按键实际电容大小选择合适的充电脉冲宽度，写入 TKEY_CTRL 寄存器。简单计算公式
+     如下（假定触摸按键外部电容 Ckey=25pF，假定 VDD=3.3V，假定 Fsys=12MHz，粗略计算）                  ：
+        count=(Ckey+Cint)*0.7VDD/ITKEY/(2/Fsys)=(25p+15p)*0.35*3.3*12M/50u=11
+        TKEY_CTRL=count > 127 ? 127 : count
+(4)、可选的，如果使用中断模式，还需要在此使能中断。
+(5)、当触摸按键电容充电计时到后，CH543 自动设置 bADC_START 启动 ADC 测量电容上的电压
+(6)、等待 bTKEY_ACT 变为 0，或者 bADC_IF 被置 1，表示充电和 ADC 转换结束，可通过 ADC_DAT 读
+     取结果数据。软件再用该数值与之前没有按键时的数值进行比较，根据电容的变化量，判断
+     该触摸按键是否被按下。
+(7)、根据需要转到步骤(2)选择另一个触摸按键信号通道进行检测。
+
+上述被选择的外部模拟信号通道，其所在 GPIO 引脚必须设置为高阻输入模式、或者开漏输出模式并
+且处于输出 1 的状态（相当于高阻输入）
+                   ，Pn_DIR_PU[x]=0，并且关闭上拉电阻和下拉电阻。
+CH543 手册                          51
+
+
+16、USB 控制器
+16.1 简介
+   CH543 集成了一个 USB 主机控制器，   支持 12Mbps 全速和 1.5Mbps 低速 USB 传输；集成了一个 USB
+设备控制器，支持全速和低速，支持最大 64 字节的数据包。
+   CH543 的 USB 控制器的主要特性如下：
+(1)、支持 USB Host 主机功能和 USB Device 设备功能，CH541 只支持 USB 设备；
+(2)、支持 USB 2.0 全速 12Mbps 或者低速 1.5Mbps；
+(3)、支持 USB 控制传输、批量传输、中断传输、同步/实时传输；
+(4)、支持最大 64 字节的数据包，内置 FIFO，支持中断和 DMA。
+   CH543 的 USB 相关寄存器分为 3 个部分，部分寄存器是在主机和设备模式下进行复用的。
+(1)、USB 全局寄存器；
+(2)、USB 设备控制器寄存器；
+(3)、USB 主机控制器和根集线器寄存器。
+
+16.2 全局寄存器
+             表 16.2.1 USB 全局寄存器列表（标灰受 bUC_RESET_SIE 复位控制）
+       名称          地址                   描述                     复位值
+      USB_PULL     B4h    USB 端口上拉/下拉的电阻/电流控制寄存器             0001 0001b
+     USB_INT_FG    D8h    USB 中断标志寄存器                        0000 0000b
+     USB_INT_ST    D9h    USB 中断状态寄存器(只读)                    0011 xxxxb
+     USB_MIS_ST    DAh    USB 杂项状态寄存器(只读)                    xx10 1000b
+     USB_RX_LEN    DBh    USB 接收长度寄存器(只读)                    0xxx xxxxb
+     USB_INT_EN    E1h    USB 中断使能寄存器                        0000 0000b
+      USB_CTRL     E2h    USB 控制寄存器                          0000 0110b
+     USB_DEV_AD    E3h    USB 设备地址寄存器                        0000 0000b
+
+
+USB 端口上拉/下拉的电阻/电流控制寄存器(USB_PULL)：
+位          名称      访问                      描述                       复位值
+                         USB 在 DM 引脚内置的 1.5KΩ上拉电阻使能：
+ 7      bUDM_PUE   RW                                                0
+                         该位为 1 启用；该位为 0 关闭
+                         USB 在 DM 引脚内置的 16KΩ下拉电阻使能：
+ 6      bUDM_PDE   RW                                                0
+                         该位为 1 启用；该位为 0 关闭
+                         MASK_UDM_PCS 用于配置 DM 引脚内置的上拉/下拉电流：
+ 5     bUDM_PCS1   RW    00-禁止上拉或下拉电流；                               0
+                         01-启用弱下拉电流，约 2uA，建议与 bUDM_PUE 互斥；
+ 4     bUDM_PCS0   RW    10-启用弱上拉电流，约 10uA，建议与 bUDM_PDE 互斥；          1
+                         11-启用下拉电流，约 100uA，建议与 bUDM_PUE 互斥
+                         USB 在 DP 引脚内置的 1.5KΩ上拉电阻使能：
+                         该位为 1 启用；该位为 0 关闭。
+ 3      bUDP_PUE   RW                                                0
+                         如果 bUDP_PUE=1 并且 MASK_UDP_PCS=10，那么将额外插入
+                         二极管降压，用于 VDD>=4.5V 的情况，例如 5V 睡眠期间
+                         USB 在 DP 引脚内置的 16KΩ下拉电阻使能：
+ 2      bUDP_PDE   RW                                                0
+                         该位为 1 启用；该位为 0 关闭
+CH543 手册                                  52
+
+                                 MASK_UDP_PCS 用于配置 DP 引脚内置的上拉/下拉电流：
+ 1        bUDP_PCS1        RW                                                0
+                                 00-禁止上拉或下拉电流；
+                                 01-启用弱下拉电流，约 2uA，建议与 bUDP_PUE 互斥；
+ 0        bUDP_PCS0        RW    10-启用弱上拉电流，约 10uA，建议与 bUDP_PDE 互斥；          1
+                                 11-启用下拉电流，约 100uA，建议与 bUDP_PUE 互斥
+
+
+USB 中断标志寄存器(USB_INT_FG)：
+位           名称          访问                         描述                       复位值
+                                 USB 设备模式下，该位为 1 表示当前 USB 传输过程中接收到
+ 7        U_IS_NAK         RO                                                0
+                                 NAK 忙响应；该位为 0 表示接收到非 NAK 响应
+                                 当前 USB 传输 DATA0/1 同步标志匹配状态，该位为 1 表示
+ 6        U_TOG_OK         RO                                                0
+                                 同步，数据有效；该位为 0 表示不同步，数据可能无效
+                                 USB 设备模式下，该位为 1 表示当前已成功接收到 8 字节的
+ 5       U_SETUP_ACT       RO    SETUP 请求包，SETUP 令牌不影响 bUIS_TOG_OK 和         0
+                                 bUIS_TOKEN1/0、MASK_UIS_ENDP 及 USB_RX_LEN
+                                 USB FIFO 溢出中断标志位，该位为 1 表示 FIFO 溢出中断；
+ 4       UIF_FIFO_OV       RW    该位为 0 无中断。直接位写 0 清零或寄存器对应位写 1 清             0
+                                 零
+                                 USB 主机模式下 SOF 定时中断标志位，该位为 1 表示 SOF
+ 3       UIF_HST_SOF       RW    定时中断，该中断由 SOF 包传输完成触发；该位为 0 表示              0
+                                 无中断。直接位写 0 清零或寄存器对应位写 1 清零
+                                 USB 总线挂起或唤醒事件中断标志位，该位为 1 表示有中
+ 2       UIF_SUSPEND       RW    断，该中断由 USB 挂起事件或唤醒事件触发；该位为 0 表              0
+                                 示无中断。直接位写 0 清零或寄存器对应位写 1 清零
+                                 USB 传输完成中断标志位，该位为 1 表示有中断，该中断由
+ 1       UIF_TRANSFER      RW    一个 USB 传输完成触发；该位为 0 表示无中断。直接位写 0            0
+                                 清零或寄存器对应位写 1 清零
+                                 USB 主机模式下 USB 设备连接或断开事件中断标志位，该位
+                                 为 1 表示有中断，该中断由检测到 USB 设备连接或断开触
+ 0       UIF_DETECT        RW                                                0
+                                 发；该位为 0 表示无中断。直接位写 0 清零或寄存器对应
+                                 位写 1 清零
+                                 USB 设备模式下 USB 总线复位事件中断标志位，该位为 1
+ 0       UIF_BUS_RST       RW    表示有中断，该中断由 USB 总线复位事件触发；该位为 0               0
+                                 表示无中断。直接位写 0 清零或寄存器对应位写 1 清零
+
+
+USB 中断状态寄存器(USB_INT_ST)：
+     位           名称             访问                   描述                     复位值
+                                     USB 设备模式下，该位为 1 表示当前已成功接收到 8
+     7      bUIS_SETUP_ACT      RO                                           0
+                                     字节的 SETUP 请求包。同 U_SETUP_ACT
+                                     当前 USB 传输 DATA0/1 同步标志匹配状态，该位为 1
+     6       bUIS_TOG_OK        RO                                           0
+                                     表示同步；该位为 0 表示不同步。同 U_TOG_OK
+     5       bUIS_TOKEN1        RO   设备模式下当前 USB 传输事务的令牌 PID 标识高位            1
+     4       bUIS_TOKEN0        R0   设备模式下当前 USB 传输事务的令牌 PID 标识低位            1
+CH543 手册                                      53
+
+                                        USB 设备模式下当前 USB 传输事务的端点号，0000 表
+ [3:0]       MASK_UIS_ENDP        RO                                         xxxxb
+                                        示端点 0；…；1111 表示端点 15
+                                        USB 主机模式下当前 USB 传输事务的应答 PID 标识，
+ [3:0]      MASK_UIS_H_RES        R0                                         xxxxb
+                                        0000 表示设备无应答或超时；其它值表示应答 PID
+  bUIS_TOKEN1 和 bUIS_TOKEN0 组成 MASK_UIS_TOKEN，用于 USB 设备模式下标识当前 USB 传输事
+务的令牌 PID：00 表示 OUT 包；01 表示 SOF 包；10 表示 IN 包；11 表示空闲。
+  当 MASK_UIS_TOKEN 非空闲、并且 bUIS_SETUP_ACT 也为 1 时，必须先处理前者，处理完前者后
+清零一次 UIF_TRANSFER 使前者进入空闲状态，再处理后者，最后再清零一次 UIF_TRANSFER。
+
+USB 杂项状态寄存器(USB_MIS_ST)：
+位             名称             访问                        描述                    复位值
+                                       USB 主机模式下 SOF 包预示状态位，该位为 1 表示将要发
+ 7       bUMS_SOF_PRES       RO                                                x
+                                       送 SOF 包，此时如有其它 USB 数据包将被自动延后
+                                       USB 主机模式下 SOF 包传输状态，该位为 1 表示正在发出
+ 6        bUMS_SOF_ACT       RO                                                x
+                                       SOF 包；该位为 0 表示发送完成或者空闲
+                                       USB 协议处理器的空闲状态位，该位为 0 表示忙，正在进
+ 5       bUMS_SIE_FREE       RO                                                1
+                                       行 USB 传输；该位为 1 表示 USB 空闲
+                                       USB 接收 FIFO 数据就绪状态位，该位为 0 表示接收 FIFO
+ 4       bUMS_R_FIFO_RDY     RO                                                0
+                                       为空；该位为 1 表示接收 FIFO 非空
+                                       USB 总线复位状态位，该位为 0 表示当前没有 USB 总线复
+ 3       bUMS_BUS_RESET      RO                                                1
+                                       位；该位为 1 表示当前正在 USB 总线复位
+                                       USB 挂起状态位，该位为 0 表示当前有 USB 活动；该位为
+ 2        bUMS_SUSPEND       RO                                                0
+                                       1 表示已经有一段时间没有 USB 活动，请求挂起
+                                       USB 主机模式下记录 USB 设备刚连接到 USB 端口时的 DM
+ 1       bUMS_DM_LEVEL       RO        引脚的状态，为 0 表示低电平；为 1 表示高电平。用于判           0
+                                       断全速或低速
+                                       USB 主机模式下 USB 端口 USB 设备连接状态位，该位为 1
+ 0       bUMS_DEV_ATTACH     RO                                                0
+                                       表示 USB 端口已经连接 USB 设备；该位为 0 表示没有
+
+
+USB 接收长度寄存器(USB_RX_LEN)：
+     位           名称           访问                        描述                   复位值
+ [7:0]        bUSB_RX_LEN         RO    当前 USB 端点接收到的数据的字节数                   xxh
+
+
+USB 中断使能寄存器(USB_INT_EN)：
+位             名称             访问                        描述                    复位值
+ 7        bUIE_DEV_SOF       RW        该位为 1 使能 USB 设备模式接收 SOF 包中断；为 0 禁止      0
+ 6        bUIE_DEV_NAK       RW        该位为 1 使能 USB 设备模式接收到 NAK 中断；为 0 禁止      0
+ 5            保留             RO        保留                                      0
+ 4        bUIE_FIFO_OV       RW        该位为 1 使能 FIFO 溢出中断；该位为 0 关闭使能           0
+ 3        bUIE_HST_SOF       RW        该位为 1 使能 USB 主机模式 SOF 定时中断；为 0 禁止       0
+ 2        bUIE_SUSPEND       RW        该位为 1 使能 USB 总线挂起或唤醒事件中断；为 0 禁止         0
+ 1       bUIE_TRANSFER       RW        该位为 1 使能 USB 传输完成中断；该位为 0 禁止            0
+                                       该位为 1 使能 USB 主机模式下 USB 设备连接或断开事件中
+ 0        bUIE_DETECT        RW                                                0
+                                       断；该位为 0 禁止
+CH543 手册                                54
+
+                              该位为 1 使能 USB 设备模式下 USB 总线复位事件中断；该
+ 0    bUIE_BUS_RST       RW                                                         0
+                              位为 0 禁止
+
+
+P3.6/P3.7 电平变化中断：
+    在 bUC_CLR_ALL=1、bUIE_TRANSFER=0、bUC_HOST_MODE=0、bUC_DEV_SWAP=0、bUC_DEV_EN=0 状
+态下（复位后的默认态），DP/DM 关闭，启用 GPIO，对于高阻输入模式下的 P3.6 或 P3.7，将自动
+允许该 GPIO 的电平变化中断功能。即，如果 P3_MOD_OC[6]=0 和 P3_DIR_PU[6]=0，则当 P3.6 引脚
+输入状态不同于 P3.6 输出寄存器中的值时，产生 USB 中断，用 P3.6 引脚新状态更新输出寄存器中
+的值后撤消中断请求。P3.7 类似，另外也允许 P3.6 和 P3.7 都开启电平变化中断。
+
+USB 控制寄存器(USB_CTRL)：
+位          名称            访问                          描述                          复位值
+                              USB 工作模式选择位，该位为 0 选择 USB 设备模式
+ 7   bUC_HOST_MODE       RW                                                         0
+                              (DEVICE)；该位为 1 选择 USB 主机模式(HOST)
+                              USB 总线信号传输速率选择位，   该位为 0 选择全速 12Mbps；
+ 6   bUC_LOW_SPEED       RW                                                         0
+                              该位为 1 选择低速 1.5Mbps
+                              USB 设备模式下 DP/DM 引脚互换模式使能，该位为 0 禁用
+ 5    bUC_DEV_SWAP       RW   引脚互换，该位为 1 并且 bUD_LOW_SPEED=1 并且                      0
+                              bUC_LOW_SPEED=0 则互换全速 USB 信号引脚 DP 和 DM
+                              USB 设备模式下 USB 设备使能控制位，该位为 1 则使能 USB
+ 4     bUC_DEV_EN        RW                                                         0
+                              设备传输，需事先在 USB_PULL 启用内部上拉电阻或外接
+ 5   bUC_SYS_CTRL1       RW   USB 主机模式下的系统控制高位                                      0
+ 4   bUC_SYS_CTRL0       RW   USB 主机模式下的系统控制低位                                      0
+                              USB 传输完成中断标志未清零前自动暂停使能位，该位为
+                              1 则在中断标志 UIF_TRANSFER 未清零前自动暂停，对于
+ 3    bUC_INT_BUSY       RW                                                         0
+                              设备模式将自动应答忙 NAK，对于主机模式将自动暂停后
+                              续传输；该位为 0 则不暂停
+                              USB 协议处理器软件复位控制位，该位为 1 则强制复位 USB
+ 2   bUC_RESET_SIE       RW                                                         1
+                              协议处理器及大部分 USB 控制寄存器，需要软件清零
+ 1    bUC_CLR_ALL        RW   该位为 1 清空 USB 中断标志和 FIFO，需要软件清零                        1
+ 0         保留            RO   保留                                                    0
+  当 bUC_HOST_MODE、bUC_SYS_CTRL1 即 bUC_DEV_SWAP、bUC_SYS_CTRL0 即 bUC_DEV_EN 其中任一
+个被设置为 1 则关闭 P3.6/P3.7 的 GPIO 功能，并使能 USB DP/DM 功能。
+  由 bUC_HOST_MODE、bUC_SYS_CTRL1 和 bUC_SYS_CTRL0 组成 USB 系统控制组合：
+                bUC_SYS_CTRL1 bUC_SYS_CTRL0
+bUC_HOST_MODE                                              USB 系统控制描述
+                 bUC_DEV_SWAP  bUC_DEV_EN
+      0              0              0         禁止 USB 设备功能，禁止 DP/DM，启用 GPIO
+                                              使能 USB 设备功能，需另行开启 1.5KΩ上拉电阻，
+                                              配 置 位 bUDP_PUE 、 bUDM_PUE 、 bUD_LOW_SPEED 、
+      0              0              1
+                                              bUC_LOW_SPEED 在全速时应为 1000，在低速时应为
+                                              0111，其它上拉和下拉关闭
+                                              当 bUD_LOW_SPEED=1 且 bUC_LOW_SPEED=0 时，使能
+      0              1              x         互换 DP/DM 信号引脚的全速 USB 设备功能，需事先
+                                              设置 bUDM_PUE=1 开启 1.5KΩ上拉电阻
+CH543 手册                                55
+
+         1              0           0        选择 USB 主机模式，正常工作状态
+         1              0           1        选择 USB 主机模式，强制 DP/DM 输出 SE0 状态
+         1              1           0        选择 USB 主机模式，强制 DP/DM 输出 J 状态
+         1              1           1        选择 USB 主机模式，强制 DP/DM 输出 K 状态/唤醒
+
+
+USB 设备地址寄存器(USB_DEV_AD)：
+  位               名称          访问                     描述                  复位值
+  7           bUDA_GP_BIT     RW   USB 通用标志位：使用者可自定义，可软件清零或置位                0
+                                   主机模式下是当前操作的 USB 设备的地址；设备模式
+ [6:0]       MASK_USB_ADDR    RW                                            00h
+                                   下是该 USB 设备的地址
+
+
+16.3 USB 设备寄存器
+    在 USB 设备模式下 CH543 提供了端点 0、1、2、3 共 4 组双向端点，所有端点的最大数据包长度
+都是 64 字节。
+    端点 0 是默认端点，支持控制传输，发送和接收共用一个 64 字节数据缓冲区。
+    端点 1、端点 2、端点 3 各包括一个发送端点 IN 和一个接收端点 OUT，发送和接收各有一个独
+立的 64 字节数据缓冲区，支持控制传输、批量传输、中断传输和实时/同步传输。
+    每组端点都具有一个控制寄存器 UEPn_CTRL 和发送长度寄存器 UEPn_T_LEN(n=0/1/2/3)，用于
+设定该端点的同步触发位、对 OUT 事务和 IN 事务的响应以及发送数据的长度等。
+    作为 USB 设备所必要的 USB 总线上拉电阻可以由软件随时设置是否启用，当 USB_PULL 寄存器
+中的 bUDP_PUE 或 bUDM_PUE 置 1 时，CH543 在内部为 USB 总线的 DP 引脚或者 DM 引脚连接 1.5KΩ上
+拉电阻，用于 USB 设备功能。
+    当检测到 USB 总线复位、USB 总线挂起或唤醒事件，或者当 USB 成功处理完数据发送或者数据
+接收后，USB 协议处理器都将设置相应的中断标志并产生中断请求。应用程序可以直接查询或在 USB
+中断服务程序中查询并分析中断标志寄存器 USB_INT_FG，根据 UIF_BUS_RST 和 UIF_SUSPEND 进行相
+应的处理；并且，如果 UIF_TRANSFER 有效，那么还需要继续分析 USB 中断状态寄存器 USB_INT_ST，
+根据当前端点号 MASK_UIS_ENDP 和当前事务令牌 PID 标识 MASK_UIS_TOKEN 进行相应的处理。如果事
+先设定了各个端点的 OUT 事务的同步触发位 bUEP_R_TOG，那么可以通过 U_TOG_OK 或 bUIS_TOG_OK
+判断当前所接收到的数据包的同步触发位是否与该端点的同步触发位匹配，如果数据同步，则数据
+有效；如果数据不同步，则数据应该被丢弃。每次处理完 USB 发送或者接收中断后，都应该正确修
+改相应端点的同步触发位，用于同步下次所发送的数据包和检测下次所接收的数据包是否同步；另
+外，通过设置 bUEP_AUTO_TOG 可以实现在发送成功或者接收成功后自动翻转相应的同步触发位。
+    各个端点准备发送的数据在各自的缓冲区中，准备发送的数据长度是独立设定在 UEPn_T_LEN
+中；各个端点接收到的数据在各自的缓冲区中，但是接收到的数据长度都在 USB 接收长度寄存器
+USB_RX_LEN 中，可以在 USB 接收中断时根据当前端点号区分。
+           表 16.3.1 USB 设备相关寄存器列表（标灰受 bUC_RESET_SIE 复位控制）
+         名称             地址                      描述                    复位值
+      UDEV_CTRL         D1h    USB 设备物理端口控制寄存器                      0000 0000b
+      UEP1_CTRL         D2h    端点 1 控制寄存器                           0000 0000b
+   UEP1_T_LEN           D3h    端点 1 发送长度寄存器                         0000 0000b
+      UEP2_CTRL         D4h    端点 2 控制寄存器                           0000 0000b
+   UEP2_T_LEN           D5h    端点 2 发送长度寄存器                         0000 0000b
+      UEP3_CTRL         D6h    端点 3 控制寄存器                           0000 0000b
+   UEP3_T_LEN           D7h    端点 3 发送长度寄存器                         0000 0000b
+CH543 手册                                          56
+
+         UEP0_CTRL          DCh        端点 0 控制寄存器                            0000 0000b
+     UEP0_T_LEN             DDh        端点 0 发送长度寄存器                          0000 0000b
+     UEP0_DMA_L             ECh        端点 0 缓冲区起始地址低字节                       xxxx xxxxb
+     UEP1_DMA_L             EEh        端点 1 缓冲区起始地址低字节                       xxxx xxxxb
+     UEP2_DMA_L             E4h        端点 2 缓冲区起始地址低字节                       xxxx xxxxb
+     UEP3_DMA_L             E6h        端点 3 缓冲区起始地址低字节                       xxxx xxxxb
+     UEP4_1_MOD             EAh        端点 1、4 模式控制寄存器                        0000 0000b
+     UEP2_3_MOD             EBh        端点 2、3 模式控制寄存器                        0000 0000b
+
+
+USB 设备物理端口控制寄存器(UDEV_CTRL)，受 bUC_RESET_SIE 复位控制：
+     位               名称           访问                        描述                     复位值
+ [7:3]               保留            RO       保留                                     00000b
+                                            USB 设备物理端口低速模式使能位，该位为 1 选择
+     2       bUD_LOW_SPEED         RW       1.5Mbps 低速模式或者 12Mbps 引脚 DP/DM 互换模式；     0
+                                            该位为 0 选择 12Mbps 全速模式
+                                            USB 设备模式通用标志位：使用者可自己定义，可软件
+     1         bUD_GP_BIT          RW                                                0
+                                            清零或置位
+                                            USB 设备物理端口使能位，该位为 1 使能物理端口；该
+     0        bUD_PORT_EN          RW                                                0
+                                            位为 0 禁用物理端口
+
+
+端点 n 控制寄存器(UEPn_CTRL)：
+位             名称            访问                            描述                       复位值
+                                       USB 端点 n 的接收器(处理 SETUP/OUT 事务)期望的同步触发
+ 7         bUEP_R_TOG        RW                                                      0
+                                       位，该位为 0 表示期望 DATA0；为 1 表示期望 DATA1
+                                       USB 端点 n 的发送器(处理 IN 事务)准备的同步触发位，该
+ 6         bUEP_T_TOG        RW                                                      0
+                                       位为 0 表示发送 DATA0；为 1 表示发送 DATA1
+ 5            保留             RO        保留                                            0
+                                       同步触发位自动翻转使能控制位，该位为 1 表示在发送成
+ 4       bUEP_AUTO_TOG       RW        功或接收成功后自动翻转相应的同步触发位；为 0 表示不                   0
+                                       自动翻转，但可以手动切换。只支持端点 1/2/3
+ 3        bUEP_R_RES1        RW        端点 n 的接收器对 SETUP/OUT 事务的响应控制高位                0
+ 2        bUEP_R_RES0        RW        端点 n 的接收器对 SETUP/OUT 事务的响应控制低位                0
+ 1        bUEP_T_RES1        RW        端点 n 的发送器对 IN 事务的响应控制高位                       0
+ 0        bUEP_T_RES0        RW        端点 n 的发送器对 IN 事务的响应控制低位                       0
+  由 bUEP_R_RES1 和 bUEP_R_RES0 组成的 MASK_UEP_R_RES 用于控制端点 n 的接收器对 SETUP/OUT
+事务的响应方式：00 表示应答 ACK 或就绪；01 表示超时/无响应，用于实现非端点 0 的实时/同步传
+输；10 表示应答 NAK 或忙；11 表示应答 STALL 或错误。
+  由 bUEP_T_RES1 和 bUEP_T_RES0 组成的 MASK_UEP_T_RES 用于控制端点 n 的发送器对 IN 事务的
+响应方式：00 表示应答 DATA0/DATA1 或数据就绪并期望 ACK；01 表示应答 DATA0/DATA1 并期望无响
+应，用于实现非端点 0 的实时/同步传输；10 表示应答 NAK 或忙；11 表示应答 STALL 或错误。
+
+端点 n 发送长度寄存器(UEPn_T_LEN)：
+     位           名称           访问                           描述                      复位值
+ [7:0]        bUEPn_T_LEN         RW    设置 USB 端点 n 准备发送的数据字节数                      00h
+CH543 手册                                    57
+
+
+USB 端点 1、4 模式控制寄存器(UEP4_1_MOD)：
+  位             名称             访问                    描述                   复位值
+  7          bUEP1_RX_EN        RW   该位为 0 禁止端点 1 接收；为 1 使能端点 1 接收(OUT)    0
+  6          bUEP1_TX_EN        RW   该位为 0 禁止端点 1 发送；为 1 使能端点 1 发送(IN)     0
+ [5:0]          保留              RO   保留                                   00h
+
+
+USB 端点 2、3 模式控制寄存器(UEP2_3_MOD)：
+  位             名称             访问                    描述                   复位值
+  7          bUEP3_RX_EN        RW   该位为 0 禁止端点 3 接收；为 1 使能端点 3 接收(OUT)    0
+  6          bUEP3_TX_EN        RW   该位为 0 禁止端点 3 发送；为 1 使能端点 3 发送(IN)     0
+ [5:4]          保留              RO   保留                                    0
+  3          bUEP2_RX_EN        R0   该位为 0 禁止端点 2 接收；为 1 使能端点 2 接收(OUT)    0
+  2          bUEP2_TX_EN        RW   该位为 0 禁止端点 2 发送；为 1 使能端点 2 发送(IN)     0
+ [1:0]          保留              RO   保留                                    0
+
+
+   USB 端点 0 收发共用缓冲区(IN 和 OUT)，以 UEP0_DMA 为起始地址，最大 64 字节。
+   USB 端点 1、2、3 的数据缓冲区由 bUEPn_RX_EN 和 bUEPn_TX_EN(n=1/2/3)组合选择，参考下表。
+                   表 16.3.2 端点 n 缓冲区模式(n=1/2/3)
+ bUEPn_RX_EN       bUEPn_TX_EN            结构描述：以 UEPn_DMA 为起始地址由低向高排列
+         0                 0         端点被禁用，未用到 UEPn_DMA 缓冲区
+         1                 0         单 64 字节接收缓冲区(OUT)
+         0                 1         单 64 字节发送缓冲区(IN)
+         1                 1         单 64 字节接收缓冲区；单 64 字节发送缓冲区
+
+
+USB 端点 n 缓冲区起始地址(UEPn_DMA_L)(n=0/1/2/3)：
+  位            名称              访问                   描述                    复位值
+ [7:0]       UEPn_DMA_L        RW    端点 n 缓冲区起始地址低字节，地址高字节固定为 0           xxh
+注：接收数据的缓冲区的长度 >= min（可能接收到的最大数据包长度 + 2 字节，64 字节）
+
+16.4 主机寄存器
+    在 USB 主机模式下 CH543 提供了一组双向主机端点，    包括一个发送端点 OUT 和一个接收端点 IN，
+数据包的最大长度是 64 字节，支持控制传输、批量传输、中断传输和实时/同步传输。
+    由主机端点发起的每一个 USB 事务，在处理结束后总是自动设置中断标志 UIF_TRANSFER。应用
+程序可以直接查询或在 USB 中断服务程序中查询并分析中断标志寄存器 USB_INT_FG，根据各中断标
+志分别进行相应的处理；并且，如果 UIF_TRANSFER 有效，那么还需要继续分析 USB 中断状态寄存器
+USB_INT_ST，根据当前 USB 传输事务的应答 PID 标识 MASK_UIS_H_RES 进行相应的处理。
+    如果事先设定了主机接收端点的 IN 事务的同步触发位 bUH_R_TOG，那么可以通过 U_TOG_OK 或
+bUIS_TOG_OK 判断当前所接收到的数据包的同步触发位是否与主机接收端点的同步触发位匹配，如
+果数据同步，则数据有效；如果数据不同步，则数据应该被丢弃。每次处理完 USB 发送或者接收中
+断后，都应该正确修改相应主机端点的同步触发位，用于同步下次所发送的数据包和检测下次所接
+收的数据包是否同步；另外，通过设置 bUEP_AUTO_TOG 可以实现在发送成功或者接收成功后自动翻
+转相应的同步触发位。
+    USB 主机令牌设置寄存器 UH_EP_PID 是对 USB 设备模式下的 USB 端点 2 控制寄存器的复用，用
+CH543 手册                                    58
+
+于设置被操作的目标设备的端点号和本次 USB 传输事务的令牌 PID 包标识。SETUP 令牌和 OUT 令牌
+所对应的数据由主机发送端点提供，准备发送的数据在 UH_TX_DMA 缓冲区中，准备发送的数据长度
+设置在 UH_TX_LEN 中；IN 令牌所对应的数据由目标设备返回给主机接收端点，接收到的数据存放在
+UH_RX_DMA 缓冲区中，接收到的数据长度存放在 USB_RX_LEN 中。
+           表 16.4.1 USB 主机相关寄存器列表（标灰受 bUC_RESET_SIE 复位控制）
+         名称                地址                      描述                  复位值
+      UHOST_CTRL           D1h        USB 主机物理端口控制寄存器                 0000 0000b
+       UH_SETUP            D2h        USB 主机辅助设置寄存器                   0000 0000b
+      UH_RX_CTRL           D4h        USB 主机接收端点控制寄存器                 0000 0000b
+       UH_EP_PID           D5h        USB 主机令牌设置寄存器                   0000 0000b
+      UH_TX_CTRL           D6h        USB 主机发送端点控制寄存器                 0000 0000b
+       UH_TX_LEN           D7h        USB 主机发送长度寄存器                   0000 0000b
+      UH_RX_DMA_L          E4h        USB 主机接收缓冲区起始地址低字节              xxxx xxxxb
+      UH_TX_DMA_L          E6h        USB 主机发送缓冲区起始地址低字节              xxxx xxxxb
+       UH_EP_MOD           EBh        USB 主机端点模式控制寄存器                 0000 0000b
+
+
+USB 主机物理端口控制寄存器(UHOST_CTRL)，受 bUC_RESET_SIE 复位控制：
+  位               名称         访问                       描述                   复位值
+ [7:3]            保留             RO   保留                                   00000b
+                                      USB 主机端口低速模式使能位，该位为 1 选择 1.5Mbps
+  2        bUH_LOW_SPEED         RW                                          0
+                                      低速模式；该位为 0 选择 12Mbps 全速模式
+                                      USB 主机端口总线复位控制位，该位为 1 强制主机端口
+  1        bUH_BUS_RESET         RW                                          0
+                                      输出 USB 总线复位；该位为 0 结束输出
+                                      USB 主机端口使能位，该位为 0 禁用主机端口；该位为
+  0         bUH_PORT_EN          RW                                          0
+                                      1 使能主机端口。当 USB 设备断开连接时该位自动清零
+
+
+USB 主机辅助设置寄存器(UH_SETUP)：
+  位               名称         访问                       描述                   复位值
+                                      低速前导包 PRE PID 使能位，该位为 1 使能 USB 主机
+  7       bUH_PRE_PID_EN         RW   通过外部 HUB 与低速 USB 设备通讯；为 0 禁用低速前        0
+                                      导包，USB 主机与低速 USB 设备之间不能有 HUB
+                                      自动产生 SOF 包使能位，该位为 1 由 USB 主机自动产
+  6         bUH_SOF_EN           RW                                          0
+                                      生 SOF 包；为 0 不自动产生，但可以手工产生
+ [5:0]            保留             RO   保留                                    00h
+
+
+USB 主机接收端点控制寄存器(UH_RX_CTRL)：
+  位               名称         访问                       描述                   复位值
+                                      USB 主机接收器(处理 IN 事务)期望的同步触发位，该
+  7          bUH_R_TOG           RW                                          0
+                                      位为 0 表示期望 DATA0；为 1 表示期望 DATA1
+ [6:5]            保留             RO   保留                                    00b
+                                      自动翻转 bUH_R_TOG 使能控制位，该位为 1 表示在 USB
+  4       bUH_R_AUTO_TOG         RW   主机接收成功后自动翻转 bUH_R_TOG 标志；为 0 表示        0
+                                      不自动翻转，但可以手动切换
+  3               保留             RO   保留                                     0
+CH543 手册                               59
+
+                                 USB 主机接收器对 IN 事务的响应控制位，为 0 表示应
+  2         bUH_R_RES      RW    答 ACK 或就绪；为 1 表示无响应，用于与目标设备的           0
+                                 非端点 0 进行实时/同步传输
+ [1:0]         保留          RO    保留                                    00b
+
+
+USB 主机令牌设置寄存器(UH_EP_PID)：
+  位            名称          访问                   描述                    复位值
+ [7:4]     MASK_UH_TOKEN   RW    设置本次 USB 传输事务的令牌 PID 包标识             0000b
+ [3:0]     MASK_UH_ENDP    RW    设置本次被操作的目标设备的端点号                     0000b
+
+
+USB 主机发送端点控制寄存器(UH_TX_CTRL)：
+  位            名称          访问                   描述                    复位值
+  7            保留          RO    保留                                     0
+                                 USB 主机发送器(处理 SETUP/OUT 事务)准备的同步触
+  6         bUH_T_TOG      RW                                           0
+                                 发位，该位为 0 表示发送 DATA0；为 1 表示发送 DATA1
+  5            保留          RO    保留                                     0
+                                 自动翻转 bUH_T_TOG 使能控制位，该位为 1 表示在 USB
+  4      bUH_T_AUTO_TOG    RW    主机发送成功后自动翻转 bUH_T_TOG 标志；为 0 表示        0
+                                 不自动翻转，但可以手动切换
+ [3:1]         保留          RO    保留                                   000b
+                                 USB 主机发送器对 SETUP/OUT 事务的响应控制位，为 0
+  0         bUH_T_RES      RW    表示期望应答 ACK 或就绪；为 1 表示期望无响应，用           0
+                                 于与目标设备的非端点 0 进行实时/同步传输
+
+
+USB 主机发送长度寄存器(UH_TX_LEN)：
+  位            名称          访问                   描述                    复位值
+ [7:0]      UH_TX_LEN      RW    设置 USB 主机发送端点准备发送的数据字节数               00h
+
+
+USB 主机端点模式控制寄存器(UH_EP_MOD)：
+  位             名称         访问                    描述                   复位值
+  7             保留          RO   保留                                     0
+                                 该位为 0 禁止 USB 主机发送端点发送数据；该位为 1
+  6         bUH_EP_TX_EN    RW   使能 USB 主机发送端点发送数据(SETUP/OUT)，以         0
+                                 UH_TX_DMA 为起始地址，单 64 字节发送缓冲区
+ [5:4]          保留          RO   保留                                    00b
+                                 该位为 0 禁止 USB 主机接收端点接收数据；该位为 1
+  3         bUH_EP_RX_EN    RO   使能 USB 主机接收端点接收数据(IN)，以 UH_RX_DMA      0
+                                 为起始地址，单 64 字节接收缓冲区
+ [2:0]          保留          RO   保留                                   000b
+
+
+USB 主机接收缓冲区起始地址(UH_RX_DMA_L)：
+  位            名称          访问                   描述                    复位值
+ [7:0]      UH_RX_DMA_L    RW    主机接收缓冲区起始地址低字节，地址高字节固定为 0             xxh
+CH543 手册                          60
+
+USB 主机发送缓冲区起始地址(UH_TX_DMA_L)：
+  位           名称         访问              描述               复位值
+ [7:0]     UH_TX_DMA_L   RW   主机发送缓冲区起始地址低字节，地址高字节固定为 0   xxh
+CH543 手册                                 61
+
+
+17、两线通讯接口 I2C
+17.1 I2C 简介
+   CH543 和 CH541 芯片提供 I2C 从机 I2CS 接口。主要特性有：
+(1)、I2C 从机控制器 slave，支持多种中断，支持 100KHz、400KHz 和 1MHz 等速率；
+(2)、可以预置本机 slave 地址，支持广播地址；
+(3)、对于低速应用，可直接使用 I2C 引脚内置的上拉电阻。
+
+17.2 I2C 寄存器
+                               表 17.2.1 I2C 相关寄存器列表
+         名称              地址                    描述                       复位值
+      I2CS_CTRL          A4h    I2CS 从机控制寄存器                       0000 0x00b
+      I2CS_DEV_A         A5h    I2CS 从机设备地址寄存器                     0000 0000b
+      I2CS_ADDR          A6h    I2CS 从机数据地址寄存器(只读)                 xxxx xxxxb
+      I2CS_DATA          A7h    I2CS 从机数据收发寄存器                     xxxx xxxxb
+      I2CS_STAT          A0h    I2CS 从机状态寄存器                       0000 1100b
+
+
+I2CS 从机控制寄存器(I2CS_CTRL)：
+  位                名称          访问                   描述                   复位值
+                                    I2CS 被读取数据的中断使能位，该位为 1 则发送完
+  7         bI2CS_IE_READ      RW                                         0
+                                    一个数据字节后触发中断；该位为 0 则不触发中断
+                                    I2CS 被写入数据的中断使能位，该位为 1 则接收到
+  6        bI2CS_IE_WRITE      RW                                         0
+                                    一个数据字节后触发中断；该位为 0 则不触发中断
+                                    I2CS 接收数据地址的中断使能位，该位为 1 则接收
+  5         bI2CS_IE_ADDR      RW                                         0
+                                    到数据地址后触发中断；该位为 0 则不触发中断
+                                    I2CS 接收从机地址的中断使能位，该位为 1 则接收
+  4        bI2CS_IE_DEV_A      RW   到从机地址后触发中断；该位为 0 则不触发中断。              0
+                                    该位为 1 将使能广播地址，否则不支持广播地址
+                                    I2CS 接收 START 或 STOP 情形的中断使能位，该位
+  3        bI2CS_IE_STASTO     RW   为 1 则接收到 START 或 STOP 后触发中断；该位为 0     0
+                                    则不触发中断
+                                    经同步后当前 SDA 引脚的状态：
+  2         bI2CS_SDA_IN       RO                                         x
+                                    0-低电平；1-高电平
+  1                保留          RO   保留                                    0
+                                    I2CS 从机使能，该位为 0 关闭并清零 I2CS 从机，
+  0           bI2CS_EN         RW                                         0
+                                    该位为 1 开启 I2CS 从机
+
+
+I2CS 从机设备地址寄存器(I2CS_DEV_A)：
+  位                名称          访问                   描述                   复位值
+                                    I2CS 从机设备地址值，0 为广播地址，其它值为经
+ [7:1]     MASK_I2CS_DEV_A     RW                                        00h
+                                    分配的需要匹配的从机设备地址
+                                    存储由外部 I2C 主机指定的数据单元地址的高 3
+ [3:1]      bI2CS_DEV_A3H      RO                                        xxxb
+                                    位，仅在 bI2CS_DA_4BIT=1 时可见
+  0         bI2CS_DA_4BIT      RW   I2CS 从机设备地址模式：                        0
+CH543 手册                                 62
+
+                                     0-7 位从机地址模式，I2CS_ADDR 实际为 8 位；
+                                     1-4 位从机地址模式，仅需匹配从机设备地址的高
+                                     4 位，无需匹配低 3 位，当前操作的从机设备地址
+                                     的低 3 位存储于 bI2CS_DEV_A3H 中，I2CS_ADDR 实
+                                     际扩展为 11 位，其高 3 位来自 bI2CS_DEV_A3H
+
+
+I2CS 从机数据地址寄存器(I2CS_ADDR)：
+  位          名称        访问                           描述                       复位值
+                                存储由外部 I2C 主机指定的数据单元地址，在连续读写操
+ [7:0]     I2CS_ADDR       RO                                                 xxh
+                                作过程中，该数据单元地址将在每个字节后自动增量
+
+
+I2CS 从机数据收发寄存器(I2CS_DATA)：
+  位          名称        访问                           描述                       复位值
+                                I2CS 从机数据收发寄存器包括发送和接收两个物理上分
+                                开的寄存器。写入该寄存器的数据用于发送，供外部 I2C
+ [7:0]     I2CS_DATA       RW                                                 xxh
+                                主机读取。读取该寄存器将返回接收缓冲区中的数据，通
+                                常是最近外部 I2C 主机写入的数据
+
+
+I2CS 从机状态寄存器(I2CS_STAT)：
+  位             名称              访问                   描述                      复位值
+                                     接收到 START 或 STOP 情形中断标志位，该位为 1
+                                     表示有中断，根据 MASK_I2CS_STAT 进一步判断是
+  7        I2CS_IF_STASTO       RW                                             0
+                                     START 或 STOP；该位为 0 表示无中断。直接位写 0
+                                     清零或寄存器对应位写 1 清零
+                                     一个数据字节传输完成中断标志位，该位为 1 表示
+                                     有中断，在收发完成一个字节后触发；该位为 0 表
+  6         I2CS_IF_BYTE        RW                                             0
+                                     示无中断。直接位写 0 清零或寄存器对应位写 1 清
+                                     零
+                                     接收到数据单元地址中断标志位，该位为 1 表示有
+  5         I2CS_IF_ADDR        RW   中断，在接收到数据地址后触发；该位为 0 表示无                  0
+                                     中断。直接位写 0 清零或寄存器对应位写 1 清零
+                                     接收到从机设备地址中断标志位，该位为 1 表示有
+                                     中断，在接收到从机地址后触发，不管地址是否匹
+  4        I2CS_IF_DEV_A        RW                                             0
+                                     配；该位为 0 表示无中断。直接位写 0 清零或寄存
+                                     器对应位写 1 清零
+                                     I2CS 从机当前状态：
+                                     0000-空闲或者正在接收从机地址；
+                                     0001-对接收到的从机地址进行应答；
+                                     0010-正在接收数据单元地址；
+ [3:0]     MASK_I2CS_STAT       RO   0011-对接收到的数据单元地址进行应答；                   1100b
+                                     0100-正在接收数据字节；
+                                     0101-对接收到的数据字节进行应答；
+                                     0110-正在发送数据字节；
+                                     0111-正在等待和检查发送数据后的应答；
+CH543 手册       63
+
+           1100-正在处于 STOP 情形；
+           XXXX-未知状态
+CH543 手册                                   64
+
+
+18、USB PD 和 type C 控制器
+18.1 PD 和 type C 简介
+   CH541 仅支持 USB type-C，CH543 芯片支持 USB type-C 和 USB PD 及 PD 3.0。CH543 还支持可
+编程灌电流，用于 PMU 调节外部电源电压，支持 PD 3.0 和 PPS。主要特性有：
+(1)、内置 USB type-C 接口，支持主从检测，支持 DRP、Sink/Consumer 和 Source/Provider；
+(2)、内置 USB PD 收发器 PHY，集成硬件边沿斜率控制；
+(3)、内置 USB Power Delivery 控制器，自动 BMC 编解码、4b5b 编解码和 CRC；
+(4)、支持 SOP、SOP’、SOP”等 PD 包，支持 USB PD 复位信号帧硬件复位；
+(5)、支持最大包长度 123 字节，支持 DMA；
+(6)、支持 USB PD 2.0 和 3.0 电力传输协议，USB 端口支持 BC 等充电协议。
+
+18.2 PD 和 type C 寄存器
+                              表 18.1.1 PD 和 type C 相关寄存器列表
+         名称                 地址                      描述                        复位值
+        CC1_CTRL            C6h    PD/type C 的 CC1 控制寄存器                     0000 0011b
+        CC2_CTRL            C7h    PD/type C 的 CC2 控制寄存器                     0000 0011b
+       UPD_INT_FG           C0h    PD 中断标志寄存器                                0000 0000b
+       UPD_INT_EN           C1h    PD 中断使能寄存器                                0000 0000b
+        UPD_CTRL            C2h    PD 控制寄存器                                  0000 0010b
+        UPD_DATA            C3h    PD 数据寄存器                                  xxxx xxxxb
+       UPD_DMA_L            C4h    PD 缓冲区起始地址低字节                             xxxx xxxxb
+       UPD_TIMER            BBh    PD BMC 定时寄存器                              0000 0000b
+       UPD_COUNT            BCh    PD 数据字节计数寄存器(只读)                          0xxx xxxxb
+       UPD_T_LEN            BDh    PD 发送长度寄存器                                0000 0000b
+       UPD_T_SOP            BEh    PD 发送 SOP 配置寄存器                           0000 0000b
+       UPD_CRC32            BFh    PD CRC32 数据检查寄存器(只读)                      xxxx xxxxb
+
+
+PD/type C 的 CC1、CC2 控制寄存器(CC1_CTRL 和 CC2_CTRL 独立控制)：
+  位                 名称            访问                     描述                     复位值
+                                       CC1/CC2 端口电压比较器使能：
+   7               bCC_CE         RW   0-关闭比较器，默认 bCC_CMPO 输出 1；                   0
+                                       1-开启比较器，由 MASK_CC_CVS 选择参考电压
+                                       CC1/CC2 端口低电压输出模式使能：
+   6           bCC_LVO            RW                                               0
+                                       0-正常电压 VDD 驱动输出；1-PD 低电压驱动输出
+   5           bCC_CVS1           RW   MASK_CC_CVS 选择端口电压比较器的参考电压：                 0
+   4           bCC_CVS0           RW   00-0.55V；01-0.22V；10-0.66V；11-1.23V         0
+   3           bCC_PU1            RW   MASK_CC_PU 选择 CC1/CC2 端口上拉电流：               0
+                                       00-禁止上拉电流；01-约 330uA 上拉；
+   2           bCC_PU0            RW   10-约 180uA 上拉；11-约 80uA 上拉                  0
+                                       CC1/CC2 端口下拉电阻使能：
+   1               bCC_PD         RW                                               1
+                                       0-禁止下拉电阻；1-启用 5.1KΩ下拉电阻
+                                       CC1/CC2 端口电压比较器的结果输出位：
+   0           bCC_CMPO           RO                                               1
+                                       0-当前端口电压小于参考电压；
+CH543 手册                             65
+
+                                1-当前端口电压大于参考电压
+
+
+USB PD 中断标志寄存器(UPD_INT_FG)：
+位          名称       访问                         描述                           复位值
+                          PD 发送数据包完成中断标志位，该位为 1 表示有中断，该
+ 7    PIF_TX_END    RW    中断由数据包传输完成触发；该位为 0 表示无中断。直接                        0
+                          位写 0 清零或寄存器对应位写 1 清零
+                          PD 收到复位信号帧中断标志位，该位为 1 表示有中断，该
+                          中断由复位信号帧接收完成触发，由 MASK_PD_STAT 具体区
+ 6    PIF_RX_RST    RW                                                       0
+                          分；该位为 0 表示无中断。直接位写 0 清零或寄存器对应
+                          位写 1 清零
+                          PD 接收到数据包中断标志位，该位为 1 表示有中断，该中
+                          断由数据包接收完成触发，由 MASK_PD_STAT 具体区分；该
+ 5    PIF_RX_ACT    RW                                                       0
+                          位为 0 表示无中断。直接位写 0 清零或寄存器对应位写 1
+                          清零
+                          PD 接收到数据字节中断标志位，该位为 1 表示有中断，该
+                          中断由 SOP 接收完成或数据字节接收完成触发，由
+ 4   PIF_RX_BYTE    RW                                                       0
+                          MASK_PD_STAT 和 UPD_COUNT 具体区分；该位为 0 表示无中
+                          断。直接位写 0 清零或寄存器对应位写 1 清零
+                          PD 接收到数据位中断标志位，该位为 1 表示有中断，该中
+                          断由一符号即 5bit 接收完成（如果 bPIE_RX_BYTE=1）或一
+ 3    PIF_RX_BIT    RW                                                       0
+                          位接收完成（如果 bPIE_RX_BYTE=0）触发；该位为 0 表示
+                          无中断。直接位写 0 清零或寄存器对应位写 1 清零
+                          当 bPD_TX_EN=1 时是 PD 发送控制位，置 1 启动 PD 发送，
+                          PHY 自动切换为输出，发送完成后该位自动清零。
+ 2     PD_START     RW                                                       0
+                          当 bPD_TX_EN=0 并且 bPD_CC_SEL 所选 bCC_CE=1 时是 PD 接
+                          收使能位，置 1 允许 PD 接收，置 0 则禁止接收
+                          MASK_PD_STAT 指示当前 PD 状态，提供具体细节。
+                          在 PD 接收时或者接收完成后，状态如下：
+ 1     PD_STAT1     RO                                                       0
+                          00-接收空闲或者没有接收到有效的数据包；
+                          01-接收到 SOP 即 SOP0；
+                          10-接收到 SOP’即 SOP1 或者 Hard Reset；
+                          11-接收到 SOP”即 SOP2 或者 Cable Reset。
+ 0     PD_STAT0     RO    在 PD 发送时，状态如下：                                     0
+                          00-正在发送 CRC32[7:0]；01-正在发送 CRC32[15:8]；
+                          10-正在发送 CRC32[23:16]；11-正在发送 CRC32[31:24]
+
+
+PD 中断使能寄存器(UPD_INT_EN)：
+位          名称       访问                          描述                          复位值
+ 7    bPIE_TX_END    RW    该位为 1 使能 PD 发送数据包完成中断；为 0 禁止                      0
+ 6    bPIE_RX_RST    RW    该位为 1 使能 PD 收到复位信号帧中断；为 0 禁止                      0
+ 5    bPIE_RX_ACT    RW    该位为 1 使能 PD 接收到数据包中断；为 0 禁止                       0
+ 4   bPIE_RX_BYTE    RW    该位为 1 使能 PD 接收到数据字节中断；为 0 禁止                      0
+ 3    bPIE_RX_BIT    RW    该位为 1 使能 PD 接收到数据位中断；为 0 禁止                       0
+CH543 手册                                 66
+
+                                如果 CC1 或 CC2 被 bPD_CC_SEL 选中的 bCC_CE=1，那么是
+                                该 CC 端口电压比较器结果变化中断使能，该位为 1 使能
+                                CC 端口电压比较器结果变化中断；为 0 禁止。清零
+ 2        bPIE_CC_IO       RW   bPIE_CC_IO 位将同时清零内部的中断标志。                      0
+                                如果 bPD_CC_SEL 所选 bCC_CE=0，那么是 GPIO 电平变化
+                                中断使能，该位为 1 使能 P1.0/P1.1 引脚电平变化中断；
+                                为 0 禁止。正常 PD 接收过程中必须置 0
+                                MASK_PD_CRC_SEL 选择 UPD_CRC32 呈现的 CRC32 数据位：
+ 1    bPD_CRC32_SEL1       RW   00-数据位[7:0]供读取；01-数据位[15:8]供读取；                0
+                                10-数据位[23:16]供读取；11-数据位[31:24]供读取。
+ 0    bPD_CRC32_SEL0       RW   该选择在 bPD_CLR_ALL=1 时、或者读写 UPD_INT_EN 时自        0
+                                动清零，在 UPD_CRC32 被读取后自动加 1、支持回环
+
+
+P1.0/P1.1 电平变化中断：
+    在 bPD_CC_SEL 所选 bCC_CE=0 且 bPIE_CC_IO=1 状态下，对于高阻输入模式下的 P1.0 或 P1.1，
+将自动允许该 GPIO 的电平变化中断功能。即，如果 P1_MOD_OC[0]=0 和 P1_DIR_PU[0]=0，则当 P1.0
+引脚输入状态不同于 P1.0 输出寄存器中的值时，产生 PD 中断，用 P1.0 引脚新状态更新输出寄存器
+中的值后撤消中断请求。P1.1 类似，另外也允许 P1.0 和 P1.1 都开启电平变化中断。
+
+PD 控制寄存器(UPD_CTRL)：
+位            名称            访问                      描述                         复位值
+                                指示当前 PD 数据收发时的半字节状态，该位为 0 表示正
+ 7     bPD_NIBBLE_HI       RO                                                  0
+                                在处理低 4 位，该位为 1 表示正在处理高 4 位
+                                指示当前 BMC 发送编码时的位状态，该位为 0 表示正在处
+ 6     bBMC_TX_BIT_B       RO                                                  0
+                                理前半位，该位为 1 表示正在处理后半位
+                                选择 PD 唤醒所用的比较结果或者 I/O 的极性，该位为 0
+ 5    bPD_WAKE_POLAR       RW                                                  0
+                                低有效唤醒，该位为 1 高有效唤醒
+                                选择收到 PD 复位信号帧后的执行功能：
+                                0-收到后激活中断标志 PIF_RX_RST，如果 bPIE_RX_RST=1
+ 4        bPD_RST_EN       RW   则产生 PD 中断；                                     0
+                                1-收到 Hard Reset 将复位芯片，如果 bPIE_RX_RST=1 则
+                                收到 Cable Reset 也将复位芯片
+ 3        bPD_DMA_EN       RW   该位为 1 使能 PD 的 DMA；为 0 关闭 DMA                   0
+ 2        bPD_CC_SEL       RW   选择 PD 收发端口：0-选择 P1.0/CC1；1-选择 P1.1/CC2         0
+                                该位为 1 清空 PD 中断标志和 FIFO，需要软件清零。该位
+ 1        bPD_CLR_ALL      RW                                                  1
+                                为 0 使能 PD 的 IO 功能
+                                PD 发送使能：
+                                0-禁止发送，如果 bPD_CC_SEL 所选 bCC_CE=1 则该 CC 通
+ 0         bPD_TX_EN       RW                                                  0
+                                道允许接收；
+                                1-允许在 bPD_CC_SEL 所选的 CC 通道上发送
+     由 bPD_CLR_ALL、bPD_CC_SEL 所选 bCC_CE 和 bPD_TX_EN 组成 USB PD 系统控制组合：
+bPD_CLR_ALL 所选 bCC_CE bPD_TX_EN                    USB PD 系统控制描述
+      1                0        0    禁止 PD 功能，P1.0/P1.1 作为 GPIO
+      0                0        0    使能 PD 时钟和 I/O，关闭 GPIO
+CH543 手册                              67
+
+      0           1         0      开启 CC 端口电压比较器，稍后由 PD_START 使能 PD 接收
+      0           x         1      PD 发送使能，在 bCC_LVO 置 1 后，由 PD_START 启动发送
+
+
+PD 唤醒信号源和极性：
+    当 bPD_CC_SEL=0 时，支持 P1.0/CC1 信号唤醒或 P1.1/CC2 信号唤醒。当 bPD_CC_SEL=1 时，仅
+支持 P1.1/CC2 信号唤醒。
+    bCC_CE 选择模拟比较结果或者引脚数字电平。当 CC1 的 bCC_CE=1 时，选择 CC1 端口电压比较
+器结果唤醒；当 CC1 的 bCC_CE=0 时，选择 CC1 引脚电平唤醒。
+    bPD_WAKE_POLAR 选择信号极性。当 bPD_WAKE_POLAR=0 时比较结果低或引脚低电平唤醒；当
+bPD_WAKE_POLAR=1 时比较结果高或引脚高电平唤醒。
+    CC2 类似 CC1，由 CC2 的 bCC_CE 选择。
+
+PD 数据寄存器(UPD_DATA)：
+  位          名称        访问                       描述                    复位值
+                                PD 数据收发的一字节缓冲区。
+                                如果未开启 DMA，发送时查询 bPD_NIBBLE_HI 可将数据
+ [7:0]     UPD_DATA    RW                                              xxh
+                                写入该寄存器用于发送；接收时在 PIF_RX_BYTE 中断后
+                                读取该寄存器将返回接收到的数据字节
+
+
+PD 缓冲区起始地址(UPD_DMA_L)：
+  位          名称        访问                       描述                    复位值
+                                PD 缓冲区起始地址低字节，地址高字节固定为 0，
+ [7:0]     UPD_DMA_L   RW                                              xxh
+                                实际将占用缓冲区的字节数是 UPD_COUNT
+
+
+PD BMC 定时寄存器(UPD_TIMER)：
+  位          名称        访问                       描述                    复位值
+                                调节 PD BMC 编解码的定时值。
+                                为适应不同系统主频 Fsys，或为调节 PD 通讯速率，在
+ [7:0]     UPD_TIMER   RW                                              00h
+                                PD 发送前需写入编码定时值，在接收前需写入解码定时
+                                值。
+
+
+PD 数据字节计数寄存器(UPD_COUNT)：
+  位          名称        访问                       描述                    复位值
+                                提供 PD 包传输的当前数据字节计数。
+                                对于发送，进入数据阶段后指示当前数据字节计数。
+ [7:0]     UPD_COUNT   RO                                              00h
+                                对于接收，指示当前接收到的数据字节数，该值减去 4
+                                得到不含 32 位 CRC 后的数据包的字节数
+
+
+PD 发送长度寄存器(UPD_T_LEN)：
+  位          名称        访问                       描述                    复位值
+                                PD 发送数据包的字节数，不含 CRC，当数据包发送完成
+ [7:0]     UPD_T_LEN   RW                                              00h
+                                后自动添加 32 位 CRC 及 EOP 结束符并发送
+
+
+PD 发送 SOP 配置寄存器(UPD_T_SOP)：
+CH543 手册                            68
+
+  位          名称        访问                      描述                       复位值
+ [7:6]     bUPD_KC4    RW                                               00b
+ [5:4]     bUPD_KC3    RW   由 4 个符号组合形成 PD 发送 SOP 配置。提供预定义：             00b
+ [3:2]     bUPD_KC2    RW   UPD_SOP0/SOP、UPD_SOP1/SOP’、UPD_SOP2/SOP”、   00b
+  1          保留        RO   UPD_HARD_RESET、UPD_CABLE_RESET               0
+  0        bUPD_KC1    RW                                                0
+
+
+PD CRC32 数据检查寄存器(UPD_CRC32)：
+  位          名称        访问                      描述                       复位值
+                            CRC32 数据检查窗口，由 MASK_PD_CRC_SEL 选择所需检
+ [7:0]     UPD_CRC32   RO                                               xxh
+                            查的数据位
+
+
+18.3 PD 应用
+18.3.1 PD 接收配置和应用
+(1)、初始化 type C 端口，设置 CC 所用 I/O 引脚为高阻输入模式，设置所选 CC 端口的 bCC_CE=1、
+     MASK_CC_CVS=00、bCC_LVO=0，另外，根据实际情况保持或更改 MASK_CC_PU 或 bCC_PD；
+(2)、设置 bPD_CLR_ALL=0、选择 bPD_CC_SEL，置 bPD_TX_EN=0 接收模式，按需设置 bPD_DMA_EN、
+     bPD_RST_EN；
+(3)、可选设置 UPD_INT_EN 和 IE_USBPD，一般是 bPIE_RX_ACT=1，按需设置 bPIE_RX_RST；
+(4)、如果启用了 DMA，需事先设置 UPD_DMA_L；
+(5)、根据系统主频为 UPD_TIMER 加载相应的解码定时值 UPD_TMR_RX_*；
+(6)、设置 PD_START=1 允许接收；
+(7)、接收完成中断后或者查询到接收完成后，则分析 MASK_PD_STAT 并处理数据包，UPD_COUNT 减
+     去 4 是数据长度，后续可以自动继续接收下一包，如果没有后续接收则可关闭 PD_START。
+
+18.3.2 PD 发送配置和应用
+(1)、初始化 type C 端口，设置 CC 所用 I/O 引脚为高阻输入模式，设置所选 CC 端口的 bCC_LVO=0，
+     bCC_CE 和 MASK_CC_CVS 不影响，另外，根据实际情况保持或更改 MASK_CC_PU 或 bCC_PD；
+(2)、设置 bPD_CLR_ALL=0、选择 bPD_CC_SEL，置 bPD_TX_EN=1 发送模式，按需设置 bPD_DMA_EN；
+(3)、可选设置 UPD_INT_EN 和 IE_USBPD，一般是 bPIE_TX_END=1；
+(4)、如果启用了 DMA，需事先设置 UPD_DMA_L；
+(5)、根据系统主频为 UPD_TIMER 加载相应的编码定时值 UPD_TMR_TX_*；
+(6)、准备数据，设置 UPD_T_SOP、设置 UPD_T_LEN；
+(7)、设置所选 CC 端口的 bCC_LVO=1，立即设置 PD_START=1 开启发送，发送完成后自动清零；
+(8)、发送完成中断后或者查询到发送完成后，立即设置所选 CC 端口的 bCC_LVO=0；
+(9)、可再次设置 bCC_LVO=1 及 PD_START=1 则开启下一包发送。
+
+18.3.3 兼顾 PD 收发切换的建议配置和应用
+(1)、初始化 type C 端口，设置所用 I/O 引脚为高阻输入模式（P1_DIR_PU/P1_MOD_OC 对应位为 0），
+     设置所选 CC 端口的 bCC_CE=1、MASK_CC_CVS=00、bCC_LVO=0，兼顾接收和发送，减少收发切
+     换时的频繁更改，另外，MASK_CC_PU 或 bCC_PD 保持之前 type C 主从协商的实际设置；
+(2)、设置 bPD_CLR_ALL=0、选择 bPD_CC_SEL，置 bPD_TX_EN=0 默认接收，建议设置 bPD_DMA_EN；
+(3)、清除各中断标志，建议设置 UPD_INT_EN 和 IE_USBPD，置 bPIE_RX_ACT=1、bPIE_TX_END=1；
+(4)、对于发送 SOP 配置基本不变的应用，在此预先设置 UPD_T_SOP；
+(5)、根据收发缓冲区的位置，事先设置 UPD_DMA_L，如果收发缓冲区合用则后续无需更改；
+CH543 手册                    69
+
+(6)、根据系统主频为 UPD_TIMER 加载相应的解码定时值 UPD_TMR_RX_*；
+(7)、设置 PD_START=1 允许接收；
+(8)、接收完成中断后，关闭 PD_START 暂停接收，分析 MASK_PD_STAT 并处理数据包；
+(9)、进入半双工的发送状态，在缓冲区中准备待发送数据；
+(10)、根据系统主频为 UPD_TIMER 加载相应的编码定时值 UPD_TMR_TX_*；
+(11)、设置 UPD_T_LEN，如果收发缓冲区独立，则在此切换 UPD_DMA_L，如果需要更改发送 SOP，则
+     在此更新 UPD_T_SOP，根据需要延时等待 PD 协议的间隔；
+(12)、设置 bPD_TX_EN=1 切换到发送模式；
+(13)、设置所选 CC 端口的 bCC_LVO=1，立即设置 PD_START=1 开启发送，发送完成后自动清零；
+(14)、发送完成中断后，立即设置所选 CC 端口的 bCC_LVO=0，可以设置 bPD_TX_EN=0 切换为默认的
+     接收模式；
+(15)、转步骤(5)准备下一包的接收。
+CH543 手册                             70
+
+
+19、参数
+19.1 绝对最大值(临界或者超过绝对最大值将可能导致芯片工作不正常甚至损坏)
+  名称                        参数说明                         最小值        最大值        单位
+            工作时的      额定 5V 或 9V，VDD12<10V，Fsys<40MHz      -40        85        ℃
+   TA
+            环境温度       额定 12V，VDD12>=10V，Fsys<40MHz        -20        70        ℃
+ TAROM       Flash-ROM/EEPROM 擦写操作的环境温度（建议）                -20        85        ℃
+   TS                   储存时的环境温度                           -55        125       ℃
+ VDD12          电源电压（VDD12 接电源，GND 接地）                    -0.4       13.5       V
+                                                                      6.0
+  VDD                 内部 USB 和 I/O 电源电压                   -0.4                  V
+                                                                   VDD12+0.4
+  VIO        除 P3.5 或 RST 之外的输入或者输出引脚上的电压                 -0.4      VDD+0.4     V
+ VIOHV                P3.5 或 RST 引脚上的电压                   -0.4     VDD12+0.4    V
+ TVRISE     VDD12 电压上升时间（避免纳秒级瞬时高压上电）                      1        500000     uS/V
+
+
+19.2 电气参数 3.3V(测试条件：TA=25℃，VDD12=5V&VDD=3.3V 或 VDD12=VDD=3.3V，Fsys=12MHz)
+  名称                   参数说明                   最小值        典型值        最大值        单位
+                              VDD 仅外接电容         3.7        5         12.6       V
+ VDD12     VDD12 引脚电源电压
+                             VDD 短接到 VDD12      2.8        3.3        3.6       V
+           内部电压调整器输出电压 TA=-15～65℃              3.23        3.3       3.45       V
+  VDD
+           （睡眠时自动短接 VDD12） TA=-40～85℃           3.2        3.3        3.5       V
+           VDD 引脚    VDD 短接到 VDD12，开启 USB       3.0        3.3        3.6       V
+  VDD
+           电源电压      VDD 短接到 VDD12，关闭 USB       2.8        3.3        3.6       V
+ ICC24M3      Fsys=24MHz 工作时的总电源电流                         4.3                 mA
+ ICC12M3      Fsys=12MHz 工作时的总电源电流                         2.9                 mA
+ICC750K3      Fsys=750KHz 工作时的总电源电流                        1.4                 mA
+ ISLP3         Halt 暂停模式下的总电源电流                            0.3        0.6      mA
+               bLDO_3V3_OFF=1 关闭 LDO，
+ ISLP3L                                                    4          20       uA
+              下电/深度睡眠后的总电源电流
+ IADC3          ADC 模数转换模块工作电流                             180        500      uA
+ ICMP3          电压比较器模块工作电流                                80         240      uA
+ ITKEY3             触摸按键电容充电电流                  30         50         70       uA
+  VIL3               低电平输入电压                     0                    0.8       V
+  VIH3               高电平输入电压                    2.0                   VDD       V
+ VIHP4     P1.0/1.1/P3.6/3.7 引脚高电平输入电压          2.2                   VDD       V
+ VIH3H         P3.5/RST 引脚高电平输入电压               2.0                  VDD12      V
+  VOL3        低电平输出电压(12mA 吸入电流)                                      0.4       V
+  VOH3        高电平输出电压(6mA 输出电流)               VDD-0.4                           V
+ VOH3PD    P1.0/1.1 高电平输出电压(1mA 输出电流)         VDD-0.6                           V
+ VOL3U     P3.5/6/7 低电平输出电压(8mA 吸入电流)                                 0.4       V
+ VOH3U     P3.6/3.7 高电平输出电压(8mA 输出电流)         VDD-0.4                           V
+ VOH35       P3.5 高电平输出电压(2mA 输出电流)          VDD12-0.4                          V
+ VADCPD     AIN0/1/3 通道 ADC 有效输入高电压范围         VDD-0.8    VDD-0.5                V
+  ICMP          CMP 比较器输出驱动能力                   120        180                 uA
+CH543 手册                           71
+
+  IIN           无上拉输入端的输入电流                   -5         0        5      uA
+  IUP3      非专用、带上拉电阻输入端的输入电流                 15         30       50     uA
+ IUP3X     带上拉输入端由低向高翻转时的输入电流                 100        170      260    uA
+ ISSTEP     ISINK 可编程灌电流的步距（平均值）                        0.465            uA
+ V3REF     ADC 内部通道 VREF12 参考电压的相对误差          -7%       ±2%       +7%
+ ISDIF      ISINK 可编程灌电流的误差（满幅时）             -3.5%      ±1%      +3.5%
+ I3DIF       USB 和 USB PD 上拉或下拉电流的误差         -30%       ±7%      +20%
+ R3DIF       USB 和 USB PD 上拉或下拉电阻的误差         -20%       ±7%      +20%
+ RU1K5          USB 引脚的 1.5KΩ上拉电阻             1.3        1.5     1.75    KΩ
+ RR40K          RST 引脚的 40KΩ下拉电阻              35         40       46     KΩ
+  Rsw3        ADC 等模块的模拟开关的导通电阻               500        700     2000    Ω
+  Vovr          VDD12 过压复位的门限电压              13.0       14.5     17.5    V
+  Vpot          电源上电复位的门限电压                   2.2      2.3/2.8    3.0    V
+
+
+19.3 电气参数 4.7V(测试条件：TA=25℃，VDD12=5.5V&VDD=4.7V 或 VDD12=VDD=4.7V，Fsys=12MHz)
+  名称                  参数说明                  最小值        典型值       最大值     单位
+ VDD12     VDD12 引脚电源电压     VDD 仅外接电容         5.2        5.5     12.6    V
+           内部电压调整器输出电压 TA=-15～65℃             4.6        4.7     4.85    V
+  VDD
+           （睡眠时自动短接 VDD12） TA=-40～85℃        4.56        4.7      4.9    V
+  VDD       VDD 引脚电源电压（VDD 短接到 VDD12）         4.0        4.7      5.5    V
+ ICC24M5      Fsys=24MHz 工作时的总电源电流                       4.4             mA
+ ICC12M5      Fsys=12MHz 工作时的总电源电流                       3.0             mA
+ICC750K5      Fsys=750KHz 工作时的总电源电流                      1.5             mA
+ ISLP5         Halt 暂停模式下的总电源电流                          0.3      0.7    mA
+               bLDO_3V3_OFF=1 关闭 LDO，
+ ISLP5L                                                  6        30     uA
+              下电/深度睡眠后的总电源电流
+ IADC5          ADC 模数转换模块工作电流                           200      600    uA
+ ICMP5          电压比较器模块工作电流                              100      300    uA
+ ITKEY5          触摸按键电容充电电流                   30         50       70     uA
+  VIL5             低电平输入电压                    0                   1.2    V
+  VIH5             高电平输入电压                    2.6                 VDD    V
+ VIHP6     P1.0/1.1/P3.6/3.7 引脚高电平输入电压        3.0                 VDD    V
+ VIH5H         P3.5/RST 引脚高电平输入电压             2.6                VDD12   V
+  VOL5        低电平输出电压(20mA 吸入电流)                                  0.4    V
+  VOH5        高电平输出电压(10mA 输出电流)            VDD-0.4                      V
+ VOH5PD    P1.0/1.1 高电平输出电压(1mA 输出电流)       VDD-0.6                      V
+ VOL5U     P3.5/6/7 低电平输出电压(10mA 吸入电流)                            0.4    V
+ VOH5U     P3.6/3.7 高电平输出电压(10mA 输出电流)      VDD-0.4                      V
+ VOH35       P3.5 高电平输出电压(4mA 输出电流)        VDD12-0.4                     V
+ VADCPD     AIN0/1/3 通道 ADC 有效输入高电压范围       VDD-0.9    VDD-0.6           V
+  ICMP          CMP 比较器输出驱动能力                 160        240             uA
+  IIN           无上拉输入端的输入电流                   -5         0        5      uA
+  IUP5      非专用、带上拉电阻输入端的输入电流                 35         70       110    uA
+ IUP5X     带上拉输入端由低向高翻转时的输入电流                 250        400      600    uA
+CH543 手册                              72
+
+ ISSTEP     ISINK 可编程灌电流的步距（平均值）                          0.465                 uA
+ V5REF     ADC 内部通道 VREF12 参考电压的相对误差            -8%        ±2%         +8%
+ ISDIF      ISINK 可编程灌电流的误差（满幅时）                -4%        ±1%         +4%
+ I5DIF      USB 和 USB PD 上拉或下拉电流的误差             -30%       ±8%        +24%
+ R5DIF      USB 和 USB PD 上拉或下拉电阻的误差             -24%       ±8%        +24%
+ RU1K5          USB 引脚的 1.5KΩ上拉电阻               1.2         1.5        1.7      KΩ
+ RR40K          RST 引脚的 40KΩ下拉电阻                 35         40         46       KΩ
+  Rsw5       ADC 等模块的模拟开关的导通电阻                  300         450       1000      Ω
+  Vovr          VDD12 过压复位的门限电压                 13.0       14.5       17.5       V
+  Vpot           电源上电复位的门限电压                    2.2      2.3/2.8       3.0       V
+
+
+19.4 时序参数(测试条件：TA=25℃，VDD12=5V&VDD=3.3V 或 VDD12=VDD=3.3V，Fsys=12MHz)
+  名称                   参数说明                    最小值        典型值        最大值       单位
+           VDD12>=3V 时经校准后     TA=-15～65℃       47.1        48        48.9      MHz
+  Fosc
+              的内部时钟频率          TA=-40～85℃       46.8        48        49.2      MHz
+ Fosc3      VDD12<3V 时经校准后的内部时钟频率               46.5        48        49.5      MHz
+  Tpor             电源上电复位延时                      8          11         15       mS
+  Trst      从 RST 外部输入有效复位信号的宽度                  2                              uS
+  Trdl                热复位延时                      20         30         50       uS
+  Twdc      看门狗溢出周期/定时周期的计算公式                 131072 * ( 0x100 - WDOG_COUNT ) / Fsys
+            USB 主机模式下检测 USB 自动挂起时间               2           3          4       mS
+  Tusp
+            USB 设备模式下检测 USB 自动挂起时间               4           5          6       mS
+ Twakht      芯片 halt 暂停模式后唤醒完成时间                0.5          1          3       uS
+ Twakdp      芯片下电/深度睡眠后唤醒完成时间                   120        200        1000      uS
+
+
+19.5 其它参数(测试条件：TA=25℃，VDD12=4.5V～5.5V 或 VDD12=VDD=3.0V～3.6V)
+  名称                   参数说明                    最小值        典型值        最大值       单位
+ TERPG     Flash-ROM/EEPROM 的单次擦写操作时间            2           5          8       mS
+              Flash-ROM/EEPROM 的擦写次数                      抽检值
+ NEPCE                                          10K                            times
+            （erase/program cycle endurance）                100K
+  TDR        Flash-ROM/EEPROM 的数据保持能力            10                            years
+                                                          抽检值
+  VESD       I/O 输入或者输出引脚上的 ESD 耐压               4K                              V
+                                                           8K
+CH543 手册         73
+
+
+20、封装尺寸
+20.1 TSSOP20
+
+
+
+
+20.2 QFN20-3*3
+CH543 手册                       74
+
+20.3 SOP16
+
+
+
+
+21、修改记录
+    版本          日期                           说明
+    V0.99    2020.10.28                     初版发行
+                                提醒 USB 引脚外部不串联电阻，
+    V1.0     2021.11.25
+                          位清零表述优化：直接位写 0 清零或寄存器对应位写 1 清零
+    V1.1     2022.04.18   删除有关 ISINK 表述，提示 P1.0/P1.1 不支持满幅电压输出
+    V1.2     2022.04.26   修改 10.3 节 PIN_FUNC 说明和 15.5 节 TouchKey 计算笔误
+    V1.3     2022.08.09   更正 SOP16 的 9#、10#引脚标号错误，恢复有关 ISINK 表述
+                           微调 19 节电流等参数，对于新品设计只保留 CH543D、
+    V1.4     2023.05.26
+                           CH541T/G 封装形式、将 48MHz 主频保留为定制芯片用
+    V1.5     2023.09.12    修改 7.1 节电源退耦电容的建议值，细化 19 节环境温度
+

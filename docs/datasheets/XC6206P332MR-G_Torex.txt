@@ -1,0 +1,601 @@
+XC6206 Series                                                                                                               ETR0305_004b
+
+
+
+
+■GENERAL DESCRIPTION
+The XC6206 series are highly precise, low power consumption, 3 terminal, positive voltage regulators manufactured using
+CMOS and laser trimming technologies. The series provides large currents with a significantly small dropout voltage.
+The XC6206 consists of a current limiter circuit, a driver transistor, a precision reference voltage and an error correction circuit.
+The series is compatible with low ESR ceramic capacitors. The currrent limiter's foldback circuit operates as a short circuit
+protection as well as the output current limiter for the output pin.
+Output voltages are internally by laser trimming technologies.         It is selectable in 0.1V increments within a range of 1.2V to
+5.0V.
+SOT-23, SOT-89, TO-92 and USP-6B packages are available.
+
+
+
+■APPLICATIONS                                                           ■FEATURES
+●Battery powered equipment                                              Maximum Output Current            : 200mA (3.0V type)
+                                                                        Dropout Voltage                   : 250mV @ 100mA (3.0V type)
+●Reference voltage sources
+                                                                        Maximum Operating Voltage         : 6.0V
+●Cameras, video cameras
+                                                                        Output Voltage Range              : 1.2V ~ 5.0V (0.1V increments)
+●Portable AV systems                                                    Highly Accurate                   :±2%@VOUT≧1.5V
+●Mobile phones                                                                                             +30mV@VOUT<1.5V
+●Portable games                                                                                            (+1% @VOUT>2.0V)
+                                                                        Low Power Consumption             : 1.0μA (TYP.)
+●Cordless phones,
+                                                                        Low ESR Capacitor                 : Ceramic capacitor compatible
+ wireless communication equipment
+                                                                        Protection                    : Current Limit Circuit Built-in
+                                                                        Operating Ambient Temperature : -40℃~ +85℃
+                                                                        Packages                          : SOT-23
+                                                                                                            SOT-89
+                                                                                                            TO-92
+                                                                                                            USP-6B
+                                                                        Environmentally Friendly          : EU RoHS Compliant, Pb Free
+
+
+
+
+■TYPICAL APPLICATION CIRCUIT                                            ■TYPICAL PERFORMANCE
+                                                                         CHARACTERISTICS
+
+
+
+
+                                                                                                                                    1/17
+       XC6206 Series
+
+
+■PIN CONFIGURATION
+
+
+
+
+                                                         *The dissipation pad for the USP-6B
+                                                         package should be solder-plated in
+                                                         recommended mount pattern and
+                                                         metal masking so as to enhance
+                                                         mounting strength and heat release.
+                                                         If the pad needs to be connected to
+                                                         other pins, it should be connected to       (SIDE VIEW)
+                                                         the pin number 4 (VIN).
+
+
+
+
+■PIN ASSIGNMENT
+                      PIN NUMBER
+                                                           PIN NAME                   FUNCTIONS
+       SOT-23       SOT-89   USP-6B           TO-92
+          1            1               2        1             VSS                       Ground
+          3            2               4        2              VIN                    Power Input
+          2            3               6        3             VOUT                      Output
+          -            -            1, 3, 5     -              NC                    No Connection
+
+
+
+
+■PRODUCT CLASSIFICATION
+ ●Ordering Information
+                               *1
+ XC6206P ①②③④⑤-⑥( )
+
+  DESIGNATOR                   ITEM           SYMBOL                                DESCRIPTION
+
+          ①②               Output Voltage      12~50       e.g. VOUT: 3.0V→①=3, ②=0
+
+                                                  2        + 2% (VOUT≧1.5V), +30mV (VOUT<1.5V)
+           ③                 Accuracy
+                                                  1        +1% (VOUT≧2.0V)
+                                                 MR        SOT-23 (3,000/Reel)
+                                                MR-G       SOT-23 (3,000/Reel)
+                                                 PR        SOT-89 (1,000/Reel)
+                                                PR-G       SOT-89 (1,000/Reel)
+                             Packages            DR        USP-6B (3,000/Reel)
+        ④⑤-⑥
+                            (Order Unit)        DR-G       USP-6B (3,000/Reel)
+                                                 TH        TO-92 (T type), Paper type (2,000/Tape)
+                                                TH-G       TO-92 (T type), Paper type (2,000/Tape)
+                                                 TB        TO-92 (T type), Bag type (500/Bag)
+                                                TB-G       TO-92 (T type), Bag type (500/Bag)
+(*1)
+       The “-G” suffix denotes Halogen and Antimony free as well as being fully RoHS compliant.
+
+
+
+
+2/17
+                                                                                                     XC6206
+                                                                                                       Series
+
+
+
+■BLOCK DIAGRAM
+
+
+
+
+                     *Diodes inside the circuit are an ESD protection diode and a parasitic diode.
+
+
+
+
+■ABSOLUTE MAXIMUM RATINGS
+
+                                                                                           Ta=25OC
+             PARAMETER                       SYMBOL                 RATINGS                 UNITS
+             Input Voltage                      VIN                     7.0                    V
+            Output Current                      IOUT                    500 *                 mA
+            Output Voltage                     VOUT           VSS – 0.3 ~ VIN + 0.3            V
+                              SOT-23                                    250
+                              SOT-89                                    500
+    Power Dissipation                           Pd                                           mW
+                             USP-6B                                     100
+                              TO-92                                     300
+    Operating Ambient Temperature               Topr                - 40 ~ + 85               O
+                                                                                               C
+         Storage Temperature                    Tstg               - 55 ~ + 125               O
+                                                                                               C
+
+* IOUT=Pd / (VIN-VOUT)
+
+
+
+
+                                                                                                      3/17
+     XC6206 Series
+■ELECTRICAL CHARACTERISTICS
+●XC6206P series                                                                                                                             Ta=25 OC
+                                                                                                                                UNIT
+   PARAMETER               SYMBOL                       CONDITIONS(*1)                       MIN.         TYP.         MAX.                CIRCUIT
+                                                                                                                                 S
+                                                                                            x 0.98     VOUT(T) (*2)    x 1.02
+Output Voltage (*4)       VOUT(E)(*3)                      IOUT=30mA                                                              V            ①
+                                                                                                         E-1
+ Maximum Output
+                           IOUTMAX                               -                           E-2            -            -       mA            ①
+     Current
+                                             VOUT(T)>1.8V: 1mA≦IOUT≦100mA
+ Load Regulation            △VOUT                                                              -            -           E-3      mV            ①
+                                             VOUT(T)<1.8V: 1mA≦IOUT≦50mA
+                             Vdif1                         IOUT=30mA                           -                 E-4             mV
+Dropout Voltage(*5)                               VOUT(T)>1.8V: IOUT=100mA                                                                     ①
+                             Vdif2                                                             -                 E-5             mV
+                                                  VOUT(T)<1.8V: IOUT=60mA
+  Supply Current              IDD                           VCE=VIN                            -           1.0          3.0      μA            ②
+                                           VOUT(T)<4.5V:VOUT(T)+1.0V≦VIN≦6.0V
+                          △VOUT
+  Line Regulation                             VOUT(T)>4.5V:5.5V≦VIN≦6.0V                       -          0.05         0.25      %/V           ①
+                         △VIN･VOUT
+                                                        IOUT=30mA
+   Input Voltage              VIN                                -                            1.8           -           6.0       V             -
+  Output Voltage
+                          △VOUT                           IOUT=30mA                                                             ppm/
+   Temperature                                                                                 -         +100            -                     ①
+                         △Topr･VOUT                  -40 OC≦Topr≦85 OC                                                           O
+                                                                                                                                   C
+  Characteristics
+   Short Circuit
+                             Ishort               VIN=VOUT+1.5V, VOUT=VSS                      -          E-6            -       mA            ①
+     Current
+NOTE:
+* 1 Unless otherwise stated, VIN = VOUT(T) + 1.0V
+* 2 VOUT(T) :Nominal voltage
+* 3 VOUT(E) :Effective output voltage (le. The output voltage when "VOUT(T)+1.0V" is provided at the VIN pin while maintaining a certain IOUT value.)
+* 4 For output voltage accuracy, Please refer to E-1 table.
+* 5 Vdif =VIN1 -VOUT1
+    VOUT1 :A voltage equal to 98% of the output voltage whenever an amply stabilized {VOUT(T) + 1.0V} is input with each IOUT.
+    VIN1 :The input voltage when VOUT1 appears as input voltage is gradually decreased.
+
+
+
+
+4/17
+                                                                                                                  XC6206
+                                                                                                                     Series
+
+
+■ELECTRICAL CHARACTERISTICS (Continued)
+●Electrical Characteristics Chart
+                             E-1                       E-2           E-3            E-4               E-5           E-6
+  PARAMETER
+                      OUTPUT VOLTAGE                  MAX.          LOAD
+                                                                              DROPOUT           DROPOUT            SHORT
+                 2%                   1%             OUTPUT       REGULATIO
+NOMINAL                                                                       VOLTAGE 1         VOLTAGE 2         CURRENT
+VOLTAGE
+              ACCURACY             ACCURACY         CURRENT           N
+                                                                   UVOUT         Vdif1             Vdif2           Ishort
+               VOUT(E) (V)          VOUT(E) (V)    IOUTMAX (mA)
+  VOUT(T)                                                           (mV)         (mV)              (mV)             (mA)
+              MIN.      MAX.       MIN.    MAX.       MIN.         MAX.       TYP. MAX.         TYP. MAX.           TYP.
+    1.2       1.170     1.230                                                 460         760
+                                                                                                700         960
+    1.3       1.270     1.330                                        40       400         650                       180
+                                                       60
+    1.4       1.370     1.430                                                 350         590
+                                                                                                580         860
+    1.5       1.470     1.530                                                 300         510
+                                   Not Available
+    1.6       1.568     1.632                                                 250         450                       155
+                                                                                                450         810
+    1.7       1.666     1.734                                        45       200         410
+                                                       80
+    1.8       1.764     1.836                                                 150         390
+    1.9       1.862     1.938                                                                               780
+    2.0       1.960     2.040      1.980   2.020                                                                    130
+    2.1       2.058     2.042      2.079   2.121
+    2.2       2.156     2.244      2.178   2.222       120           50
+    2.3       2.254     2.346      2.277   2.323
+                                                                                                350
+    2.4       2.352     2.448      2.376   2.424                              100         370
+    2.5       2.450     2.550      2.475   2.525                                                            710
+    2.6       2.548     2.652      2.574   2.626
+    2.7       2.646     2.754      2.673   2.727       150           55
+    2.8       2.744     2.856      2.772   2.828
+    2.9       2.842     2.958      2.871   2.929
+    3.0       2.940     3.060      2.970   3.030
+    3.1       3.038     3.162      3.069   3.131
+    3.2       3.136     3.264      3.168   3.232                     60
+    3.3       3.234     3.366      3.267   3.333
+    3.4       3.332     3.468      3.366   3.434
+                                                       200                    75          350   250         680
+    3.5       3.430     3.570      3.465   3.535
+    3.6       3.528     3.672      3.564   3.636
+                                                                                                                    100
+    3.7       3.626     3.774      3.663   3.737                     65
+    3.8       3.724     3.876      3.762   3.838
+    3.9       3.822     3.978      3.861   3.939
+    4.0       3.920     4.080      3.960   4.040
+    4.1       4.018     4.182      4.059   4.141
+    4.2       4.116     4.284      4.158   4.242                     70
+    4.3       4.214     4.386      4.257   4.343
+    4.4       4.312     4.488      4.356   4.444
+                                                                              60          320   200         630
+    4.5       4.410     4.590      4.455   4.545       250
+    4.6       4.508     4.692      4.554   4.646
+    4.7       4.606     4.794      4.653   4.747                     75
+    4.8       4.704     4.896      4.752   4.848
+    4.9       4.802     4.998      4.851   4.949
+    5.0       4.900     5.100      4.950   5.050                     80       50          290   175         600
+
+
+
+
+                                                                                                                     5/17
+  XC6206 Series
+
+■TEST CIRCUITS
+
+Circuit ①
+
+
+
+
+ Circuit ②
+
+
+
+
+6/17
+                                                   XC6206
+                                                      Series
+
+
+
+■TYPICAL PERFORMANCE CHARACTERISTICS
+
+(1) Output Voltage vs. Output Current
+
+
+
+
+(2) Current Limit
+
+
+
+                                        Topr=25℃
+
+
+
+
+                             Topr=25℃               Topr=25℃
+
+
+
+
+                                                       7/17
+   XC6206 Series
+
+■TYPICAL PERFORMANCE CHARACTERISTICS (Continued)
+ (3) Output Voltage vs. Input Voltage
+
+
+
+
+(4) Dropout Voltage vs. Output Current
+
+
+
+
+8/17
+                                                   XC6206
+                                                     Series
+
+
+
+■TYPICAL PERFORMANCE CHARACTERISTICS (Continued)
+(5) Supply Current vs. Input Voltage
+
+
+
+
+(6) Output Voltage vs. Ambient Temperature
+
+
+
+
+                                                     9/17
+    XC6206 Series
+
+ ■TYPICAL PERFORMANCE CHARACTERISTICS (Continued)
+(7) Output Voltage vs. Ambient Temperature
+
+
+
+
+ (8) Input Transient Response 1
+
+
+
+
+                Time (0.4ms / div)            Time (0.4ms / div)   Time (0.4ms / div)
+
+
+
+
+               Time (0.4ms / div)            Time (0.4ms / div)    Time (0.4ms / div)
+
+
+
+
+10/17
+                                                                         XC6206
+                                                                           Series
+
+
+
+
+■TYPICAL PERFORMANCE CHARACTERISTICS (Continued)
+(9) Input Transient Response 2
+
+
+
+
+               Time (2ms / div)    Time (2ms / div)   Time (2ms / div)
+
+
+
+
+                Time (2ms / div)   Time (2ms / div)   Time (2ms / div)
+
+
+
+
+(10) Load Transient Response
+
+
+
+
+             Time (1ms / div)      Time (1ms / div)   Time (1ms / div)
+
+
+
+
+                                                                          11/17
+   XC6206 Series
+
+■TYPICAL PERFORMANCE CHARACTERISTICS (Continued)
+(11) Ripple Rejection Rate
+
+
+
+
+12/17
+                                                    XC6206
+                                                           Series
+
+
+
+■PACKAGING INFORMATION
+●SOT-23                         ●SOT-89
+                  Unit : mm                    Unit : mm
+
+
+
+
+●USP-6B                               ●TO-92
+                    Unit : mm
+                                                 Unit : mm
+
+
+
+
+                                                       13/17
+  XC6206 Series
+
+■PACKAGING INFORMATION (Continued)
+
+ ●USP-6B Reference Pattern Layout   ●USP-6B Reference Metal Mask Design
+
+
+
+
+14/17
+                                                                                                           XC6206
+                                                                                                               Series
+
+
+
+■MARKING RULE
+●SOT-23, SOT-89
+
+                    3              ① represents product number
+                                                    MARK                                PRODUCT SERIES
+          ①     ②       ③ ④                               6                                XC6206P*****
+
+                                   ② represents 3 pins regulator
+          1                2
+                                                      MARK
+                SOT-23                                                                         PRODUCT SERIES
+              (TOP VIEW)             VOLTAGE＝0.1 ~ 3.0V  VOLTAGE＝3.1 ~ 6.0V
+                                                5                            6                       XC6206P*****
+
+                                   ③ represents output voltage
+                                    MARK             VOLTAGE (V)                 MARK        OUTPUT VOLTAGE (V)
+          ②
+
+
+
+
+                           ④
+
+
+
+
+                                         0           -        3.1      -           F           1.6       4.6        -
+          ①
+
+
+
+
+                           ③
+
+
+
+
+                                         1           -        3.2      -           H           1.7       4.7        -
+                                         2           -        3.3      -           K           1.8       4.8        -
+                                         3           -        3.4      -           L           1.9       4.9        -
+      1             2          3         4           -        3.5      -           M           2.0       5.0        -
+                                         5           -        3.6      -           N           2.1        -         -
+                SOT-89
+              (TOP VIEW)
+                                         6           -        3.7      -           P           2.2        -         -
+                                         7           -        3.8      -           R           2.3        -         -
+                                         8           -        3.9      -           S           2.4        -         -
+                                         9           -        4.0      -           T           2.5        -         -
+                                         A                    4.1      -           U           2.6        -         -
+                                         B          1.2       4.2      -           V           2.7        -         -
+                                         C          1.3       4.3      -           X           2.8        -         -
+                                         D          1.4       4.4      -           Y           2.9        -         -
+                                         E          1.5       4.5      -           Z           3.0        -         -
+
+
+                                   ④ represents production lot number
+                                     0 to 9, A to Z, and inverted 0 to 9, A to Z repeated. (G, I, J, O, Q, W excepted.)
+
+
+
+
+                                                                                                               15/17
+  XC6206 Series
+
+■MARKING RULE (Continued)
+
+                           ①② represents product number
+●USP-6B
+                                              MARK
+                                                                                     PRODUCT SERIES
+                                    ①                            ②
+                                       0                          6                    XC6206P***D*
+
+                           ③ represents 3 pins regulator
+                                         MARK                                PRODUCT SERIES
+                                              P                                XC6206P***D*
+             USP-6B
+           (TOP VIEW)
+                           ④⑤ represents output voltage
+                                 MARK
+                                                 OUTPUT VOLTAGE(V)                   PRODUCT SERIES
+                             ④           ⑤
+                                3            3                  3.3                    XC6206P33*D*
+                                5            0                  5.0                    XC6206P50*D*
+
+
+                           ⑥ represents production lot number
+                             0 to 9, A to Z repeated. (G, I, J, O, Q, W excluded)
+                            *No character inversion used.
+
+● TO-92
+
+
+
+
+                           ① represents type of regulator
+                                           MARK                              PRODUCT SERIES
+                                              P                                    XC6206P*****
+
+                           ②③ represents output voltage
+                                 MARK
+                                                       VOLTAGE (V)                   PRODUCT SERIES
+                              ②          ③
+                              3           3                3.3                         XC6206P33***
+          TO-92 (T Type)      5           0                 5                          XC6206P50***
+          (SIDE VIEW)
+
+                           ④ represents output voltage accuracy
+
+                              MARK         OUTPUT VOLTAGE ACCURACY                   PRODUCT SERIES
+                                1                    ±1%                               XC6206P**1**
+                                2                    ±2%                               XC6206P**2**
+
+
+                           ⑤ represents least significant digit of the production year
+                                                 MARK                             PRODUCTION YEAR
+                                                    3                                  2003
+                                                    4                                  2004
+
+
+                           ⑥ represents production lot number
+                            0 to 9, A to Z repeated. (G, I, J, O, Q, W excluded)
+                           *No character inversion used.
+
+
+
+
+16/17
+                                                                                               XC6206
+                                                                                                 Series
+
+
+
+
+1. The products and product specifications contained herein are subject to change without
+    notice to improve performance characteristics.        Consult us, or our representatives
+    before use, to confirm that the information in this datasheet is up to date.
+2. We assume no responsibility for any infringement of patents, patent rights, or other
+    rights arising from the use of any information and circuitry in this datasheet.
+3. Please ensure suitable shipping controls (including fail-safe designs and aging
+    protection) are in force for equipment employing products listed in this datasheet.
+4. The products in this datasheet are not developed, designed, or approved for use with
+    such equipment whose failure of malfunction can be reasonably expected to directly
+    endanger the life of, or cause significant injury to, the user.
+    (e.g. Atomic energy; aerospace; transport; combustion and associated safety
+    equipment thereof.)
+5. Please use the products listed in this datasheet within the specified ranges.
+    Should you wish to use the products under conditions exceeding the specifications,
+    please consult us or our representatives.
+6. We assume no responsibility for damage or loss due to abnormal use.
+7. All rights reserved. No part of this datasheet may be copied or reproduced without the
+    prior permission of TOREX SEMICONDUCTOR LTD.
+
+
+
+
+                                                                                                 17/17
+

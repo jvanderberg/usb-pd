@@ -1,0 +1,14 @@
+{
+ "J1.A8": "SBU1: not used by a USB-PD sink (Type-C spec: sideband use only) - open",
+ "J1.B8": "SBU2: not used by a USB-PD sink - open",
+ "J3.6": "VBREF: NC per N069 DS pin table 1.5 (reserved)",
+ "U1.2": "D+: only for Apple/BC1.2 legacy detection (HUSB238 DS p.3, p.11); left open so the USB data pair stays free for the CH552 bootloader",
+ "U1.3": "D-: as D+ - open",
+ "U1.9": "ISET: open = 3.25 A power-up request (DS table 7); I2C PDO select overrides VSET/ISET (DS p.11)",
+ "U1.10": "GATE: open-drain PMOS driver, 'leave floating if unused' (DS table 1); not used because the _002 variant turns it on at POR",
+ "U4.4": "P3.2: spare GPIO, default quasi-bidirectional with pull-up (CH552 DS 10) - open",
+ "U4.7": "RST: internal pull-down (CH552 DS section 4) - open",
+ "U4.8": "P1.0: spare GPIO, internal pull-up by default - open",
+ "U4.11": "P1.1: spare GPIO, internal pull-up by default - open",
+ "U4.12": "P3.3: spare GPIO, internal pull-up by default - open"
+}

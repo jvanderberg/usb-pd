@@ -1,0 +1,644 @@
+                                                                                 UMW XC6206
+                                                                                                 Linear voltage regulator
+
+
+
+
+1.Description                                                         2.Product Usage
+
+XC6206 series is a CMOS step - down voltage                            Battery power supply system
+
+regulator with high ripple rejection, low power                        Cordless telephone equipment
+
+consumption, low dropout, overcurrent and                              Wireless control system
+
+short - circuit protection. These devices have a                       Portable/palm computer
+
+very low static bias current (6.0μA Typ.), which                       Portable consumer equipment
+
+can provide an output current of 250mA even if                         Portable instrument
+
+the difference between the input and output                            Automobile electronic equipment
+
+voltages is very small, and still maintain a good                      Voltage reference source
+
+regulation rate.
+
+
+
+3.Features
+
+  High precision output voltage:                                       The highest input voltage can reach 8V
+
+  Accuracy A: ±1%, Accuracy B: ±2.5%                                   With strong load capacity: when Vin=4.3V
+
+  Output voltage: 1.5V~5.0V (step size 0.1V)                           and Vout=3.3V, Iout=250mA.
+
+  Very low static bias current                                         It can be used as regulator and reference
+
+  (Typ.=6.0 μ A)                                                       voltage
+
+  Low temperature adjustment                                           Good input stability: Typ. 0.03%/V
+
+  coefficient                                                          Package form: SOT89 -3, SOT23 -3
+
+
+
+4.Pinning Information
+
+                                          Input
+                                           2
+
+
+
+
+                                    1               3                  1         2   3
+                                   GND            Output              GND    Input Output
+
+                                         SOT-23                             SOT-89
+
+
+
+
+  UTD Semiconductor Co.,Limited
+  www.umw-ic.com                                           Mar.2025                                                 1 of 13
+www.umw-ic.com                                               UMW XC6206
+                                                                                Linear voltage regulator
+
+
+
+
+5.Model Selection
+XC6206P 18 2 M R
+        ①②③④
+
+  Representative Number          Describe    Symbol                       Describe
+           ①                Output voltage   12 ~ 50          e.g. output 3.0V → ① =3, ② =0
+
+                                                2             ±2.5%
+           ②                     precision
+                                                1             ±1%
+
+                                               M              SOT-23
+           ③                     package
+                                                P             SOT-89
+
+           ④                 Belt loading       R             embossed belt, standard inflow
+
+
+
+
+6.Principle Block Diagram
+
+
+
+                                                                 Vout
+                          Vi n
+
+
+
+                                   Vre f      C ur re n t
+                                              Lim i t
+
+
+
+
+                          Vs s
+
+
+
+
+                                                UTD Semiconductor Co.,Limited
+2 of 13                                                            Mar.2025
+www.umw-ic.com                                                                 UMW XC6206
+                                                                                                  Linear voltage regulator
+
+
+
+
+7.Limit Parameter
+
+      Project              Symbol                      parameter                Limit value          Company
+                              VIN                     Input voltage                  9                      V
+      Voltage
+                             VOUT                     Output voltage          Vss-0.3 ~Vout 0.3             V
+
+   electric current           IOUT                    output current                500                    mA
+
+                                         SOT23            Maximum allowable         300                   mW
+ power consumption            PD
+                                         SOT89 - 3        power consumption         500                   mW
+
+                              Tw               Working temperature                -25 to 85                °C
+
+    temperature               Tc                Storage temperature              -40 to 125                °C
+
+                              Th                welding temperature                 260                 °C,10s
+
+
+
+
+                      UTD Semiconductor Co.,Limited
+                      Mar.2025                                                                                    3 of 13
+www.umw-ic.com                                                                            UMW XC6206
+                                                                                                                Linear voltage regulator
+
+
+
+
+8.Electrical Characteristics
+(Cin=Cout=1µF,TA=25°C unless otherwise specified)
+
+           Parameter                        Symbol                 Conditions                        Min       Typ Max Units
+                                                                                                     VOUT(T)             VOUT(T)
+ Output voltage                             VOUT(E)        IOUT=1mA, VIN= VOUT(T)+1V                 *0.975
+                                                                                                               VOUT(T)
+                                                                                                                         *1.025      V
+
+ Output Current                             IOUT(max)      VIN=VOUT(T)+1V                             100                           mA
+
+                                                                           1.5V≤VOUT(T)≤2.5V                    200      280        mV
+
+ Drop pressure difference                    Vdrop         IOUT=50mA       2.6V≤VOUT(T)≤3.3V                    160      240        mV
+
+                                                                           3.4V≤VOUT(T)≤5.5V                    120      200        mV
+
+ quiescent current                             ISS         VIN=VOUT(T)+1V                                        6                  µA
+
+ Load stability                              ΔVOUT         VIN=VOUT(T)+1V, 1mA≤IOUT≤80mA                        20                  mV
+
+ Input stability                     ΔVOUT/(ΔVIN*VOUT) IOUT=1mA, VOUT(T)+0.5V ≤VIN≤5.5V                         0.1      0.2       %/V
+
+ Output voltage                                            VIN=VOUT(T)+1V, IOUT=10mA
+                                     ΔVOUT/(ΔTA*VOUT)                                                          ±100                ppm/°C
+ temperature coefficient                                   -40°C≤TA≤85°C
+
+ input voltage                                 VIN                                                    1.8                  8         V
+
+                                                           VIN=[VOUT(T)+1]V +1Vp-pAC
+ Ripple suppression ratio                    PSRR                                                               40                  dB
+                                                           IOUT=10mA, f=1kHz
+
+ Short circuit current                       Ishort        VIN=VOUT(T)+1.5V, VOUT=VSS                           30                  mA
+
+ Overcurrent protection current               Ilimt        VIN=VOUT(T)+1.5V                                     380                 mA
+
+Note:
+
+1. VOUT(T): the specified output voltage.
+
+2. VOUT(E): effective output voltage (that is, the output voltage when IOUT keeps a certain value and VIN= (VOUT(T)+1.0V)) .
+
+3. IOUT(max):VIN=VOUT(T)+1V, slowly increase the output current, and the current value when the output voltage is ≤ VOUT(E)*95%.
+
+4. Vdrop=VIN1 – VOUT(e) s: VIN1 = the input voltage when the output voltage drops to 98% of VOUT(E)1. VOUT(E)s= VOUT(E)*98%
+
+VOUT(E)1= the output voltage value when VIN= VOUT(t)+1V and IOUT= a certain value.
+
+
+
+
+                                                                          UTD Semiconductor Co.,Limited
+4 of 13                                                                                      Mar.2025
+www.umw-ic.com                                          UMW XC6206
+                                                                        Linear voltage regulator
+
+
+
+
+9.Test Circuit
+
+
+
+                        V IN                             V IN    VOUT                OPEN
+                                                    A
+              +                VOUT   +                         VSS
+          V                                     V
+                  CL      VSS             CL
+                  1µF                     1µF
+                                                                A
+
+
+
+                          Figure 1                         Figure 2
+
+
+
+
+                  UTD Semiconductor Co.,Limited
+                  Mar.2025                                                              5 of 13
+www.umw-ic.com                                                                                   UMW XC6206
+                                                                                                                  Linear voltage regulator
+
+
+
+
+10.Applied Circuit
+
+
+                                                 Vin                         Vo ut
+                                                                                                          VOUT
+                                                        XC6206
+                    VIN            +       C1                                          +     C2
+                                           1 uF                                              1 uF
+                                                        GND
+
+
+
+                                                                       Sing le Point GND
+            COMMON                                                                                        COMMON
+
+
+                                                       1. Basic circuit
+
+
+
+
+                                                          Vin                        Vo ut
+              VIN                                                XC6206                                      VOUT
+                          R1                 +         C1                                    +      C2
+                                                       1uF                                          1uF
+                                                                 GND
+
+
+          COMMON                                                                                            COMMON
+                                                                               Sing le Point GND
+
+
+                          2. Positive voltage regulator with large output current
+
+
+
+                                       Vin                      Vout
+                                             X C6206                                                       VOUT
+
+                 VIN           +    C1                                   +      C2
+                                                                                                    R1
+                                    1 uF                                        1 uF
+                                             GND                                       Vxx
+                                                        Iss
+
+
+
+
+                                                                                                    R2
+
+
+                                                        Single Point GND
+            COMMON                                                                                         COMMON
+
+
+                                             VOUT=Vxx(1+R2/R1)+ISSR2
+
+                                   3. Circuit for increasing output voltage (1)
+
+
+
+
+                                                                              UTD Semiconductor Co.,Limited
+6 of 13                                                                                          Mar.2025
+www.umw-ic.com                                                                                         UMW XC6206
+                                                                                                                           Linear voltage regulator
+
+
+
+
+                                                  Vin                    Vout                                    VOUT
+                       VIN
+                                                        XC6206
+                                     +      C1
+                                            1 uF                XC6206+               C2
+                                                                                      1 uF
+                                                                                                       R1
+                                                        GND                                  Vxx
+                                                                Iss
+
+
+
+                                                                 D1
+
+
+
+
+             COMMON                                                                                              COMMON
+                                                                Single Point GND
+
+
+
+
+                                                              VOUT=Vxx+VD1
+                                     4. Circuit for increasing output voltage (2)
+
+
+
+
+                 VIN
+                                                 Vin                  XC6206
+                                                                       Vout
+                                                        XC6206
+                                 +         C1                                    +     C2
+                                                                                                            R1
+                                           1uF                                         1uF
+                                                        GND                                      Vxx
+                                                                Iss
+
+
+                                                                                                                 Iout
+
+                                                                                                                               RL
+
+
+           COMMON                                              Single Point GND
+
+
+
+                                                          IOUT=Vxx/RA+ISS
+                                                 5. Constant current regulator
+
+
+
+
+                                                                     Vin                Vout
+                                                                                                                        VOUT
+                                                                           XC6206
+             VIN                                                                             +
+
+                                                                           GND
+                                                                                         C3
+                                                                                         10uF
+                                           IC2
+                                     Vin                      Vout
+                             +   C1         XC6206                   +     C2
+                                 1µF                                       1µF                                          VOUT
+                                                                                 R1
+                                            GND
+          COMMON                                                                                                        COMMON
+
+
+                                                          6. Double output
+
+
+
+
+                 UTD Semiconductor Co.,Limited
+                 Mar.2025                                                                                                                  7 of 13
+www.umw-ic.com                                                         UMW XC6206
+                                                                                         Linear voltage regulator
+
+
+
+
+11.1 Typical Characteristic
+
+
+
+
+            Figure 1: Output voltage-output current
+                                                          Figure 2: Output voltage and input voltage
+               (when the load current increases)
+
+
+
+
+          Figure 3: Dropout voltage and output current   Figure 4: Dropout voltage and output voltage
+
+
+
+
+           Figure 5: Output voltage and temperature             Figure 6: Ripple suppression
+
+
+
+
+                                                         UTD Semiconductor Co.,Limited
+8 of 13                                                                     Mar.2025
+www.umw-ic.com                                                       UMW XC6206
+                                                                                       Linear voltage regulator
+
+
+
+
+11.2 Typical Characteristic
+
+
+
+
+           Figure 7: Transient response
+                                                  Figure 8: Load transient input response characteristics
+      Input transient response characteristics
+
+
+
+
+                  UTD Semiconductor Co.,Limited
+                  Mar.2025                                                                             9 of 13
+www.umw-ic.com                                                                        UMW XC6206
+                                                                                                       Linear voltage regulator
+
+
+
+
+12.1 SOT-89 Package Outline Dimensions
+
+
+
+                                                 F
+
+
+
+
+                                                                                  C
+                             E
+            L2        L1
+
+
+
+
+                                                                   L
+
+
+
+
+                                                 H           H1
+
+
+
+
+                                                 B
+
+
+
+
+                                                 D
+
+
+
+
+                                                                                          A
+
+
+
+
+DIMENSIONS (mm are the original dimensions)
+
+   Symbol         A         B      C       D          E      F         H     H1       L       L1       L2
+      Min        1.40      2.90   0.330   4.40       2.30   1.60   0.40     0.320 0.900 3.900 4.100
+     Max         1.60      3.10   0.430   4.60       2.60   1.80   0.580 0.520 1.200 4.300 4.350
+
+
+
+
+                                                                       UTD Semiconductor Co.,Limited
+10 of 13                                                                                  Mar.2025
+www.umw-ic.com                                                                          UMW XC6206
+                                                                                                           Linear voltage regulator
+
+
+
+
+12.2 SOT-23 Package Outline Dimensions
+
+
+
+                                    D
+
+
+
+
+                                                        B       E
+
+
+
+
+                                      G
+                                                                                                                    C
+
+
+                                      A                                    F
+                                                                                                       K
+
+
+                                                                                    M
+
+
+
+
+           A2
+
+
+
+
+DIMENSIONS (mm are the original dimensions)
+
+  Symbol         A         B      C        D      E         G        K          M       A2      F
+    Min         2.85     1.20    0.90     0.40   2.25   1.80        0.00       0.30     0.95   0.095
+    Max         3.04     1.40    1.10     0.50   2.55   2.00        0.10        -       1.05   0.115
+
+
+
+
+                       UTD Semiconductor Co.,Limited
+                       Mar.2025                                                                                          11 of 13
+www.umw-ic.com                                            UMW XC6206
+                                                                              Linear voltage regulator
+
+
+
+
+13.Ordering Information
+
+
+
+                          SOT-23                   SOT-89
+
+
+
+
+                         65K5                  6206-1.8
+                        UMW yww                UMW yyww
+                                                                       yy: Year Code
+                                                                       ww: Week Code
+
+
+
+
+           Order Code   Marking    Package         Base QTY             Delivery Mode
+  UMW XC6206P182MR       65K5      SOT-23              3000                  Tape and reel
+
+  UMW XC6206P252MR       65T5      SOT-23              3000                  Tape and reel
+
+  UMW XC6206P282MR       65X5      SOT-23              3000                  Tape and reel
+
+  UMW XC6206P302MR       65Z5      SOT-23              3000                  Tape and reel
+
+  UMW XC6206P332MR       662K      SOT-23              3000                  Tape and reel
+
+  UMW XC6206P362MR       665K      SOT-23              3000                  Tape and reel
+
+   UMW XC6206P182PR     6206-1.8   SOT-89              1000                  Tape and reel
+
+   UMW XC6206P252PR     6206-2.5   SOT-89              1000                  Tape and reel
+
+   UMWXC6206P282PR      6206-2.8   SOT-89              1000                  Tape and reel
+
+   UMW XC6206P302PR     6206-3.0   SOT-89              1000                  Tape and reel
+
+   UMW XC6206P332PR     6206-3.3   SOT-89              1000                  Tape and reel
+
+   UMW XC6206P362PR     6206-3.6   SOT-89              1000                  Tape and reel
+
+
+
+
+                                             UTD Semiconductor Co.,Limited
+12 of 13                                                        Mar.2025
+www.umw-ic.com                                                                   UMW XC6206
+                                                                                                    Linear voltage regulator
+
+
+
+
+14.Disclaimer
+
+UMW reserves the right to make changes to all products, specifications. Customers should obtain the latest version
+
+of product documentation and verify the completeness and currency of the information before placing an order.
+
+
+When applying our products, please do not exceed the maximum rated values, as this may affect the reliability of the
+
+entire system. Under certain conditions, any semiconductor product may experience faults or failures. Buyers are
+
+responsible for adhering to safety standards and implementing safety measures during system design, prototyping,
+
+and manufacturing when using our products to prevent potential failure risks that could lead to personal injury or
+
+property damage.
+
+
+Unless explicitly stated in writing, UMW products are not intended for use in medical, life-saving, or life-sustaining
+
+applications, nor for any other applications where product failure could result in personal injury or death. If customers
+
+use or sell the product for such applications without explicit authorization, they assume all associated risks.
+
+
+When reselling, applying, or exporting, please comply with export control laws and regulations of China, the United
+
+States, the United Kingdom, the European Union, and other relevant countries, regions, and international
+
+organizations.
+
+
+This document and any actions by UMW do not grant any intellectual property rights, whether express or implied,
+
+by estoppel or otherwise. The product names and marks mentioned herein may be trademarks of their respective
+
+owners.
+
+
+
+
+                      UTD Semiconductor Co.,Limited
+                      Mar.2025                                                                                    13 of 13
+
