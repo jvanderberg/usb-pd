@@ -6494,7 +6494,7 @@
 			(at -0.432816 0 180)
 			(size 0.565658 0.54)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "+3V3")
+			(net "+5V")
 			(pintype "passive")
 			(uuid "ca54c1ac-8c3a-59cb-a0be-ec301ebf3c78")
 		)
@@ -6511,12 +6511,12 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "NoOutline:0402WGF2200TCE"
+	(footprint "NoOutline:0402WGF1500TCE"
 		(layer "F.Cu")
 		(uuid "8c5a63d1-91ab-5dd9-af04-16e34631c4ff")
 		(at 116 112.435 90)
-		(descr "220Ω (2200) ±1%")
-		(tags "0402WGF2200TCE C25091 R0402 UNI-ROYAL")
+		(descr "150Ω (1500) ±1%")
+		(tags "0402WGF1500TCE C25082 R0402 UNI-ROYAL")
 		(property "Reference" "R12"
 			(at 0 -1.4986 90)
 			(layer "F.SilkS")
@@ -6529,7 +6529,7 @@
 				)
 			)
 		)
-		(property "Value" "220"
+		(property "Value" "150"
 			(at 0 1.4986 90)
 			(layer "F.Fab")
 			(uuid "3d95d4cf-0fe9-52b9-9938-56ba9cf7ac4a")
@@ -6540,7 +6540,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C25091.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25082.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6564,7 +6564,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25091"
+		(property "LCSC" "C25082"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6606,7 +6606,7 @@
 			(pintype "passive")
 			(uuid "a91ad32c-03bf-5b8b-80ba-ad4f00bb5d68")
 		)
-		(model "${KIPRJMOD}/JLCImport.3dshapes/0402WGF2200TCE.wrl"
+		(model "${KIPRJMOD}/JLCImport.3dshapes/0402WGF1500TCE.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -6619,12 +6619,12 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "NoOutline:0402WGF2200TCE"
+	(footprint "NoOutline:0402WGF1500TCE"
 		(layer "F.Cu")
 		(uuid "f44f8fcf-b835-5375-b321-f0351507f543")
 		(at 115.45 110.85 90)
-		(descr "220Ω (2200) ±1%")
-		(tags "0402WGF2200TCE C25091 R0402 UNI-ROYAL")
+		(descr "150Ω (1500) ±1%")
+		(tags "0402WGF1500TCE C25082 R0402 UNI-ROYAL")
 		(property "Reference" "R13"
 			(at 0 -1.4986 90)
 			(layer "F.SilkS")
@@ -6637,7 +6637,7 @@
 				)
 			)
 		)
-		(property "Value" "220"
+		(property "Value" "150"
 			(at 0 1.4986 90)
 			(layer "F.Fab")
 			(uuid "b1ba6d17-cdd7-5a14-9e0e-7d7b5a66de59")
@@ -6648,7 +6648,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C25091.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25082.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6672,7 +6672,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25091"
+		(property "LCSC" "C25082"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6714,7 +6714,7 @@
 			(pintype "passive")
 			(uuid "a017a765-b91c-5992-994a-59efdd84ef38")
 		)
-		(model "${KIPRJMOD}/JLCImport.3dshapes/0402WGF2200TCE.wrl"
+		(model "${KIPRJMOD}/JLCImport.3dshapes/0402WGF1500TCE.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -10261,12 +10261,20 @@
 		(uuid "75a01a2d-7f03-529c-9666-8b96f9a6190a")
 	)
 	(segment
-		(start 118 111.5828)
+		(start 119.5 114)
+		(end 118.3 113.6)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "+5V")
+		(uuid "10031d4d-e6d4-565b-94c9-d03c73954e0a")
+	)
+	(segment
+		(start 118.3 113.6)
 		(end 117.8828 113.6)
 		(width 0.25)
 		(layer "F.Cu")
-		(net "+3V3")
-		(uuid "8d37200b-a934-591c-bd1e-14d913a835e9")
+		(net "+5V")
+		(uuid "48adfb4f-600b-5367-9636-196dc19ecebe")
 	)
 	(segment
 		(start 114.9172 113.6)
@@ -11307,6 +11315,15 @@
 		(free yes)
 		(net "Net-(U4-P3.0{slash}RXD)")
 		(uuid "fc670f3d-3f22-5106-86e6-095c12d1897f")
+	)
+	(via
+		(at 119.5 114)
+		(size 0.6)
+		(drill 0.3)
+		(layers "F.Cu" "B.Cu")
+		(free yes)
+		(net "+5V")
+		(uuid "6168481e-6295-5c5c-840e-ad2fe4745bd5")
 	)
 	(via
 		(at 114.25 113.55)

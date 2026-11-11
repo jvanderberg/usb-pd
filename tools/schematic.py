@@ -209,21 +209,23 @@ for pin, ref, net in ((10, 'TP6', 'RXD'), (9, 'TP5', 'TXD')):
 gp = u4.p(17); s.wire(gp, L(gp, 0, G)); gnd(L(gp, 0, G))
 for pin in (13, 2, 12):          # P3.4, P1.5 (alternate bootloader-entry pin: left alone), P3.3
     s.nc(u4.p(pin))
-# board temperature: NTC divider into P3.2 / AIN3 (8-bit ADC, ref VCC 5 V; divider from 3.3 V). 2.2k top centres the
-# range on the trip region: ~1.1 counts/K at 80-85 C (85 C = 68 counts, 25 C = 138), NTC self-heating ~1 K
+# board temperature: NTC divider into P3.2 / AIN3. The CH552 ADC reads relative to VCC, so the divider runs from VCC
+# (+5V) too: ratiometric (VCC sags to ~4.4 V on a 5 V contract). 85 C = 103 counts, 25 C = 209, ~1.7 counts/K near the
+# trip (firmware/tools/gen_ntc_table.py); NTC self-heating ~2.7 mW / 1 mW/K at 85 C, less once soldered
 p4 = u4.p(4); s.wire(p4, L(p4, 5.08)); s.label('NTC', *L(p4, 5.08))
 node = (114.3, 228.6)
-r11 = s.add('Device:R', 'R11', '2.2k', 0, 0, footprint='NoOutline:0402WGF2201TCE', lcsc='C25879'); at(r11, 2, node); rail('+3V3', r11.p(1))
+r11 = s.add('Device:R', 'R11', '2.2k', 0, 0, footprint='NoOutline:0402WGF2201TCE', lcsc='C25879'); at(r11, 2, node); rail('+5V', r11.p(1))
 rt1 = s.add('Device:Thermistor_NTC', 'RT1', '10k B3380', 0, 0, footprint='NoOutline:NCP15XH103F03RC', lcsc='C77131',
             fields={'Datasheet': 'https://www.lcsc.com/datasheet/C77131.pdf'})
 at(rt1, 1, node); gnd(rt1.p(2))
 s.wire(node, L(node, -7.62)); s.label('NTC', *L(node, -7.62), rot=180); s.tap(node)
 # I2C with pull-ups hanging above
 sda, scl = u4.p(5), u4.p(6)
-# 220R series: limit current into the 3.3 V parts' clamps if a 5 V CH552 pin ever drives high (INA226 SCL max VS+0.3,
-# OLED VDD abs max 4 V); low level at the bus 3.3 V x 220 / 2420 = 0.30 V + Vol, under the OLED's VIL 0.2 VDD = 0.66 V
+# 150R series: limit current into the 3.3 V parts' clamps if a 5 V CH552 pin ever drives high (INA226 SCL max VS+0.3,
+# OLED VDD abs max 4 V; 9.3 mA total). Low level at the bus 0.26 V worst case (3.3 V +2 %, 2.2k -1 %, CH552 33R),
+# under the HUSB238's VIL max 0.4 V (the strictest on the bus) with 139 mV margin
 for ref, p, end, lab in (('R12', sda, 22.86, 'SDA'), ('R13', scl, 35.56, 'SCL')):
-    r = s.add('Device:R', ref, '220', 0, 0, 90, footprint='NoOutline:0402WGF2200TCE', lcsc='C25091')
+    r = s.add('Device:R', ref, '150', 0, 0, 90, footprint='NoOutline:0402WGF1500TCE', lcsc='C25082')
     at(r, 1, L(p, 2.54)); s.wire(p, r.p(1)); s.wire(r.p(2), L(p, end)); s.label(lab, *L(p, end))
 for ref, p, dx in (('R1', sda, 12.7), ('R2', scl, 30.48)):
     r = R(ref, '2.2k'); at(r, 2, L(p, dx)); s.tap(L(p, dx)); rail('+3V3', r.p(1))
@@ -246,7 +248,7 @@ p = r4.p(2); s.wire(p, L(p, 0, G)); s.label('USB_DP', *L(p, 0, G), rot=270)
 s.wire(en, L(en, 5.08)); s.label('SW_EN', *L(en, 5.08))
 s.text('SW1, SW2: TS-1088 4 x 3 mm, top-actuated (printed plungers)\n'
        'R1/R2 2.2k to 3.3 V: CH552 reset pull-up (140 uA) keeps the bus < 3.7 V (OLED VDD abs max 4 V)\n'
-       'R12/R13 220R: firmware runs P1.6/P1.7 open drain, no pull-up (P1_MOD_OC=1, P1_DIR_PU=0); the resistors limit a mistake',
+       'R12/R13 150R: firmware runs P1.6/P1.7 open drain, no pull-up (P1_MOD_OC=1, P1_DIR_PU=0); the resistors limit a mistake',
        25.4, 251.46, 1.27)
 
 # ================================================================== OLED

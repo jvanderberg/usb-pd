@@ -76,7 +76,7 @@ def build(r):
 
     # ------------------------------------------------------------------ I2C
     # SCL: U1 -> lane x 115.45 -> U4; the bus row y 110.05 runs right to R2 and J3.
-    # U4's own branch of each line goes through its 220R (R13 SCL, R12 SDA); the pull-ups sit on the bus side
+    # U4's own branch of each line goes through its 150R (R13 SCL, R12 SDA); the pull-ups sit on the bus side
     r.track(T, THIN, ('U1', '7'), (115.45, 106.1), (115.45, 110.05), ('R13', '2'), net=SCL)
     r.track(T, THIN, ('R13', '1'), (115.45, 112.45), ('U4', '6'))
     r.track(T, THIN, (115.45, 110.05), ('R2', '2'), ('J3', '10'), net=SCL)
@@ -149,7 +149,9 @@ def build(r):
     NTC = n('U4', '4')
     r.track(T, THIN, ('U4', '4'), (113.25, 114.2), (116.4, 114.2), (116.4, 113.6), net=NTC)
     r.track(T, THIN, ('RT1', '1'), ('R11', '2'), net=NTC)
-    r.track(T, 0.25, ('R1', '1'), ('R11', '1'), net=P33)
+    # R11 from +5V (= CH552 VCC, the ADC reference): a via onto the +5V bottom run at x 119.5
+    r.via((119.5, 114.0), P5, *VP)
+    r.track(T, 0.25, (119.5, 114.0), (118.3, 113.6), ('R11', '1'), net=P5)
     r.track(T, 0.25, ('RT1', '2'), (114.25, 113.55), net=GND)
     r.via((114.25, 113.55), GND, *VS)
 

@@ -46,7 +46,7 @@ None. Every IC pin map matches its datasheet; nothing exceeds an absolute maximu
   drives a pin high for 2 clocks on every low-to-high transition. Push-pull mode would drive a full 5 V.
 - Fix (firmware rule): set P1.6 and P1.7 to open drain with no pull-up (P1_MOD_OC bit = 1, P1_DIR_PU bit = 0) before
   the first I2C transaction, and never drive them high.
-- Done 2026-11-10: 220R series resistors R12 (SDA) / R13 (SCL) in U4's branch, pull-ups on the bus side. 1k was
+- Done 2026-11-10: series resistors R12 (SDA) / R13 (SCL) in U4's branch (220R, then 150R: see Timing budget), pull-ups on the bus side. 1k was
   rejected: the low level at the bus would be 3.3 x 1k / 3.2k = 1.03 V, above the OLED's VIL (0.2 VDD = 0.66 V).
   With 220R it is 0.30 V + Vol; a 5 V drive puts about 6 mA, shared, into the INA226 / OLED clamps.
 
@@ -87,3 +87,77 @@ None. Every IC pin map matches its datasheet; nothing exceeds an absolute maximu
 - USB-C land pattern against the connector drawing (datasheet is image-only).
 - The CH552 ROM bootloader entry condition (not documented).
 - Enclosure air and the cooling the cables provide.
+
+## Firmware validation (2026-11-10, firmware/)
+
+The firmware was written against the datasheets and builds with SDCC 4.6.0 (8.6 KB of 14 KB flash, 460 B of 1 KB
+xRAM, no warnings); the board-independent logic has host tests (`make test`). What it found:
+
+- **Fixed in hardware:** the NTC divider ran from +3V3 while the CH552 ADC reads relative to VCC. On a 5 V contract
+  VCC is VBUS minus the SGM2203 dropout (1.3 V typ at 150 mA; a few hundred mV at ~35 mA), about 4.4 V, which would
+  shift the reading ~12 % (~11 C at 85 C). R11 now runs from +5V (VCC), so the reading is ratiometric.
+- **Firmware constraint:** CH552 at 24 MHz needs VCC > 4.5 V (DS table 8.2.2), not guaranteed on a 5 V contract.
+  The firmware runs at 16 MHz, allowed down to VCC 3.8 V (12 MHz until 2026-11-10).
+- **Firmware constraint:** P1.6/P1.7 open drain without pull-up; P1.4 (CYCLE, to 3.3 V) high-impedance input, not the
+  reset-default pull-up to 5 V; P3.2 high-impedance for the ADC.
+- **Design limit (accepted):** the INA226 sits after Q1, so it cannot see the voltage while the output is off; the
+  display shows the HUSB238's reported contract instead.
+- **HUSB238 register map** (docs/datasheets/HUSB238_registers.pdf): PDO_SELECT codes are not sequential (15 V = 1000b)
+  while PD_STATUS0 voltage codes are; both tables are in firmware/src/logic.c with tests.
+- **Open (firmware):** a charger that hard-resets on a saved high-voltage request at every power-up would boot-loop;
+  a boot-attempt marker in the DataFlash log would break the loop. Not implemented.
+- **Needs the real board:** I2C timing (bit-banged, ~100 kHz target, scope it), the OLED init on the actual panel,
+  and the CH552 ROM bootloader entry through D1/R4.
+
+### Timing budget (cycle count, 16 MHz)
+
+Clock: 16 MHz since 2026-11-10 (was 12 MHz). The CH552 allows 16 MHz down to VCC 3.8 V (DS s23, Fsys rows) and 24 MHz
+only at VCC >= 4.5 V; on a 5 V contract VCC is VBUS minus the SGM2203 dropout, about 4.4-4.6 V, so 24 MHz is out.
+
+Bounds: the CH552 datasheet gives no per-instruction table ("79 % single-byte single-cycle, 8-15x a standard
+MCS51"), so each path is bounded at 1 and 4 clocks per instruction, with the 8-15x figure as the typical value.
+Instruction counts were measured at 12 MHz; times below are scaled by 12/16.
+
+| Path | Measured | Time |
+|---|---|---|
+| I2C bit (i2c_tx, generated asm) | 52 instructions (3 lcall, 3 ret, 12 djnz) | 3.2-13 us; typical 3.8-7.5 us (SCL ~130-270 kHz) |
+| One display update, CPU (s51 simulator) | 177,048 standard-8051 clocks (was 1,265,784 before the 16-bit arithmetic) | 0.7-1.4 ms typical, 0.5-3.7 ms bounds |
+| One update, I2C | ~440 bit times typical (OLED ~270 for a changed digit or two, INA226 96, HUSB238 78); ~2,020 when the whole screen changes or every 10 s resync | 1.7-5.7 ms typical, 27 ms worst |
+| Update total, every 100 ms (10 Hz since 2026-11-10; was 200 ms) | | ~2.5-7 ms typical, 31 ms worst (full-screen redraw) |
+| Timer ISR, every 1 ms | <= 114 instructions | <= 29 us (2.9 %) |
+| Longest gap between watchdog feeds | main loop 10 ms + update 31 ms (+ DataFlash save) | << 1.05 s (Fsys/65536 x 256) |
+| Over-current trip | INA226 AVG16 x 2.2 ms + 100 ms sample + 500 ms filter | < 0.65 s |
+
+I2C against the parts:
+- OLED: tcycle >= 2.5 us (best case 3.2 us); data hold >= 300 ns (next SDA change >= 8 instructions = 0.5 us after
+  SCL falls).
+- HUSB238: its datasheet gives no SCL maximum; the fastest possible bit (3.2 us, 312 kHz) is inside Fast-mode 400 kHz.
+- INA226: SMBus timeout 28 ms; SCL is never held low longer than one ISR (29 us).
+- Rise time: 2.2k x ~50 pF = 110 ns.
+
+Arithmetic (2026-11-10): the 8051 has only 8x8 MUL and 8/8 DIV, and SDCC's 32-bit helpers made each formatted
+number cost ~300,000 standard-8051 clocks (s51). Replaced with 16-bit shift-and-add (logic.c div10 / power_dw /
+q1_estimate_dc), per call: fmt_fixed 303,000 -> 19,000; power 136,000 -> 4,500; Q1 estimate 141,000 -> 3,400;
+INA226 units 70,000 -> 1,800. Host tests check div10 against / for all 65,536 inputs, power within 0.5 % + 0.2 W over
+0-40 V x 0-16 A, and the Q1 estimate never below the exact I^2 law (it reads ~4 % high: 26.1 K at 5 A for 25 K).
+
+OLED (2026-11-10): the flush sends only the changed byte spans (oled.c keeps a copy of what the panel holds; spans
+closer than 10 bytes merge, since each window costs ~10 bytes). A one-digit current and power change is 30 bytes
+on the wire instead of 212. Button presses redraw at once (a voltage step shows the new voltage before the ~0.1-1 s
+negotiation) instead of at the next update tick. After a failed transfer, and every 10 s, the whole screen is
+resent. test/test_oled.c checks a model of the panel's RAM against the framebuffer over 2,000 random frames and a
+NACK mid-transfer.
+
+Fixed in firmware from this pass:
+- ms_ticks was read non-atomically. It is 16 bits on an 8-bit CPU, so a torn read could end a delay early; now read
+  through ticks().
+- Buttons were sampled only in the main loop, which stalls up to ~80 ms during an update and could miss a quick tap;
+  now debounced (10 ms) and latched in the 1 ms ISR.
+- The master ACK now holds SDA a bit time past SCL low.
+
+Found here, electrical: the HUSB238's SDA/SCL VIL max is 0.4 V (datasheet I2C parameters). With R12/R13 = 220R the
+CH552's low reaches the bus at 0.35 V worst case (3.3 V +2 %, 2.2k -1 %, CH552 33 R at VOL 0.4 V / 12 mA): 49 mV of
+margin. 150R gives 0.26 V (139 mV), 100R 0.19 V (206 mV); the cost is the clamp current if firmware ever drives
+5 V push-pull (9.3 / 14 mA total, against the INA226's 5 mA per pin).
+
+Decision 2026-11-10 (user): R12/R13 changed to 150R (0402WGF1500TCE, C25082, Extended).

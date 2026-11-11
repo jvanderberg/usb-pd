@@ -49,7 +49,7 @@ USB-C (16-pin, 5 A) --VBUS 5-20 V--+------------------------------> AO4407A PMOS
    +--> CH552P MCU (VCC 5 V) ---- SW_EN (P1.0, 2.2k pull-down) ---------+
           |  P1.6 SDA / P1.7 SCL (bit-banged, open-drain); P1.5 left free on purpose (alternate bootloader-entry pin)
           |  P1.1 <- ON/OFF button (to GND)
-          |  P3.2 / AIN3 <- board temperature: 2.2k (to 3.3 V) / NTC 10k B3380 (to GND), beside U4 between J1 and U2
+          |  P3.2 / AIN3 <- board temperature: 2.2k (to VCC 5 V, ratiometric) / NTC 10k B3380 (to GND), beside U4
           |  P1.4 <- CYCLE button (to 3.3 V; also via BAT54 + 10k to D+ = bootloader entry at plug-in)
           +--> OLED 0.69" 96x16 (SSD1306/SSD1315, I2C 0x3C), FPC hand-soldered
           '--> INA226 power monitor (I2C 0x40, A0 = A1 = GND): Kelvin taps across R10, bus voltage at OUT+
@@ -165,8 +165,8 @@ Output switch: AO4407A R_DS(on) max 18.5 mOhm at V_GS = -4.5 V, 11.5 mOhm at -10
 | Output switch | AO4407A (UMW) | C2841482 | 66,168 | Ext | SOP-8 | -30 V, V_GS +-25 V, 11.5 mOhm |
 | Power monitor | INA226AIDGSR (TI) | C49851 | 67,268 (global, 2026-11-10) | Ext | VSSOP-10 | bus 0-36 V, shunt +-81.92 mV full scale; displays output V, I, W. ALERT unused |
 | Shunt | RLM12FTCMR005 (Ta-I) 5 mOhm 1 % 1206 | C316225 | 132,154 (global, 2026-11-10) | Ext | 1206 | 25 mV / 0.125 W at 5 A (rating 1 W); 5 A = 31 % of the INA226 range. Footprint NoOutline:RLM12FTCMR005 (JLC's, silk outline removed: its top pad sits against Q1's drain pads) |
-| I2C series | 0402WGF2200TCE 220R x2 (R12 SDA, R13 SCL) | C25091 | 1,787,359 (global, 2026-11-10) | Basic | 0402 | in U4's branch: limit clamp current if a 5 V CH552 pin drives high; bus low 0.30 V + Vol (OLED VIL 0.66 V). Firmware still runs P1.6/P1.7 open drain, no pull-up |
-| Board temperature | NCP15XH103F03RC (Murata) NTC 10k 1 % B3380, 0402 | C77131 | 289,467 (global, 2026-11-10) | Ext | 0402 | with R11 2.2k: 85 C = 68 counts, 25 C = 138 (8-bit ADC, ref 5 V), ~1.1 count/K near the trip; self-heating ~1.2 K (1 mW/C). RT1 and R11 use outline-free copies (NoOutline.pretty): placed tight beside U4 and D1 |
+| I2C series | 0402WGF1500TCE 150R x2 (R12 SDA, R13 SCL) | C25082 | 709,091 (global, 2026-11-10) | Ext | 0402 | in U4's branch: limit clamp current if a 5 V CH552 pin drives high (9.3 mA total); bus low 0.26 V worst case vs the HUSB238's VIL max 0.4 V (139 mV margin; 220R left 49 mV). User chose 150R 2026-11-10. Firmware still runs P1.6/P1.7 open drain, no pull-up |
+| Board temperature | NCP15XH103F03RC (Murata) NTC 10k 1 % B3380, 0402 | C77131 | 289,467 (global, 2026-11-10) | Ext | 0402 | with R11 2.2k from VCC (the ADC reference, so VCC sag cancels): 85 C = 103 counts, 25 C = 209, ~1.7 count/K near the trip; self-heating ~2.7 K at 85 C in air (1 mW/C), less soldered. RT1 and R11 use outline-free copies (NoOutline.pretty): placed tight beside U4 and D1 |
 | Gate driver | 2N7002 | C8545 | 5.9 M | Basic | SOT-23 | |
 | USB-C | TYPE-C-31-M-12 | C165948 | 289,362 | Ext | SMD 16-pin | 5 A / 20 V rated (DS) |
 | Buttons | TS-1088-AR02016 | C720477 | 933,292 | Basic | 4 x 3 mm SMD | top-actuated |
