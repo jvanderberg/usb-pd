@@ -76,10 +76,13 @@ def build(r):
 
     # ------------------------------------------------------------------ I2C
     # SCL: U1 -> lane x 115.45 -> U4; the bus row y 110.05 runs right to R2 and J3.
-    r.track(T, THIN, ('U1', '7'), (115.45, 106.1), (115.45, 112.45), ('U4', '6'))
+    # U4's own branch of each line goes through its 220R (R13 SCL, R12 SDA); the pull-ups sit on the bus side
+    r.track(T, THIN, ('U1', '7'), (115.45, 106.1), (115.45, 110.05), ('R13', '2'), net=SCL)
+    r.track(T, THIN, ('R13', '1'), (115.45, 112.45), ('U4', '6'))
     r.track(T, THIN, (115.45, 110.05), ('R2', '2'), ('J3', '10'), net=SCL)
     # SDA: J3 -> row y 110.67 -> lane x 116.0 (R1) -> U4; U1's branch hops under SCL on the bottom.
-    r.track(T, THIN, ('J3', '11'), (116.0, 110.67), (116.0, 112.95), ('U4', '5'))
+    r.track(T, THIN, ('J3', '11'), (116.0, 110.67), ('R12', '2'), net=SDA)     # passes R1.2 (pull-up) on the row
+    r.track(T, THIN, ('R12', '1'), (116.0, 112.95), ('U4', '5'))
     r.track(T, THIN, ('U1', '6'), (114.95, 106.6))
     r.via((114.95, 106.6), SDA, *VS)
     r.via((117.0, 110.67), SDA, *VS)
@@ -121,6 +124,10 @@ def build(r):
     r.track(T, 0.25, ('C3', '2'), (123.6, 105.6), net=GND)
     r.via((123.6, 105.6), GND, *VP)
     r.via((121.75, 109.5), GND, *VP)
+    # U2's GND tab: the bottom under it is the VBUS band and the BTN_ON / SW_EN lanes, so its vias sit just below it
+    for x in (116.7, 117.6, 118.5):
+        r.track(T, 0.4, (x, 104.4), (x, 105.15), net=GND)
+        r.via((x, 105.15), GND, *VP)
     r.track(T, 0.25, ('U3', '1'), (121.75, 109.5), net=GND)
 
     # ------------------------------------------------------------------ U4 (CH552) local
@@ -137,6 +144,14 @@ def build(r):
     r.track(T, THIN, ('U4', '10'), (112.75, 109.1), (111.85, 108.2), (111.2, 108.2), net=RXD)
     r.via((111.2, 108.2), RXD, *VS)
     r.track(B, SIG, (111.2, 108.2), ('TP6', '1'), net=RXD)
+
+    # ------------------------------------------------------------------ board temperature: NTC divider into P3.2 (AIN3)
+    NTC = n('U4', '4')
+    r.track(T, THIN, ('U4', '4'), (113.25, 114.2), (116.4, 114.2), (116.4, 113.6), net=NTC)
+    r.track(T, THIN, ('RT1', '1'), ('R11', '2'), net=NTC)
+    r.track(T, 0.25, ('R1', '1'), ('R11', '1'), net=P33)
+    r.track(T, 0.25, ('RT1', '2'), (114.25, 113.55), net=GND)
+    r.via((114.25, 113.55), GND, *VS)
 
     # ------------------------------------------------------------------ CYCLE button, bootloader entry
     r.track(T, THIN, ('U4', '3'), (112.75, 114.45), (113.15, 114.85), net=BTN_V)
@@ -156,9 +171,9 @@ def build(r):
     r.track(B, THIN, (111.7, 109.8), (111.7, 104.0), (136.8, 104.0), net=BTN_ON)
     r.via((136.8, 104.0), BTN_ON, *VS)
     r.track(T, SIG, (136.8, 104.0), (138.815, 104.0), ('SW1', '1'), net=BTN_ON)
-    r.track(T, THIN, ('U4', '8'), (114.55, 111.45), (114.85, 111.15), (114.85, 110.75), net=SW_EN)
-    r.via((114.85, 110.75), SW_EN, *VS)
-    r.track(B, THIN, (114.85, 110.75), (114.3, 110.2), (114.3, 104.6), (136.0, 104.6), net=SW_EN)
+    r.track(T, THIN, ('U4', '8'), (114.55, 111.45), (114.7, 111.3), (114.7, 110.75), net=SW_EN)
+    r.via((114.7, 110.75), SW_EN, *VS)
+    r.track(B, THIN, (114.7, 110.75), (114.3, 110.35), (114.3, 104.6), (136.0, 104.6), net=SW_EN)
     r.via((136.0, 104.6), SW_EN, *VS)
     r.track(T, SIG, (136.0, 104.6), (146.733, 104.6), ('R7', '1'), ('Q2', '1'), net=SW_EN)
 
@@ -201,8 +216,9 @@ def build(r):
     r.track(T, THIN, (142.9, 110.05), (142.9, 115.7), ('U5', '5'), net=SCL)
     r.track(T, THIN, (143.45, 110.9), (143.45, 115.2), ('U5', '4'), net=SDA)
     # Kelvin sense: each line leaves its own shunt pad on the side away from the current and meets no pour
-    r.track(T, THIN, ('U5', '10'), (151.0, 113.7), (151.4, 113.3), (152.45, 113.3), ('R10', '1'), net=VOUT_SW)
-    r.track(T, THIN, ('U5', '9'), (151.6, 114.2), (151.6, 116.0), (152.45, 116.0), ('R10', '2'), net=VOUT)
+    # (RLM12 DS s6: sense traces from the pads' inner edges)
+    r.track(T, THIN, ('U5', '10'), (151.0, 113.7), (151.5, 113.2), (152.6, 113.2), net=VOUT_SW)
+    r.track(T, THIN, ('U5', '9'), (151.6, 114.2), (151.6, 115.1), (152.6, 115.1), net=VOUT)
     r.track(T, THIN, ('U5', '9'), (149.75, 114.2), (149.75, 114.7), ('U5', '8'), net=VOUT)   # VBUS sense = IN-
     # supply: C15 beside VS, +3V3 from the bottom lane; GND pins (A0, A1 = GND -> address 0x40) to a via under the body
     r.track(T, 0.25, ('U5', '6'), (150.2, 115.7), ('C15', '1'), net=P33)

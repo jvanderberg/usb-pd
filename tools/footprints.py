@@ -84,6 +84,23 @@ def ch552p_epvia():
     return name, fp
 
 
+def rlm12_land():
+    """NoOutline:RLM12FTCMR005 (strip_outline.py copy of JLC's footprint) with the datasheet land pattern
+    (RLM12 DS s6, 2-50 mOhm: pad length b 1.7, width a 1.8, gap L 1.6 -> centres +-1.65). JLC's pads are 1.21 long.
+    Footprint origin unchanged (JLC places the body there)."""
+    p = os.path.join(HW, 'NoOutline.pretty', 'RLM12FTCMR005.kicad_mod')
+    fp = load(p)
+    pads = {q.args[0]: q for q in fp.find_all('pad')}
+    assert sorted(pads) == ['1', '2'], pads.keys()
+    # pad 1 keeps the datasheet inner edge (-0.8) but is 1.0 long: on this board it faces Q1's drain pads (same net,
+    # joined by the VOUT_SW pour) with the board edge behind pad 2, so a full-length pad 1 would overlap Q1's pads
+    for num, x, length in (('1', -1.3, 1.0), ('2', 1.65, 1.7)):
+        pads[num].set('at', x, 0)
+        pads[num].set('size', length, 1.8)
+    open(p, 'w').write(dumps(fp))
+    print('wrote', p, '(datasheet land)')
+
+
 def main():
     os.makedirs(LIB, exist_ok=True)
     for name, fp in (oled(), ch552p_epvia()):
@@ -91,6 +108,7 @@ def main():
         text = dumps(fp)
         open(p, 'w').write(text)
         print('wrote', p)
+    rlm12_land()
     t = LibTable.for_project(HW, 'fp')
     if t.add('usbpd', LIB, descr='usbpd project footprints'):
         t.save()

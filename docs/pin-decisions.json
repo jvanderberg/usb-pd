@@ -9,7 +9,6 @@
  "U4.12": "P3.3: spare GPIO, internal pull-up by default - open",
  "U4.13": "P3.4: spare GPIO, internal pull-up by default - open",
  "U4.2": "P1.5: spare GPIO, internal pull-up by default - open. Kept free on purpose: P1.5 is the CH552 bootloader's alternate entry pin (pulled low at power-up), so nothing that can sit low at power-up goes on it",
- "U4.4": "P3.2: spare GPIO, internal pull-up by default - open",
  "U4.7": "RST: internal pull-down (CH552 DS section 4) - open",
  "U5.1": "A1 = GND: with A0 = GND the I2C address is 1000000b = 0x40 (INA226 DS table 6-2); clear of HUSB238 0x08 and OLED 0x3C",
  "U5.2": "A0 = GND: see U5.1 (address 0x40)",

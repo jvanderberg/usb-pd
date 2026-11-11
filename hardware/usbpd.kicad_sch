@@ -800,6 +800,279 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:Thermistor_NTC"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TH"
+				(at -4.445 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Thermistor_NTC"
+				(at 3.175 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 1.27 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 1.27 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "thermistor NTC resistor sensor RTD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_* RV_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Thermistor_NTC_0_1"
+				(arc
+					(start -3.175 2.413)
+					(mid -3.0506 2.3165)
+					(end -3.048 2.159)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -3.048 2.794)
+					(mid -2.9736 2.9736)
+					(end -2.794 3.048)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 3.048)
+					(mid -2.6144 2.9736)
+					(end -2.54 2.794)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 2.54)
+					(mid -2.9736 2.6144)
+					(end -3.048 2.794)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 1.905)
+					(mid -2.9736 1.9794)
+					(end -3.048 2.159)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.54 2.159)
+					(mid -2.6144 1.9794)
+					(end -2.794 1.905)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.159 2.794)
+					(mid -2.434 2.5608)
+					(end -2.794 2.54)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 2.159) (xy -2.54 2.794)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 -3.683) (xy -2.54 -1.397) (xy -2.794 -2.159) (xy -2.286 -2.159) (xy -2.54 -1.397) (xy -2.54 -1.651)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 2.54) (xy -1.778 1.524) (xy 1.778 -1.524) (xy 1.778 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 -1.397) (xy -1.778 -3.683) (xy -2.032 -2.921) (xy -1.524 -2.921) (xy -1.778 -3.683)
+						(xy -1.778 -3.429)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -1.016 2.54)
+					(end 1.016 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Thermistor_NTC_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Switch:SW_Push"
 			(pin_numbers
 				(hide yes)
@@ -4448,7 +4721,7 @@
 		)
 		(uuid "c3e7fa35-d0cb-58f7-8b28-6d8deb2a2a01")
 	)
-	(text "SW1, SW2: TS-1088 4 x 3 mm, top-actuated (printed plungers)\nR1/R2 2.2k to 3.3 V: CH552 reset pull-up (140 uA) keeps the bus < 3.7 V (OLED VDD abs max 4 V)"
+	(text "SW1, SW2: TS-1088 4 x 3 mm, top-actuated (printed plungers)\nR1/R2 2.2k to 3.3 V: CH552 reset pull-up (140 uA) keeps the bus < 3.7 V (OLED VDD abs max 4 V)\nR12/R13 220R: firmware runs P1.6/P1.7 open drain, no pull-up (P1_MOD_OC=1, P1_DIR_PU=0); the resistors limit a mistake"
 		(exclude_from_sim no)
 		(at 25.4 251.46 0)
 		(effects
@@ -4457,7 +4730,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "f49fd7bf-3f05-5036-aba2-19d25d5d23d4")
+		(uuid "3dfb4b09-13a7-5c0d-8c75-3128b101e7eb")
 	)
 	(text "OLED 0.69in 96x16, internal charge pump (FPC hand-soldered)"
 		(exclude_from_sim no)
@@ -4675,10 +4948,6 @@
 	(no_connect
 		(at 68.58 190.5)
 		(uuid "bdab0ac0-5754-5dad-98c6-bf20b029e9eb")
-	)
-	(no_connect
-		(at 93.98 208.28)
-		(uuid "61595437-8d09-5a6e-a644-f2710ac202fa")
 	)
 	(no_connect
 		(at 93.98 198.12)
@@ -5388,13 +5657,43 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 185.42) (xy 106.68 185.42)
+			(xy 93.98 208.28) (xy 99.06 208.28)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "9e973fb7-756e-5b8f-a344-35ef6aa4ce64")
+		(uuid "f2036e4e-8a6c-526b-9b9f-d91bf9c450a0")
+	)
+	(wire
+		(pts
+			(xy 114.3 228.6) (xy 106.68 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d6f13bfc-3efb-5f02-83ec-4e5ac0ad838e")
+	)
+	(wire
+		(pts
+			(xy 93.98 185.42) (xy 96.52 185.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fe48d918-dfed-5fcc-9ddb-507dfa21a878")
+	)
+	(wire
+		(pts
+			(xy 104.14 185.42) (xy 106.68 185.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "615c83d7-8fd5-5782-a130-618849d14ae4")
 	)
 	(wire
 		(pts
@@ -5408,13 +5707,23 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 187.96) (xy 124.46 187.96)
+			(xy 93.98 187.96) (xy 96.52 187.96)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "23a8a32c-7494-5dcb-a968-fe8b88dc6176")
+		(uuid "6a9627ba-8368-5d7a-be3f-739cfe20d13b")
+	)
+	(wire
+		(pts
+			(xy 104.14 187.96) (xy 124.46 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1c628c4b-39f4-5b81-9805-637d8b6092a5")
 	)
 	(wire
 		(pts
@@ -5885,6 +6194,26 @@
 			(justify right bottom)
 		)
 		(uuid "b7767f33-c2ca-58e8-a0b4-ad60353d598a")
+	)
+	(label "NTC"
+		(at 99.06 208.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4fdd4b37-f9fd-563f-bd7e-51fefc15ce0f")
+	)
+	(label "NTC"
+		(at 106.68 228.6 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7fb9091f-2026-5a03-9c06-8e0884340e59")
 	)
 	(label "SDA"
 		(at 116.84 185.42 0)
@@ -10313,6 +10642,533 @@
 	)
 	(symbol
 		(lib_id "Device:R")
+		(at 114.3 224.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "40d07751-9e25-57a6-9289-65e189b5c3f3")
+		(property "Reference" "R11"
+			(at 116.84 223.52 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.2k"
+			(at 116.84 226.06 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "NoOutline:0402WGF2201TCE"
+			(at 114.3 224.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25879.pdf"
+			(at 114.3 224.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 114.3 224.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "LCSC" "C25879"
+			(at 114.3 224.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "3f5dc8e7-2227-5b73-bbe4-5fe2d9a316c3")
+		)
+		(pin "2"
+			(uuid "8dd7c0f6-b57e-5940-8479-fc763e59b8e0")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "R11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 114.3 220.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5983cd72-8f01-563d-81a0-47ff7528b30f")
+		(property "Reference" "#PWR026"
+			(at 114.3 217.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 114.3 217.17 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 114.3 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "624b7ec4-a401-5379-8124-5791bcf229b6")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "#PWR026")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Thermistor_NTC")
+		(at 114.3 232.41 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "894f6118-63da-5585-bde2-b8bd5c8ab267")
+		(property "Reference" "RT1"
+			(at 116.84 231.14 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k B3380"
+			(at 116.84 233.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "NoOutline:NCP15XH103F03RC"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C77131.pdf"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "LCSC" "C77131"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "cfbc217a-1df7-5087-8fe2-c54914436e8e")
+		)
+		(pin "2"
+			(uuid "4d7d63b5-f60b-5424-a8ac-ecaa38fe28b3")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "RT1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 114.3 236.22 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3ea25f91-016f-55a0-bfde-f157a7559f68")
+		(property "Reference" "#PWR027"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 114.3 232.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 114.3 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7be9c409-683d-5f1b-a0ea-0e738fc26597")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "#PWR027")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 100.33 185.42 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c483054e-8b00-5815-affe-bd4a151a4f10")
+		(property "Reference" "R12"
+			(at 100.33 182.88 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 100.33 187.96 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "NoOutline:0402WGF2200TCE"
+			(at 100.33 185.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25091.pdf"
+			(at 100.33 185.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 100.33 185.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25091"
+			(at 100.33 185.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "da8e6e61-8cf5-55e1-aa98-6f398089ed88")
+		)
+		(pin "2"
+			(uuid "ecbbb083-757f-578c-b29e-420426d3b3e7")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "R12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 100.33 187.96 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "eb9d9995-0172-5f89-9fde-4cb0dac6d360")
+		(property "Reference" "R13"
+			(at 100.33 185.42 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 100.33 190.5 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "NoOutline:0402WGF2200TCE"
+			(at 100.33 187.96 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25091.pdf"
+			(at 100.33 187.96 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 100.33 187.96 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25091"
+			(at 100.33 187.96 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5b48dd25-b695-5348-a08f-ac64ea1d5b5b")
+		)
+		(pin "2"
+			(uuid "e7f0e1dd-56fe-5b22-b413-afe576c33bd3")
+		)
+		(instances
+			(project "usbpd"
+				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
+					(reference "R13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
 		(at 106.68 181.61 0)
 		(unit 1)
 		(body_style 1)
@@ -10418,7 +11274,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8080d683-7c5d-5b5a-851b-3721745f1dbd")
-		(property "Reference" "#PWR026"
+		(property "Reference" "#PWR028"
 			(at 106.68 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -10478,7 +11334,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR026")
+					(reference "#PWR028")
 					(unit 1)
 				)
 			)
@@ -10591,7 +11447,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "058040bf-a5e1-5c67-8f38-8bc9825e4948")
-		(property "Reference" "#PWR027"
+		(property "Reference" "#PWR029"
 			(at 124.46 176.53 0)
 			(hide yes)
 			(show_name no)
@@ -10651,7 +11507,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR027")
+					(reference "#PWR029")
 					(unit 1)
 				)
 			)
@@ -10764,7 +11620,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f2721f36-0c67-5d22-bf22-22573d2ecfe6")
-		(property "Reference" "#PWR028"
+		(property "Reference" "#PWR030"
 			(at 165.1 222.25 0)
 			(hide yes)
 			(show_name no)
@@ -10825,7 +11681,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR028")
+					(reference "#PWR030")
 					(unit 1)
 				)
 			)
@@ -10938,7 +11794,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1b54030b-b28c-53e4-ab7c-df6d4f0f414c")
-		(property "Reference" "#PWR029"
+		(property "Reference" "#PWR031"
 			(at 185.42 189.23 0)
 			(hide yes)
 			(show_name no)
@@ -10998,7 +11854,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR029")
+					(reference "#PWR031")
 					(unit 1)
 				)
 			)
@@ -11111,7 +11967,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "589df3c5-2947-5205-9607-503f29457ec8")
-		(property "Reference" "#PWR030"
+		(property "Reference" "#PWR032"
 			(at 144.78 196.85 0)
 			(hide yes)
 			(show_name no)
@@ -11172,7 +12028,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR030")
+					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -11501,7 +12357,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "68a0d322-7a9d-5b68-bfa0-1ddc0b7a0459")
-		(property "Reference" "#PWR031"
+		(property "Reference" "#PWR033"
 			(at 337.82 187.96 0)
 			(hide yes)
 			(show_name no)
@@ -11561,7 +12417,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR031")
+					(reference "#PWR033")
 					(unit 1)
 				)
 			)
@@ -11674,7 +12530,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ebd9f597-9d56-583d-8723-0ff0a1044bc7")
-		(property "Reference" "#PWR032"
+		(property "Reference" "#PWR034"
 			(at 360.68 195.58 0)
 			(hide yes)
 			(show_name no)
@@ -11735,7 +12591,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR032")
+					(reference "#PWR034")
 					(unit 1)
 				)
 			)
@@ -11848,7 +12704,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a9e4d8be-7594-5983-acf0-2318c16425f2")
-		(property "Reference" "#PWR033"
+		(property "Reference" "#PWR035"
 			(at 373.38 195.58 0)
 			(hide yes)
 			(show_name no)
@@ -11909,7 +12765,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR033")
+					(reference "#PWR035")
 					(unit 1)
 				)
 			)
@@ -11926,7 +12782,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "21dab651-6920-5d83-8389-859c9eab870d")
-		(property "Reference" "#PWR034"
+		(property "Reference" "#PWR036"
 			(at 347.98 236.22 0)
 			(hide yes)
 			(show_name no)
@@ -11987,7 +12843,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR034")
+					(reference "#PWR036")
 					(unit 1)
 				)
 			)
@@ -12286,7 +13142,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e52aa78d-991a-5865-9411-16d0de8f5d69")
-		(property "Reference" "#PWR035"
+		(property "Reference" "#PWR037"
 			(at 289.56 218.44 0)
 			(hide yes)
 			(show_name no)
@@ -12346,7 +13202,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR035")
+					(reference "#PWR037")
 					(unit 1)
 				)
 			)
@@ -12459,7 +13315,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7e4cc4aa-e226-5fb0-b313-52a5375a20a6")
-		(property "Reference" "#PWR036"
+		(property "Reference" "#PWR038"
 			(at 302.26 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -12520,7 +13376,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR036")
+					(reference "#PWR038")
 					(unit 1)
 				)
 			)
@@ -12633,7 +13489,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "4926e1d7-15d9-534f-a246-d708dd3588b8")
-		(property "Reference" "#PWR037"
+		(property "Reference" "#PWR039"
 			(at 358.14 218.44 0)
 			(hide yes)
 			(show_name no)
@@ -12694,7 +13550,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR037")
+					(reference "#PWR039")
 					(unit 1)
 				)
 			)
@@ -12807,7 +13663,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c1e0426e-5442-5be2-ae77-5b08efb195d9")
-		(property "Reference" "#PWR038"
+		(property "Reference" "#PWR040"
 			(at 368.3 215.9 0)
 			(hide yes)
 			(show_name no)
@@ -12868,7 +13724,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR038")
+					(reference "#PWR040")
 					(unit 1)
 				)
 			)
@@ -12981,7 +13837,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8c18700a-c3fb-521e-a229-89a279aaf893")
-		(property "Reference" "#PWR039"
+		(property "Reference" "#PWR041"
 			(at 383.54 213.36 0)
 			(hide yes)
 			(show_name no)
@@ -13042,7 +13898,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR039")
+					(reference "#PWR041")
 					(unit 1)
 				)
 			)
@@ -13155,7 +14011,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "de858837-26e0-5971-9159-92555fd7a605")
-		(property "Reference" "#PWR040"
+		(property "Reference" "#PWR042"
 			(at 398.78 213.36 0)
 			(hide yes)
 			(show_name no)
@@ -13216,7 +14072,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR040")
+					(reference "#PWR042")
 					(unit 1)
 				)
 			)
@@ -13315,7 +14171,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "814284f6-f9c8-5357-b2f8-3ced501449d0")
-		(property "Reference" "#PWR041"
+		(property "Reference" "#PWR043"
 			(at 165.1 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -13375,7 +14231,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR041")
+					(reference "#PWR043")
 					(unit 1)
 				)
 			)
@@ -13474,7 +14330,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "09a3b64c-8db5-54eb-891b-f3b2936135b9")
-		(property "Reference" "#PWR042"
+		(property "Reference" "#PWR044"
 			(at 182.88 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -13534,7 +14390,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR042")
+					(reference "#PWR044")
 					(unit 1)
 				)
 			)
@@ -13633,7 +14489,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "defee12d-a238-5c8c-9960-1d50de93e92e")
-		(property "Reference" "#PWR043"
+		(property "Reference" "#PWR045"
 			(at 200.66 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -13693,7 +14549,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR043")
+					(reference "#PWR045")
 					(unit 1)
 				)
 			)
@@ -13791,7 +14647,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "569d61ec-fb15-57f8-860d-a372dab84b5d")
-		(property "Reference" "#PWR044"
+		(property "Reference" "#PWR046"
 			(at 218.44 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -13852,7 +14708,7 @@
 		(instances
 			(project "usbpd"
 				(path "/c972e36d-aa4b-5927-9023-0ad30ab59c04"
-					(reference "#PWR044")
+					(reference "#PWR046")
 					(unit 1)
 				)
 			)

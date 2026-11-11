@@ -207,12 +207,24 @@ for pin, ref, net in ((10, 'TP6', 'RXD'), (9, 'TP5', 'TXD')):
     at(tp, 1, L(p, -10.16)); s.wire(p, tp.p(1))
     s.accept_missing(ref, 'Datasheet', 'bare test pad')
 gp = u4.p(17); s.wire(gp, L(gp, 0, G)); gnd(L(gp, 0, G))
-for pin in (4, 13, 2, 12):       # P3.2, P3.4, P1.5 (alternate bootloader-entry pin: left alone), P3.3
+for pin in (13, 2, 12):          # P3.4, P1.5 (alternate bootloader-entry pin: left alone), P3.3
     s.nc(u4.p(pin))
+# board temperature: NTC divider into P3.2 / AIN3 (8-bit ADC, ref VCC 5 V; divider from 3.3 V). 2.2k top centres the
+# range on the trip region: ~1.1 counts/K at 80-85 C (85 C = 68 counts, 25 C = 138), NTC self-heating ~1 K
+p4 = u4.p(4); s.wire(p4, L(p4, 5.08)); s.label('NTC', *L(p4, 5.08))
+node = (114.3, 228.6)
+r11 = s.add('Device:R', 'R11', '2.2k', 0, 0, footprint='NoOutline:0402WGF2201TCE', lcsc='C25879'); at(r11, 2, node); rail('+3V3', r11.p(1))
+rt1 = s.add('Device:Thermistor_NTC', 'RT1', '10k B3380', 0, 0, footprint='NoOutline:NCP15XH103F03RC', lcsc='C77131',
+            fields={'Datasheet': 'https://www.lcsc.com/datasheet/C77131.pdf'})
+at(rt1, 1, node); gnd(rt1.p(2))
+s.wire(node, L(node, -7.62)); s.label('NTC', *L(node, -7.62), rot=180); s.tap(node)
 # I2C with pull-ups hanging above
 sda, scl = u4.p(5), u4.p(6)
-s.wire(sda, L(sda, 22.86)); s.label('SDA', *L(sda, 22.86))
-s.wire(scl, L(scl, 35.56)); s.label('SCL', *L(scl, 35.56))
+# 220R series: limit current into the 3.3 V parts' clamps if a 5 V CH552 pin ever drives high (INA226 SCL max VS+0.3,
+# OLED VDD abs max 4 V); low level at the bus 3.3 V x 220 / 2420 = 0.30 V + Vol, under the OLED's VIL 0.2 VDD = 0.66 V
+for ref, p, end, lab in (('R12', sda, 22.86, 'SDA'), ('R13', scl, 35.56, 'SCL')):
+    r = s.add('Device:R', ref, '220', 0, 0, 90, footprint='NoOutline:0402WGF2200TCE', lcsc='C25091')
+    at(r, 1, L(p, 2.54)); s.wire(p, r.p(1)); s.wire(r.p(2), L(p, end)); s.label(lab, *L(p, end))
 for ref, p, dx in (('R1', sda, 12.7), ('R2', scl, 30.48)):
     r = R(ref, '2.2k'); at(r, 2, L(p, dx)); s.tap(L(p, dx)); rail('+3V3', r.p(1))
 # buttons
@@ -233,7 +245,8 @@ r4 = R('R4', '10k'); at(r4, 1, d1.p(1)); s.wire(d1.p(1), r4.p(1))
 p = r4.p(2); s.wire(p, L(p, 0, G)); s.label('USB_DP', *L(p, 0, G), rot=270)
 s.wire(en, L(en, 5.08)); s.label('SW_EN', *L(en, 5.08))
 s.text('SW1, SW2: TS-1088 4 x 3 mm, top-actuated (printed plungers)\n'
-       'R1/R2 2.2k to 3.3 V: CH552 reset pull-up (140 uA) keeps the bus < 3.7 V (OLED VDD abs max 4 V)',
+       'R1/R2 2.2k to 3.3 V: CH552 reset pull-up (140 uA) keeps the bus < 3.7 V (OLED VDD abs max 4 V)\n'
+       'R12/R13 220R: firmware runs P1.6/P1.7 open drain, no pull-up (P1_MOD_OC=1, P1_DIR_PU=0); the resistors limit a mistake',
        25.4, 251.46, 1.27)
 
 # ================================================================== OLED
